@@ -40,6 +40,6 @@ describe('App', () => {
     expect(req.request.method).toEqual('GET');
     req.flush(mockForecasts);
 
-    expect(component.forecasts).toEqual(mockForecasts);
+    expect(component.forecasts()).toEqual(mockForecasts);
   });
-};
+});
