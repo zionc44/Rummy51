@@ -1,11 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { LanguageService } from './core/i18n/language-service';
 
 @Component({
   selector: 'app-root',
-  standalone: false,
-  styleUrl: './app.css',
-  templateUrl: './app.html',
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
 })
 export class App {
-  protected readonly title = signal('Rummy 51');
+  // Constructing it is what applies the stored language and sets the document
+  // direction, before the first page renders.
+  private readonly language = inject(LanguageService);
 }

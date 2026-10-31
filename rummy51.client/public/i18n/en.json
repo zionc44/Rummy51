@@ -1,0 +1,15 @@
+{
+  "app": {
+    "title": "Rummy 51",
+    "tagline": "The classic game of runs and sets, now against real players"
+  },
+  "landing": {
+    "intro": "One deck, fifty-one points to open, and the first hand to go out wins. Pull up a chair.",
+    "register": "Sign up",
+    "login": "Sign in",
+    "hasAccount": "Already registered?"
+  },
+  "language": {
+    "switch": "Change language"
+  }
+}

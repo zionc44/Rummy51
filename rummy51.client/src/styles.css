@@ -1,1 +1,21 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Heebo", "Segoe UI", system-ui, sans-serif;
+
+  --color-felt-50: #eefbf4;
+  --color-felt-500: #10b981;
+  --color-felt-700: #047857;
+  --color-felt-900: #064e3b;
+  --color-felt-950: #022c22;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+}
