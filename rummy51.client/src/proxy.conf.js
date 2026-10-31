@@ -6,7 +6,7 @@ const target = process.env.API_TARGET || 'https://localhost:7115';
 const PROXY_CONFIG = [
   {
     context: [
-      "/weatherforecast",
+      "/api",
     ],
     target,
     secure: false

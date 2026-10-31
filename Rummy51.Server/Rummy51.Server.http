@@ -1,6 +1,12 @@
-@Rummy51.Server_HostAddress = http://localhost:5238
+@Rummy51.Server_HostAddress = https://localhost:7115
 
-GET {{Rummy51.Server_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{Rummy51.Server_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "player@example.com",
+  "password": "Str0ng!Pass",
+  "displayName": "שחקן"
+}
 
 ###
