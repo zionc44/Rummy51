@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Rummy51.Application.Authentication;
 using Rummy51.Domain.Entities;
+using Rummy51.Infrastructure.Identity;
 using Rummy51.Infrastructure.Persistence;
 
 namespace Rummy51.Infrastructure;
@@ -30,6 +33,12 @@ public static class DependencyInjection
             })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<Rummy51DbContext>();
+
+        // Injected rather than read from DateTimeOffset.UtcNow, so that a test
+        // can pin the clock when it checks CreatedAt.
+        services.TryAddSingleton(TimeProvider.System);
+
+        services.AddScoped<IPlayerAccountService, PlayerAccountService>();
 
         return services;
     }
