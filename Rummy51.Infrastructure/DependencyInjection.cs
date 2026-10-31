@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,12 +19,19 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("Rummy51Db")
             ?? throw new InvalidOperationException(
-                "Connection string 'Rummy51Db' was not found. In development set it with " +
-                "'dotnet user-secrets set \"ConnectionStrings:Rummy51Db\" \"...\"'.");
+                "Connection string 'Rummy51Db' was not found.");
 
         services.AddDbContext<Rummy51DbContext>(options => options
             .UseNpgsql(connectionString)
             .UseSnakeCaseNamingConvention());
+
+        services.Configure<AuthenticationSettings>(
+            configuration.GetSection(AuthenticationSettings.SectionName));
+
+        // Without this the keys live in a folder under the host's profile, and
+        // a replaced or scaled-out host signs every player out.
+        services.AddDataProtection()
+            .PersistKeysToDbContext<Rummy51DbContext>();
 
         services.AddIdentityCore<Player>(options =>
             {
@@ -32,7 +40,8 @@ public static class DependencyInjection
                 options.Password.RequiredLength = 8;
             })
             .AddRoles<IdentityRole<Guid>>()
-            .AddEntityFrameworkStores<Rummy51DbContext>();
+            .AddEntityFrameworkStores<Rummy51DbContext>()
+            .AddSignInManager();
 
         // Injected rather than read from DateTimeOffset.UtcNow, so that a test
         // can pin the clock when it checks CreatedAt.
@@ -42,4 +51,5 @@ public static class DependencyInjection
 
         return services;
     }
+
 }

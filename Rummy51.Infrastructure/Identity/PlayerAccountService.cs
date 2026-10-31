@@ -1,6 +1,9 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Rummy51.Application.Authentication;
+using Rummy51.Application.Authentication.Login;
 using Rummy51.Application.Authentication.Register;
 using Rummy51.Application.Common;
 using Rummy51.Domain.Entities;
@@ -9,9 +12,11 @@ namespace Rummy51.Infrastructure.Identity;
 
 public sealed class PlayerAccountService(
     UserManager<Player> userManager,
+    SignInManager<Player> signInManager,
+    IOptionsMonitor<AuthenticationSettings> settings,
     TimeProvider timeProvider) : IPlayerAccountService
 {
-    public async Task<Result<RegisterPlayerResponse>> RegisterAsync(
+    public async Task<Result<PlayerSummary>> RegisterAsync(
         RegisterPlayerRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -35,8 +40,7 @@ public sealed class PlayerAccountService(
 
         if (created.Succeeded)
         {
-            return Result<RegisterPlayerResponse>.Success(
-                new RegisterPlayerResponse(player.Id, player.Email, player.DisplayName));
+            return Result<PlayerSummary>.Success(Summarise(player));
         }
 
         // A taken address and a weak password arrive through the same channel,
@@ -51,9 +55,99 @@ public sealed class PlayerAccountService(
             ? created.Errors.Where(e => e.Code != "DuplicateUserName")
             : created.Errors;
 
-        return Result<RegisterPlayerResponse>.Fail(
+        return Result<PlayerSummary>.Fail(
             failure,
             [.. reported.Select(Translate).DistinctBy(e => e.Code)]);
+    }
+
+    public async Task<Result<PlayerSummary>> LoginAsync(
+        LoginRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var player = await userManager.FindByEmailAsync(request.Email);
+
+        // An unknown address and a wrong password give the same answer. Telling
+        // them apart would let anyone test which addresses are registered here.
+        if (player is null)
+        {
+            return InvalidCredentials();
+        }
+
+        var attempt = await signInManager.CheckPasswordSignInAsync(
+            player,
+            request.Password,
+            lockoutOnFailure: true);
+
+        if (attempt.IsLockedOut)
+        {
+            return Result<PlayerSummary>.Fail(
+                FailureKind.Unauthorized,
+                Error.With("AccountLocked", await MinutesLockedAsync(player)));
+        }
+
+        if (attempt.IsNotAllowed)
+        {
+            return Result<PlayerSummary>.Fail(
+                FailureKind.Unauthorized,
+                new Error("LoginNotAllowed"));
+        }
+
+        if (!attempt.Succeeded)
+        {
+            return InvalidCredentials();
+        }
+
+        var now = timeProvider.GetUtcNow();
+
+        // CheckPasswordSignInAsync only verifies; this is what issues the
+        // cookie, and doing it separately is what lets "remember me" set its
+        // own lifetime instead of inheriting the idle timeout.
+        await signInManager.SignInAsync(player, new AuthenticationProperties
+        {
+            IsPersistent = request.RememberMe,
+            ExpiresUtc = request.RememberMe
+                ? now.AddDays(settings.CurrentValue.RememberMeDays)
+                : null
+        });
+
+        player.LastLoginAt = now;
+        await userManager.UpdateAsync(player);
+
+        return Result<PlayerSummary>.Success(Summarise(player));
+    }
+
+    public Task LogoutAsync() => signInManager.SignOutAsync();
+
+    public async Task<PlayerSummary?> GetCurrentPlayerAsync()
+    {
+        var principal = signInManager.Context.User;
+
+        if (principal.Identity?.IsAuthenticated != true)
+        {
+            return null;
+        }
+
+        // Read back rather than trust the cookie's claims: the display name may
+        // have changed, and the account may have been removed since sign-in.
+        var player = await userManager.GetUserAsync(principal);
+
+        return player is null ? null : Summarise(player);
+    }
+
+    private static Result<PlayerSummary> InvalidCredentials() =>
+        Result<PlayerSummary>.Fail(FailureKind.Unauthorized, new Error("InvalidCredentials"));
+
+    private static PlayerSummary Summarise(Player player) =>
+        new(player.Id, player.Email ?? string.Empty, player.DisplayName);
+
+    private async Task<string> MinutesLockedAsync(Player player)
+    {
+        var lockoutEnd = await userManager.GetLockoutEndDateAsync(player);
+        var remaining = (lockoutEnd ?? timeProvider.GetUtcNow()) - timeProvider.GetUtcNow();
+
+        // Round up, and never report zero: "locked for 0 minutes" reads as a bug.
+        return Math.Max(1, (int)Math.Ceiling(remaining.TotalMinutes))
+            .ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>

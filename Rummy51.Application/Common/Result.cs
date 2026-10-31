@@ -7,7 +7,8 @@ namespace Rummy51.Application.Common;
 public enum FailureKind
 {
     Validation,
-    Conflict
+    Conflict,
+    Unauthorized
 }
 
 /// <summary>

@@ -88,10 +88,45 @@ of two kept in sync.
 - Role tables exist but are unused. Add roles when something needs them.
 - `PhoneNumber` is inherited and unused. Left in place: two nullable columns cost
   nothing, and removing them breaks parts of `UserManager`.
-- Lockout fields are populated but **not yet enforced** — that needs
-  `lockoutOnFailure: true` at sign-in, which comes with the login endpoint.
+- Lockout is enforced: five failed sign-ins lock the account for five minutes.
 - Passwords: PBKDF2/HMAC-SHA512, 100,000 iterations, 128-bit per-user salt,
   all packed into `password_hash`. Never handle a password outside `UserManager`.
+
+## Authentication
+
+**Cookies, not JWT.** Angular is served from the server's own `wwwroot`, so the
+two are same-origin and the browser can carry the credential itself. That buys
+three things a token would have had to work around: the cookie is `httpOnly`, so
+cross-site scripting cannot read it; it is encrypted, so the client cannot read
+the claims either; and it slides, so a session ends after idleness rather than at
+a fixed moment. JWT would earn its place against a native mobile client or a
+cross-domain API — a web app in a phone browser is neither.
+
+The cookie is `httpOnly`, `Secure`, `SameSite=Lax`. Lax rather than Strict: it
+still withholds the cookie from the cross-site POST that CSRF needs, without
+making a player who arrives from an outside link look signed out.
+
+Cookie authentication defaults to redirecting an unauthenticated caller to a
+login page. `CookieAuthenticationSetup` replaces that with plain 401 and 403,
+since a redirect to a page that does not exist reaches Angular as a stray 404.
+
+Timings come from the `Authentication` section of configuration, never from
+code: `IdleTimeoutMinutes` (sliding, every request restarts it) and
+`RememberMeDays`. Sign-in verifies with `CheckPasswordSignInAsync` and issues the
+cookie with `SignInAsync` as a separate step — that is what lets "remember me"
+set its own lifetime instead of inheriting the idle timeout.
+
+The Data Protection keys that encrypt the cookie live in `data_protection_keys`.
+On disk they would be lost whenever the host is replaced, signing everyone out.
+
+Because the cookie is opaque to the client, **`GET /api/auth/me`** is how Angular
+learns who is signed in; call it at startup to discover a live session. It reads
+the player back from the database rather than trusting the cookie's claims, so a
+renamed or deleted account is noticed.
+
+`InvalidCredentials` is returned for both an unknown address and a wrong
+password. Distinguishing them would let anyone test which addresses are
+registered.
 
 ## Error contract
 
@@ -158,10 +193,12 @@ the round trip.
 
 ## State of play
 
-Done: project layout, player table, registration (`POST /api/auth/register`),
-Swagger at `/swagger`, error contract.
+Done: project layout, player table, error contract, Swagger at `/swagger`, and
+`/api/auth` — `register`, `login`, `logout`, `me`.
 
-Next: login and JWT, then rate limiting and CAPTCHA on the open endpoints —
-registration cannot require a token, so those are its only real protection.
-`AddIdentityCore` does not register `SignInManager`; login will need
-`.AddSignInManager()`.
+Next: the Angular side — sign-up and sign-in forms, an interceptor that treats a
+401 as "session over", and the i18n map from error codes to Hebrew.
+
+After that, rate limiting and CAPTCHA on registration. It cannot require a
+credential, so those are its only real protection; everything else is behind
+`[Authorize]`.
