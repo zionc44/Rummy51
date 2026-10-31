@@ -17,23 +17,38 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddPersistence(configuration);
+        services.AddPlayerIdentity();
+
+        services.Configure<AuthenticationSettings>(
+            configuration.GetSection(AuthenticationSettings.SectionName));
+
+        // Injected rather than read from DateTimeOffset.UtcNow, so a test can
+        // pin the clock.
+        services.TryAddSingleton(TimeProvider.System);
+
+        services.AddScoped<IPlayerAccountService, PlayerAccountService>();
+
+        return services;
+    }
+
+    private static void AddPersistence(this IServiceCollection services, IConfiguration configuration)
+    {
         var connectionString = configuration.GetConnectionString("Rummy51Db")
-            ?? throw new InvalidOperationException(
-                "Connection string 'Rummy51Db' was not found.");
+            ?? throw new InvalidOperationException("Connection string 'Rummy51Db' was not found.");
 
         services.AddDbContext<Rummy51DbContext>(options => options
             .UseNpgsql(connectionString)
             .UseSnakeCaseNamingConvention());
 
-        services.Configure<AuthenticationSettings>(
-            configuration.GetSection(AuthenticationSettings.SectionName));
+        // On disk these are lost whenever the host is replaced, which signs
+        // every player out.
+        services.AddDataProtection().PersistKeysToDbContext<Rummy51DbContext>();
+    }
 
-        // Without this the keys live in a folder under the host's profile, and
-        // a replaced or scaled-out host signs every player out.
-        services.AddDataProtection()
-            .PersistKeysToDbContext<Rummy51DbContext>();
-
-        services.AddIdentityCore<Player>(options =>
+    private static void AddPlayerIdentity(this IServiceCollection services) =>
+        services
+            .AddIdentityCore<Player>(options =>
             {
                 // The email doubles as the login identifier, so it has to be unique.
                 options.User.RequireUniqueEmail = true;
@@ -42,14 +57,4 @@ public static class DependencyInjection
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<Rummy51DbContext>()
             .AddSignInManager();
-
-        // Injected rather than read from DateTimeOffset.UtcNow, so that a test
-        // can pin the clock when it checks CreatedAt.
-        services.TryAddSingleton(TimeProvider.System);
-
-        services.AddScoped<IPlayerAccountService, PlayerAccountService>();
-
-        return services;
-    }
-
 }

@@ -6,8 +6,8 @@ import { AuthService } from '../../core/auth/auth-service';
 import { ApiError } from '../../core/errors/api-error';
 import { FieldCodes, fieldErrorOf } from '../../core/errors/form-errors';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
-import { FieldError } from '../../shared/error-messages/single-error';
-import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
+import { FormField } from '../../shared/form-field/form-field';
+import { PageShell } from '../../shared/page-shell/page-shell';
 import { PasswordVisibilityToggle } from '../../shared/password-input/password-visibility-toggle';
 
 const EMAIL_CODES: FieldCodes = {
@@ -21,7 +21,7 @@ const PASSWORD_CODES: FieldCodes = {
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, FieldError, LanguageSwitcher, PasswordVisibilityToggle],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, FormField, PageShell, PasswordVisibilityToggle],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
 })

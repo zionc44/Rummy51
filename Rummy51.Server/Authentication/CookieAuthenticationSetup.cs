@@ -41,13 +41,22 @@ internal static class CookieAuthenticationSetup
         // timeout rather than a session length.
         cookie.SlidingExpiration = true;
 
-        // This is an API. The defaults redirect an unauthenticated caller to a
-        // login page that does not exist, which reaches Angular as a stray 404.
+        cookie.AnswerWithStatusCodes();
+    }
+
+    /// <summary>
+    /// The defaults redirect an unauthenticated caller to a login page that
+    /// does not exist here, which reaches Angular as a stray 404. This is an
+    /// API: it answers with the status code and lets the client decide.
+    /// </summary>
+    private static void AnswerWithStatusCodes(this CookieAuthenticationOptions cookie)
+    {
         cookie.Events.OnRedirectToLogin = context =>
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;
         };
+
         cookie.Events.OnRedirectToAccessDenied = context =>
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;

@@ -1,11 +1,4 @@
-<!-- Spacing and alignment use logical properties (ms/me, start/end) so the
-     page mirrors itself when the language switches between Hebrew and English. -->
-<div class="flex min-h-dvh flex-col bg-gradient-to-b from-felt-900 via-felt-950 to-black text-white">
-  <header class="flex items-center justify-between px-4 py-4 sm:px-8">
-    <span class="text-sm font-bold tracking-wide text-white/70">{{ 'app.title' | translate }}</span>
-    <app-language-switcher />
-  </header>
-
+<app-page-shell>
   <main class="flex flex-1 flex-col items-center justify-center px-6 pb-16 text-center">
     <p class="mb-6 flex gap-3 text-2xl sm:text-3xl" aria-hidden="true">
       <span class="text-white/80">&spades;</span>
@@ -14,37 +7,20 @@
       <span class="text-white/80">&clubs;</span>
     </p>
 
-    <h1 class="text-5xl font-black tracking-tight sm:text-7xl">
-      {{ 'app.title' | translate }}
-    </h1>
+    <h1 class="text-5xl font-black tracking-tight sm:text-7xl">{{ 'app.title' | translate }}</h1>
 
     <p class="mt-4 max-w-md text-lg text-felt-50/80 sm:mt-6 sm:max-w-xl sm:text-2xl">
       {{ 'app.tagline' | translate }}
     </p>
 
-    <p class="mt-3 max-w-md text-sm text-white/50 sm:text-base">
-      {{ 'landing.intro' | translate }}
-    </p>
+    <p class="mt-3 max-w-md text-sm text-white/50 sm:text-base">{{ 'landing.intro' | translate }}</p>
 
     <!-- Stacked and full width on a phone, side by side once there is room. -->
     <div class="mt-10 flex w-full max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
-      <a
-        routerLink="/register"
-        class="rounded-xl bg-felt-500 px-8 py-3.5 text-base font-bold text-felt-950 shadow-lg
-               shadow-felt-500/20 transition hover:bg-felt-50 focus-visible:outline-2
-               focus-visible:outline-offset-2 focus-visible:outline-felt-50"
-      >
+      <a routerLink="/register" class="btn-primary shadow-lg shadow-felt-500/20">
         {{ 'landing.register' | translate }}
       </a>
-
-      <a
-        routerLink="/login"
-        class="rounded-xl border border-white/25 px-8 py-3.5 text-base font-bold text-white
-               transition hover:border-white/60 hover:bg-white/5 focus-visible:outline-2
-               focus-visible:outline-offset-2 focus-visible:outline-felt-50"
-      >
-        {{ 'landing.login' | translate }}
-      </a>
+      <a routerLink="/login" class="btn-ghost">{{ 'landing.login' | translate }}</a>
     </div>
   </main>
-</div>
+</app-page-shell>

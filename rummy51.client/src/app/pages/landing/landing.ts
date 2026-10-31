@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
+import { PageShell } from '../../shared/page-shell/page-shell';
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, TranslatePipe, LanguageSwitcher],
+  imports: [RouterLink, TranslatePipe, PageShell],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './landing.html',
 })
