@@ -1,0 +1,44 @@
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# Angular-specific ignores live in rummy51.client/.gitignore
+
+## Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+publish/
+publish-test/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.VisualState.xml
+TestResult.xml
+
+## Rider / VS Code
+.idea/
+*.sln.iml
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!packages/build/
+
+## ASP.NET
+appsettings.*.local.json
+*.pem
+*.key
+
+## OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
