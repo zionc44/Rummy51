@@ -1,7 +1,10 @@
 <Solution>
+  <Project Path="Rummy51.Application/Rummy51.Application.csproj" />
   <Project Path="rummy51.client/rummy51.client.esproj">
     <Build />
     <Deploy />
   </Project>
+  <Project Path="Rummy51.Domain/Rummy51.Domain.csproj" />
+  <Project Path="Rummy51.Infrastructure/Rummy51.Infrastructure.csproj" />
   <Project Path="Rummy51.Server/Rummy51.Server.csproj" />
 </Solution>

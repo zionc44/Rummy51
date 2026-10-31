@@ -27,6 +27,8 @@
     <ProjectReference Include="..\rummy51.client\rummy51.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\Rummy51.Application\Rummy51.Application.csproj" />
+    <ProjectReference Include="..\Rummy51.Infrastructure\Rummy51.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
