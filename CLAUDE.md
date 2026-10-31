@@ -9,6 +9,43 @@ multiplayer only.
 - **Never commit without being asked.** Finish, report, stop.
 - One step at a time. Explain a design before writing it.
 - Code, comments and commits in English. Conversation in Hebrew.
+- Hold the code to the rules below, and say so when a change would break one.
+
+## How the code should read
+
+Guides, not gates — a rule may be broken when following it would hurt, and that
+is worth a word in the commit message.
+
+**Functions**
+
+- One thing, and the name says what, not how. If the name needs "and", it is
+  two functions.
+- Readable without scrolling. If it does not fit, the shape is wrong, not the
+  screen. No line count: a budget only buys functions cut mid-thought.
+- One level of abstraction. Orchestrating three calls and then parsing a string
+  is two jobs.
+- Guard clauses over nesting. A condition that ends the work returns at once.
+
+**Components**
+
+- A component either arranges other components or renders one thing.
+- Logic that is not presentation belongs in a service. The component asks and
+  shows; it does not decide.
+- A template that needs a comment to follow is two components.
+
+**Reuse**
+
+- Extract on the third occurrence, not the second. Resemblance between two
+  places is usually coincidence, and merging them too early is what grows the
+  flag parameters nobody dares touch. Duplication is cheap; the wrong
+  abstraction is not.
+- Share behaviour, not shape.
+- A parameter added only to make something reusable means there was no reuse.
+
+**Everywhere**
+
+- Names instead of comments. Comment *why*, never *what*.
+- Delete rather than comment out. Git remembers.
 
 ## Layout
 
