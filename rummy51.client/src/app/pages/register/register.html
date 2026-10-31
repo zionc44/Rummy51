@@ -1,0 +1,88 @@
+<div class="flex min-h-dvh flex-col bg-gradient-to-b from-felt-900 via-felt-950 to-black text-white">
+  <header class="flex items-center justify-between px-4 py-4 sm:px-8">
+    <a routerLink="/" class="text-sm font-bold tracking-wide text-white/70 hover:text-white">
+      {{ 'app.title' | translate }}
+    </a>
+    <app-language-switcher />
+  </header>
+
+  <main class="flex flex-1 items-center justify-center px-4 pb-12">
+    <div class="w-full max-w-sm">
+      <h1 class="mb-8 text-center text-3xl font-black">{{ 'auth.registerTitle' | translate }}</h1>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-5">
+        <div class="flex flex-col gap-1.5">
+          <label for="displayName" class="text-sm font-medium text-white/80">
+            {{ 'auth.displayName' | translate }}
+          </label>
+          <input
+            id="displayName"
+            type="text"
+            formControlName="displayName"
+            autocomplete="nickname"
+            class="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-base
+                   placeholder:text-white/30 focus:border-felt-500 focus:outline-none"
+          />
+          <p class="text-xs text-white/40">{{ 'auth.displayNameHint' | translate }}</p>
+          <app-field-error [error]="displayNameError()" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="email" class="text-sm font-medium text-white/80">
+            {{ 'auth.email' | translate }}
+          </label>
+          <!-- dir="ltr" because an address reads left to right even on an RTL
+               page; text-start keeps it aligned with the rest of the form. -->
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            dir="ltr"
+            class="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-start text-base
+                   placeholder:text-white/30 focus:border-felt-500 focus:outline-none"
+          />
+          <app-field-error [error]="emailError()" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="password" class="text-sm font-medium text-white/80">
+            {{ 'auth.password' | translate }}
+          </label>
+          <!-- The wrapper is ltr so the toggle sits after the text on both
+               language directions; a password reads left to right either way. -->
+          <div class="relative" dir="ltr">
+            <input
+              id="password"
+              [type]="passwordVisible() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              class="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 pe-12 text-start
+                     text-base placeholder:text-white/30 focus:border-felt-500 focus:outline-none"
+            />
+            <app-password-visibility-toggle [(visible)]="passwordVisible" />
+          </div>
+          <app-field-error [error]="passwordError()" />
+        </div>
+
+        <app-error-messages [errors]="serverErrors()" />
+
+        <button
+          type="submit"
+          [disabled]="submitting()"
+          class="mt-2 rounded-xl bg-felt-500 px-8 py-3.5 text-base font-bold text-felt-950
+                 transition hover:bg-felt-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {{ (submitting() ? 'auth.registerPending' : 'auth.registerSubmit') | translate }}
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-white/50">
+        {{ 'auth.haveAccount' | translate }}
+        <a routerLink="/login" class="ms-1 font-medium text-felt-500 underline underline-offset-4">
+          {{ 'landing.login' | translate }}
+        </a>
+      </p>
+    </div>
+  </main>
+</div>

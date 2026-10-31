@@ -11,5 +11,50 @@
   },
   "language": {
     "switch": "Change language"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "displayNameHint": "The name other players will see",
+    "rememberMe": "Remember me",
+    "registerTitle": "Create an account",
+    "registerSubmit": "Sign up",
+    "registerPending": "Signing up...",
+    "loginTitle": "Sign in",
+    "loginSubmit": "Sign in",
+    "loginPending": "Signing in...",
+    "noAccount": "No account yet?",
+    "haveAccount": "Already registered?",
+    "registered": "Account created. You can sign in now.",
+    "back": "Back to home",
+    "logout": "Sign out",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "lobby": {
+    "welcome": "Hello, {{0}}",
+    "placeholder": "The lobby is next."
+  },
+  "errors": {
+    "EmailRequired": "Enter an email address",
+    "EmailInvalid": "That email address is not valid",
+    "EmailTooLong": "That email address is too long",
+    "PasswordRequired": "Enter a password",
+    "PasswordTooShort": "The password must be at least {{0}} characters",
+    "PasswordRequiresDigit": "The password must contain a digit",
+    "PasswordRequiresUpper": "The password must contain an uppercase letter",
+    "PasswordRequiresLower": "The password must contain a lowercase letter",
+    "PasswordRequiresNonAlphanumeric": "The password must contain a symbol, such as ! or ?",
+    "PasswordRequiresUniqueChars": "The password must contain at least {{0}} different characters",
+    "DisplayNameRequired": "Enter a display name",
+    "DisplayNameLength": "The display name must be 2 to 50 characters",
+    "DuplicateEmail": "That email address is already registered",
+    "InvalidCredentials": "Wrong email or password",
+    "AccountLocked": "The account is locked. Try again in {{0}} minutes",
+    "LoginNotAllowed": "This account cannot sign in right now",
+    "MalformedRequest": "The request was not valid",
+    "NetworkError": "No connection to the server. Check your connection and try again",
+    "UnexpectedError": "Something went wrong. Please try again"
   }
 }

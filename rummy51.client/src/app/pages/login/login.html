@@ -1,0 +1,85 @@
+<div class="flex min-h-dvh flex-col bg-gradient-to-b from-felt-900 via-felt-950 to-black text-white">
+  <header class="flex items-center justify-between px-4 py-4 sm:px-8">
+    <a routerLink="/" class="text-sm font-bold tracking-wide text-white/70 hover:text-white">
+      {{ 'app.title' | translate }}
+    </a>
+    <app-language-switcher />
+  </header>
+
+  <main class="flex flex-1 items-center justify-center px-4 pb-12">
+    <div class="w-full max-w-sm">
+      <h1 class="mb-8 text-center text-3xl font-black">{{ 'auth.loginTitle' | translate }}</h1>
+
+      @if (registered()) {
+        <p class="mb-6 rounded-lg border border-felt-500/40 bg-felt-500/10 px-4 py-3 text-sm text-felt-50">
+          {{ 'auth.registered' | translate }}
+        </p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-5">
+        <div class="flex flex-col gap-1.5">
+          <label for="email" class="text-sm font-medium text-white/80">
+            {{ 'auth.email' | translate }}
+          </label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            dir="ltr"
+            class="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-start text-base
+                   placeholder:text-white/30 focus:border-felt-500 focus:outline-none"
+          />
+          <app-field-error [error]="emailError()" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="password" class="text-sm font-medium text-white/80">
+            {{ 'auth.password' | translate }}
+          </label>
+          <!-- The wrapper is ltr so the toggle sits after the text on both
+               language directions; a password reads left to right either way. -->
+          <div class="relative" dir="ltr">
+            <input
+              id="password"
+              [type]="passwordVisible() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              class="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 pe-12 text-start
+                     text-base placeholder:text-white/30 focus:border-felt-500 focus:outline-none"
+            />
+            <app-password-visibility-toggle [(visible)]="passwordVisible" />
+          </div>
+          <app-field-error [error]="passwordError()" />
+        </div>
+
+        <label class="flex cursor-pointer items-center gap-2.5 text-sm text-white/70">
+          <input
+            type="checkbox"
+            formControlName="rememberMe"
+            class="size-4 rounded border-white/30 bg-white/10 accent-felt-500"
+          />
+          {{ 'auth.rememberMe' | translate }}
+        </label>
+
+        <app-error-messages [errors]="serverErrors()" />
+
+        <button
+          type="submit"
+          [disabled]="submitting()"
+          class="mt-2 rounded-xl bg-felt-500 px-8 py-3.5 text-base font-bold text-felt-950
+                 transition hover:bg-felt-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {{ (submitting() ? 'auth.loginPending' : 'auth.loginSubmit') | translate }}
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-white/50">
+        {{ 'auth.noAccount' | translate }}
+        <a routerLink="/register" class="ms-1 font-medium text-felt-500 underline underline-offset-4">
+          {{ 'landing.register' | translate }}
+        </a>
+      </p>
+    </div>
+  </main>
+</div>

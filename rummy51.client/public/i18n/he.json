@@ -11,5 +11,50 @@
   },
   "language": {
     "switch": "שינוי שפה"
+  },
+  "auth": {
+    "email": "אימייל",
+    "password": "סיסמה",
+    "displayName": "שם תצוגה",
+    "displayNameHint": "השם שיראו שאר השחקנים",
+    "rememberMe": "זכור אותי",
+    "registerTitle": "יצירת חשבון",
+    "registerSubmit": "הרשמה",
+    "registerPending": "רושם...",
+    "loginTitle": "התחברות",
+    "loginSubmit": "כניסה",
+    "loginPending": "מתחבר...",
+    "noAccount": "אין לכם חשבון?",
+    "haveAccount": "כבר רשומים?",
+    "registered": "החשבון נוצר. אפשר להתחבר.",
+    "back": "חזרה לדף הבית",
+    "logout": "התנתקות",
+    "showPassword": "הצגת הסיסמה",
+    "hidePassword": "הסתרת הסיסמה"
+  },
+  "lobby": {
+    "welcome": "שלום, {{0}}",
+    "placeholder": "הלובי ייבנה בשלב הבא."
+  },
+  "errors": {
+    "EmailRequired": "יש להזין כתובת אימייל",
+    "EmailInvalid": "כתובת האימייל אינה תקינה",
+    "EmailTooLong": "כתובת האימייל ארוכה מדי",
+    "PasswordRequired": "יש להזין סיסמה",
+    "PasswordTooShort": "הסיסמה חייבת להכיל לפחות {{0}} תווים",
+    "PasswordRequiresDigit": "הסיסמה חייבת להכיל ספרה אחת לפחות",
+    "PasswordRequiresUpper": "הסיסמה חייבת להכיל אות גדולה באנגלית",
+    "PasswordRequiresLower": "הסיסמה חייבת להכיל אות קטנה באנגלית",
+    "PasswordRequiresNonAlphanumeric": "הסיסמה חייבת להכיל תו מיוחד, למשל ! או ?",
+    "PasswordRequiresUniqueChars": "הסיסמה חייבת להכיל לפחות {{0}} תווים שונים",
+    "DisplayNameRequired": "יש להזין שם תצוגה",
+    "DisplayNameLength": "שם התצוגה חייב להיות באורך 2 עד 50 תווים",
+    "DuplicateEmail": "כתובת האימייל כבר רשומה",
+    "InvalidCredentials": "אימייל או סיסמה שגויים",
+    "AccountLocked": "החשבון ננעל זמנית. נסו שוב בעוד {{0}} דקות",
+    "LoginNotAllowed": "לא ניתן להתחבר לחשבון הזה כרגע",
+    "MalformedRequest": "הבקשה לא תקינה",
+    "NetworkError": "אין חיבור לשרת. בדקו את החיבור ונסו שוב",
+    "UnexpectedError": "משהו השתבש. נסו שוב"
   }
 }
