@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Authentication.Register;
 using Rummy51.Application.Common;
+using Rummy51.Server.Errors;
 
 namespace Rummy51.Server.Controllers;
 
@@ -11,7 +12,7 @@ public class AuthController(IPlayerAccountService accounts) : ControllerBase
 {
     [HttpPost("register")]
     [ProducesResponseType<RegisterPlayerResponse>(StatusCodes.Status201Created)]
-    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register(
         RegisterPlayerRequest request,
@@ -24,19 +25,10 @@ public class AuthController(IPlayerAccountService accounts) : ControllerBase
             return StatusCode(StatusCodes.Status201Created, result.Value);
         }
 
-        if (result.Failure == FailureKind.Conflict)
-        {
-            return Problem(
-                title: "Registration failed",
-                detail: string.Join(" ", result.Errors.Select(e => e.Description)),
-                statusCode: StatusCodes.Status409Conflict);
-        }
+        var (status, title) = result.Failure == FailureKind.Conflict
+            ? (StatusCodes.Status409Conflict, "Conflict")
+            : (StatusCodes.Status400BadRequest, "ValidationFailed");
 
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError(error.Code, error.Description);
-        }
-
-        return ValidationProblem(ModelState);
+        return ApiProblem.Result(HttpContext, status, title, result.Errors);
     }
 }

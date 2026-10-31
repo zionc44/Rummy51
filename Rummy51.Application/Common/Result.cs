@@ -10,7 +10,24 @@ public enum FailureKind
     Conflict
 }
 
-public sealed record Error(string Code, string Description);
+/// <summary>
+/// A failure as the client receives it: a stable code plus the values needed
+/// to phrase it. No English text crosses the wire — the client owns the
+/// wording, so it can switch language without asking the server.
+/// </summary>
+/// <param name="Code">Stable identifier, e.g. <c>PasswordTooShort</c>.</param>
+/// <param name="Parameters">
+/// Values to substitute into the translated message, in the order the message
+/// uses them. Empty when the message needs none.
+/// </param>
+public sealed record Error(string Code, IReadOnlyList<string> Parameters)
+{
+    public Error(string code) : this(code, [])
+    {
+    }
+
+    public static Error With(string code, params string[] parameters) => new(code, parameters);
+}
 
 /// <summary>
 /// The outcome of an operation whose failures are expected rather than

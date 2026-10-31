@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Identity;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Authentication.Register;
@@ -44,8 +45,33 @@ public sealed class PlayerAccountService(
             ? FailureKind.Conflict
             : FailureKind.Validation;
 
+        // UserName is a copy of Email, so Identity reports one taken address
+        // as two separate errors. The client should see one.
+        var reported = failure == FailureKind.Conflict
+            ? created.Errors.Where(e => e.Code != "DuplicateUserName")
+            : created.Errors;
+
         return Result<RegisterPlayerResponse>.Fail(
             failure,
-            [.. created.Errors.Select(e => new Error(e.Code, e.Description))]);
+            [.. reported.Select(Translate).DistinctBy(e => e.Code)]);
+    }
+
+    /// <summary>
+    /// Identity bakes its limits into English prose ("at least 8 characters").
+    /// The client is given the code and the limit separately, read back from
+    /// the options that produced the error, so the two can never disagree.
+    /// </summary>
+    private Error Translate(IdentityError error)
+    {
+        var password = userManager.Options.Password;
+
+        return error.Code switch
+        {
+            "PasswordTooShort" => Error.With(error.Code, Number(password.RequiredLength)),
+            "PasswordRequiresUniqueChars" => Error.With(error.Code, Number(password.RequiredUniqueChars)),
+            _ => new Error(error.Code)
+        };
+
+        static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
     }
 }

@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
 using Rummy51.Infrastructure;
+using Rummy51.Server.Errors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,10 +8,28 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// Model binding rejects a request before any of our code runs, so its reply is
+// reshaped here into the same payload the rest of the API returns. Each rule in
+// the request types carries a code as its ErrorMessage, which is what surfaces.
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context => ApiProblem.Result(
+        context.HttpContext,
+        StatusCodes.Status400BadRequest,
+        "ValidationFailed",
+        ModelStateErrors.From(context.ModelState));
+});
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.UseDefaultFiles();
 app.MapStaticAssets();
