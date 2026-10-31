@@ -49,7 +49,7 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
+                        .HasDatabaseName("ix_roles_normalized_name");
 
                     b.ToTable("roles", (string)null);
                 });
@@ -270,11 +270,12 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                         .HasName("pk_players");
 
                     b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
+                        .IsUnique()
+                        .HasDatabaseName("ix_players_normalized_email");
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
+                        .HasDatabaseName("ix_players_normalized_user_name");
 
                     b.ToTable("players", (string)null);
                 });

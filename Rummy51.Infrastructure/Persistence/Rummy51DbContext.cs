@@ -18,7 +18,11 @@ public class Rummy51DbContext(DbContextOptions<Rummy51DbContext> options)
         // The remaining Identity tables have no entity class of our own, so
         // they are renamed here rather than in a configuration file. Column
         // names are handled by the snake_case convention.
-        builder.Entity<IdentityRole<Guid>>().ToTable("roles");
+        builder.Entity<IdentityRole<Guid>>(role =>
+        {
+            role.ToTable("roles");
+            role.HasIndex(r => r.NormalizedName).HasDatabaseName("ix_roles_normalized_name");
+        });
         builder.Entity<IdentityUserRole<Guid>>().ToTable("player_roles");
         builder.Entity<IdentityUserClaim<Guid>>().ToTable("player_claims");
         builder.Entity<IdentityUserLogin<Guid>>().ToTable("player_logins");

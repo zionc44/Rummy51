@@ -16,5 +16,18 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
 
         builder.Property(p => p.CreatedAt)
             .IsRequired();
+
+        // Identity names these two indexes explicitly, so the snake_case
+        // convention leaves them alone; rename them to match the schema.
+        builder.HasIndex(p => p.NormalizedUserName)
+            .HasDatabaseName("ix_players_normalized_user_name")
+            .IsUnique();
+
+        // Identity enforces RequireUniqueEmail in code only. The email is our
+        // login identifier, so back it with a constraint the database owns.
+        // Null emails stay permitted: Postgres treats nulls as distinct.
+        builder.HasIndex(p => p.NormalizedEmail)
+            .HasDatabaseName("ix_players_normalized_email")
+            .IsUnique();
     }
 }
