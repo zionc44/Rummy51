@@ -1,0 +1,6 @@
+{
+  // The git repository lives in the parent folder (the solution root), not here.
+  // Without this, VS Code offers to initialize a second repository in this
+  // folder, which shadows the real one.
+  "git.openRepositoryInParentFolders": "always"
+}
