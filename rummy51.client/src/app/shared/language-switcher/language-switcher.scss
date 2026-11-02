@@ -1,0 +1,44 @@
+.switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+// Decoration either side of the control; the select itself takes the clicks.
+.icon {
+  position: absolute;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+.icon--start {
+  inset-inline-start: 0.625rem;
+}
+
+.icon--end {
+  inset-inline-end: 0.625rem;
+}
+
+select {
+  appearance: none;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+  padding-block: 0.375rem;
+  // Room for the two icons, which follow the writing direction.
+  padding-inline: 2.25rem 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background var(--transition);
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+}
+
+option {
+  // The list is drawn by the operating system, which ignores the control's
+  // colours, so each option states its own.
+  background: var(--felt-900);
+  color: var(--text);
+}

@@ -24,6 +24,7 @@ const PASSWORD_CODES: FieldCodes = {
   imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, FormField, PageShell, PasswordVisibilityToggle],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
+  styleUrl: './login.scss',
 })
 export class Login {
   private readonly auth = inject(AuthService);

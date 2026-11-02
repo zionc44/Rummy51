@@ -1,0 +1,79 @@
+@use 'breakpoints' as *;
+
+.landing {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1.5rem;
+  padding-block-end: 4rem;
+  text-align: center;
+}
+
+.landing__suits {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+  color: rgb(255 255 255 / 0.8);
+  font-size: 1.5rem;
+
+  @include from(sm) {
+    font-size: 1.875rem;
+  }
+}
+
+.landing__suit--red {
+  color: var(--suit-red);
+}
+
+.landing__title {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+
+  @include from(sm) {
+    font-size: 4.5rem;
+  }
+}
+
+.landing__tagline {
+  margin: 1rem 0 0;
+  max-inline-size: 28rem;
+  color: rgb(238 251 244 / 0.8);
+  font-size: 1.125rem;
+
+  @include from(sm) {
+    margin-block-start: 1.5rem;
+    max-inline-size: 36rem;
+    font-size: 1.5rem;
+  }
+}
+
+.landing__intro {
+  margin: 0.75rem 0 0;
+  max-inline-size: 28rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+
+  @include from(sm) {
+    font-size: 1rem;
+  }
+}
+
+// Stacked and full width on a phone, side by side once there is room.
+.landing__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-block-start: 2.5rem;
+  inline-size: 100%;
+  max-inline-size: 20rem;
+
+  @include from(sm) {
+    flex-direction: row;
+    justify-content: center;
+    max-inline-size: none;
+  }
+}

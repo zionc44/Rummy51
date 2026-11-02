@@ -1,0 +1,77 @@
+// Register repeats most of this. Two is not three, and a password-reset form
+// would show which parts are genuinely shared; extracting now would guess.
+.auth {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--page-gutter);
+  padding-block-end: 3rem;
+}
+
+.auth__card {
+  inline-size: 100%;
+  max-inline-size: 24rem;
+}
+
+.auth__title {
+  margin: 0 0 2rem;
+  font-size: 1.875rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// Anchors the reveal button to the field.
+.auth__password {
+  position: relative;
+}
+
+.auth__submit {
+  margin-block-start: 0.5rem;
+}
+
+.auth__switch {
+  margin: 1.5rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.auth__link {
+  margin-inline-start: 0.25rem;
+  color: var(--felt-500);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.auth__notice {
+  margin: 0 0 1.5rem;
+  border: 1px solid rgb(16 185 129 / 0.4);
+  border-radius: var(--radius-sm);
+  background: rgb(16 185 129 / 0.1);
+  padding: 0.75rem 1rem;
+  color: var(--felt-50);
+  font-size: 0.875rem;
+}
+
+.auth__remember {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.auth__checkbox {
+  inline-size: 1rem;
+  block-size: 1rem;
+  accent-color: var(--felt-500);
+}

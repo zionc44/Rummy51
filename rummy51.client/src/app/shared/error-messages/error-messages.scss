@@ -1,0 +1,11 @@
+.errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.errors__item {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.875rem;
+}

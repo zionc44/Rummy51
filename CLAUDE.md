@@ -152,11 +152,25 @@ Angular 22, standalone, **zoneless** — `zone.js` is not installed. Template
 state must be a `signal`, or an async assignment will never render. Use `@if` /
 `@for`.
 
-Tailwind, **logical properties only** — `ms`/`me`, `start`/`end`, never
-`ml`/`mr`. That is what makes the layout mirror when the language changes; a
-stray `ml-4` is only noticed by whoever reads English. Exception: a wrapper
-around an email or password input is `dir="ltr"`, since both read left to right
-in any language.
+**Three files per component, always**: `.ts`, `.html`, `.scss`. No inline
+template, no inline styles, even where the stylesheet is nearly empty.
+
+SCSS, no utility framework. Tokens are custom properties in
+`styles/_tokens.scss`, so a stylesheet uses `var(--felt-500)` without importing
+anything. `styles.scss` holds the reset and the few element styles that several
+pages share — `.btn-primary`, `.btn-ghost`, `.field-input`. Breakpoints come
+from the `from()` mixin: `@use 'breakpoints' as *;`.
+
+**Logical properties only** — `margin-inline-start`, `inset-inline-end`,
+`padding-block`; never `left`, `right`, `margin-left`. That is what makes the
+layout mirror when the language changes, and a stray `margin-left` is only
+noticed by whoever reads English. Exception: a wrapper around an email or
+password input is `dir="ltr"`, since both read left to right in any language.
+
+**An icon is a component**, not markup in a template and not an `<img>`. An
+image file cannot be recoloured — `currentColor` does not reach inside it — and
+these icons take their colour from whatever contains them. A picture whose
+colours are fixed, such as a logo, is a file and an `<img>`.
 
 ngx-translate loads `public/i18n/<code>.json` at runtime. Hebrew is the default
 and carries `dir="rtl"`. Adding a language: an entry in `LANGUAGES`, a widening

@@ -1,15 +1,13 @@
 <app-page-shell>
-  <main class="flex flex-1 items-center justify-center px-4 pb-12">
-    <div class="w-full max-w-sm">
-      <h1 class="mb-8 text-center text-3xl font-black">{{ 'auth.loginTitle' | translate }}</h1>
+  <main class="auth">
+    <div class="auth__card">
+      <h1 class="auth__title">{{ 'auth.loginTitle' | translate }}</h1>
 
       @if (registered()) {
-        <p class="mb-6 rounded-lg border border-felt-500/40 bg-felt-500/10 px-4 py-3 text-sm text-felt-50">
-          {{ 'auth.registered' | translate }}
-        </p>
+        <p class="auth__notice">{{ 'auth.registered' | translate }}</p>
       }
 
-      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-5">
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="auth__form">
         <app-form-field controlId="email" label="auth.email" [error]="emailError()">
           <input
             id="email"
@@ -17,44 +15,38 @@
             formControlName="email"
             autocomplete="email"
             dir="ltr"
-            class="field-input text-start"
+            class="field-input"
           />
         </app-form-field>
 
         <app-form-field controlId="password" label="auth.password" [error]="passwordError()">
-          <div class="relative" dir="ltr">
+          <div class="auth__password" dir="ltr">
             <input
               id="password"
               [type]="passwordVisible() ? 'text' : 'password'"
               formControlName="password"
               autocomplete="current-password"
-              class="field-input pe-12 text-start"
+              class="field-input field-input--with-action"
             />
             <app-password-visibility-toggle [(visible)]="passwordVisible" />
           </div>
         </app-form-field>
 
-        <label class="flex cursor-pointer items-center gap-2.5 text-sm text-white/70">
-          <input
-            type="checkbox"
-            formControlName="rememberMe"
-            class="size-4 rounded border-white/30 bg-white/10 accent-felt-500"
-          />
+        <label class="auth__remember">
+          <input type="checkbox" formControlName="rememberMe" class="auth__checkbox" />
           {{ 'auth.rememberMe' | translate }}
         </label>
 
         <app-error-messages [errors]="serverErrors()" />
 
-        <button type="submit" [disabled]="submitting()" class="btn-primary mt-2">
+        <button type="submit" [disabled]="submitting()" class="btn-primary auth__submit">
           {{ (submitting() ? 'auth.loginPending' : 'auth.loginSubmit') | translate }}
         </button>
       </form>
 
-      <p class="mt-6 text-center text-sm text-white/50">
+      <p class="auth__switch">
         {{ 'auth.noAccount' | translate }}
-        <a routerLink="/register" class="ms-1 font-medium text-felt-500 underline underline-offset-4">
-          {{ 'landing.register' | translate }}
-        </a>
+        <a routerLink="/register" class="auth__link">{{ 'landing.register' | translate }}</a>
       </p>
     </div>
   </main>

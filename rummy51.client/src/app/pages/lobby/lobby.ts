@@ -11,6 +11,7 @@ import { OnlinePlayers } from './online-players/online-players';
   imports: [TranslatePipe, PageShell, OnlinePlayers],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lobby.html',
+  styleUrl: './lobby.scss',
 })
 export class Lobby implements OnInit, OnDestroy {
   protected readonly auth = inject(AuthService);

@@ -1,0 +1,18 @@
+<div class="switcher">
+  <label class="visually-hidden" for="language-switcher">{{ 'language.switch' | translate }}</label>
+
+  <app-icon-globe class="icon icon--start" />
+
+  <!-- Each option declares whether it is the selected one. Binding value on the
+       select instead would run before @for has created the options, leaving the
+       browser to fall back to the first in the list. -->
+  <select id="language-switcher" (change)="choose($event)">
+    @for (language of languages.available; track language.code) {
+      <option [value]="language.code" [selected]="language.code === languages.current().code">
+        {{ language.label }}
+      </option>
+    }
+  </select>
+
+  <app-icon-chevron-down class="icon icon--end" />
+</div>

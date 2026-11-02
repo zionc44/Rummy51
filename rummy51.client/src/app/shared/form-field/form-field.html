@@ -1,0 +1,11 @@
+<div class="field">
+  <label class="field__label" [attr.for]="controlId()">{{ label() | translate }}</label>
+
+  <ng-content />
+
+  @if (hint(); as hintKey) {
+    <p class="field__hint">{{ hintKey | translate }}</p>
+  }
+
+  <app-field-error [error]="error()" />
+</div>

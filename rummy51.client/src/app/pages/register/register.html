@@ -1,9 +1,9 @@
 <app-page-shell>
-  <main class="flex flex-1 items-center justify-center px-4 pb-12">
-    <div class="w-full max-w-sm">
-      <h1 class="mb-8 text-center text-3xl font-black">{{ 'auth.registerTitle' | translate }}</h1>
+  <main class="auth">
+    <div class="auth__card">
+      <h1 class="auth__title">{{ 'auth.registerTitle' | translate }}</h1>
 
-      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-5">
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="auth__form">
         <app-form-field
           controlId="displayName"
           label="auth.displayName"
@@ -27,20 +27,20 @@
             formControlName="email"
             autocomplete="email"
             dir="ltr"
-            class="field-input text-start"
+            class="field-input"
           />
         </app-form-field>
 
         <app-form-field controlId="password" label="auth.password" [error]="passwordError()">
-          <!-- The wrapper is ltr so the reveal button follows the text rather
+          <!-- ltr on the wrapper so the reveal button follows the text rather
                than covering its first characters. -->
-          <div class="relative" dir="ltr">
+          <div class="auth__password" dir="ltr">
             <input
               id="password"
               [type]="passwordVisible() ? 'text' : 'password'"
               formControlName="password"
               autocomplete="new-password"
-              class="field-input pe-12 text-start"
+              class="field-input field-input--with-action"
             />
             <app-password-visibility-toggle [(visible)]="passwordVisible" />
           </div>
@@ -48,16 +48,14 @@
 
         <app-error-messages [errors]="serverErrors()" />
 
-        <button type="submit" [disabled]="submitting()" class="btn-primary mt-2">
+        <button type="submit" [disabled]="submitting()" class="btn-primary auth__submit">
           {{ (submitting() ? 'auth.registerPending' : 'auth.registerSubmit') | translate }}
         </button>
       </form>
 
-      <p class="mt-6 text-center text-sm text-white/50">
+      <p class="auth__switch">
         {{ 'auth.haveAccount' | translate }}
-        <a routerLink="/login" class="ms-1 font-medium text-felt-500 underline underline-offset-4">
-          {{ 'landing.login' | translate }}
-        </a>
+        <a routerLink="/login" class="auth__link">{{ 'landing.login' | translate }}</a>
       </p>
     </div>
   </main>

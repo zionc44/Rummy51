@@ -1,0 +1,118 @@
+@use 'tokens';
+
+// Only what has to be global: the tokens above, the reset below, and the few
+// element styles that several components share. Everything else lives in the
+// stylesheet of the component it belongs to.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--felt-950);
+  color: var(--text);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+// Announced to a screen reader, invisible to everyone else.
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Shared because the same button and the same field appear on several pages.
+// A component would add indirection without adding behaviour.
+%control {
+  display: inline-block;
+  border-radius: var(--radius-md);
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.btn-primary {
+  @extend %control;
+
+  border: none;
+  background: var(--felt-500);
+  color: var(--felt-950);
+
+  &:hover:not(:disabled) {
+    background: var(--felt-50);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-ghost {
+  @extend %control;
+
+  border: 1px solid var(--border-strong);
+  background: none;
+  color: var(--text);
+
+  &:hover {
+    border-color: rgb(255 255 255 / 0.6);
+    background: var(--surface);
+  }
+}
+
+.field-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+
+  &::placeholder {
+    color: var(--text-ghost);
+  }
+
+  &:focus {
+    border-color: var(--felt-500);
+    outline: none;
+  }
+}
+
+// Leaves room for a button sitting inside the field, such as the password reveal.
+.field-input--with-action {
+  padding-inline-end: 3rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--felt-50);
+  outline-offset: 2px;
+}

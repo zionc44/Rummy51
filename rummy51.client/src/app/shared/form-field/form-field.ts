@@ -12,21 +12,8 @@ import { FieldError } from '../error-messages/single-error';
   selector: 'app-form-field',
   imports: [TranslatePipe, FieldError],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="flex flex-col gap-1.5">
-      <label [attr.for]="controlId()" class="text-sm font-medium text-white/80">
-        {{ label() | translate }}
-      </label>
-
-      <ng-content />
-
-      @if (hint(); as hintKey) {
-        <p class="text-xs text-white/40">{{ hintKey | translate }}</p>
-      }
-
-      <app-field-error [error]="error()" />
-    </div>
-  `,
+  templateUrl: './form-field.html',
+  styleUrl: './form-field.scss',
 })
 export class FormField {
   readonly controlId = input.required<string>();

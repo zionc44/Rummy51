@@ -1,0 +1,34 @@
+// Every colour, radius and font in the app comes from here. Custom properties
+// rather than Sass variables, so a component stylesheet can use them without
+// importing anything, and so a theme could change them at runtime.
+:root {
+  // The table: felt at the rim, darker towards the middle.
+  --felt-50: #eefbf4;
+  --felt-500: #10b981;
+  --felt-900: #064e3b;
+  --felt-950: #022c22;
+
+  --text: #ffffff;
+  --text-muted: rgb(255 255 255 / 0.6);
+  --text-faint: rgb(255 255 255 / 0.4);
+  --text-ghost: rgb(255 255 255 / 0.3);
+
+  --surface: rgb(255 255 255 / 0.05);
+  --surface-raised: rgb(255 255 255 / 0.1);
+  --surface-hover: rgb(255 255 255 / 0.15);
+
+  --border: rgb(255 255 255 / 0.15);
+  --border-strong: rgb(255 255 255 / 0.25);
+
+  --danger: #fca5a5;
+  --suit-red: #f87171;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-pill: 9999px;
+
+  --font-sans: 'Heebo', 'Segoe UI', system-ui, sans-serif;
+
+  --page-gutter: 1rem;
+  --transition: 150ms ease;
+}

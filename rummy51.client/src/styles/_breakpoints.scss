@@ -1,0 +1,14 @@
+@use 'sass:map';
+
+// Phone first: a stylesheet describes the narrow layout, then widens it.
+$breakpoints: (
+  sm: 640px,
+  md: 768px,
+  lg: 1024px,
+);
+
+@mixin from($name) {
+  @media (min-width: map.get($breakpoints, $name)) {
+    @content;
+  }
+}

@@ -1,27 +1,21 @@
 <app-page-shell>
-  <button
-    shell-actions
-    type="button"
-    (click)="logout()"
-    class="rounded-full border border-white/20 px-4 py-1.5 text-sm font-medium
-           text-white/80 transition hover:bg-white/10 hover:text-white"
-  >
+  <button shell-actions type="button" class="lobby__logout" (click)="logout()">
     {{ 'auth.logout' | translate }}
   </button>
 
-  <main class="flex flex-1 flex-col items-center gap-8 px-6 py-8">
+  <main class="lobby">
     @if (lobby.signedInElsewhere()) {
       <!-- Not an error: the same account opened the lobby somewhere else, and
            one player holds one connection. Taking it back is a button away. -->
-      <div class="mt-16 flex max-w-sm flex-col items-center gap-4 text-center">
-        <h1 class="text-2xl font-black">{{ 'lobby.replacedTitle' | translate }}</h1>
-        <p class="text-white/60">{{ 'lobby.replacedBody' | translate }}</p>
-        <button type="button" (click)="reconnect()" class="btn-primary mt-2">
+      <div class="lobby__replaced">
+        <h1 class="lobby__replaced-title">{{ 'lobby.replacedTitle' | translate }}</h1>
+        <p class="lobby__replaced-body">{{ 'lobby.replacedBody' | translate }}</p>
+        <button type="button" class="btn-primary" (click)="reconnect()">
           {{ 'lobby.reconnect' | translate }}
         </button>
       </div>
     } @else {
-      <h1 class="text-3xl font-black">
+      <h1 class="lobby__welcome">
         {{ 'lobby.welcome' | translate: { '0': auth.currentPlayer()?.displayName } }}
       </h1>
 
@@ -30,7 +24,7 @@
         [currentPlayerId]="auth.currentPlayer()?.playerId ?? null"
       />
 
-      <p class="text-sm text-white/40">{{ 'lobby.placeholder' | translate }}</p>
+      <p class="lobby__note">{{ 'lobby.placeholder' | translate }}</p>
     }
   </main>
 </app-page-shell>

@@ -4,21 +4,14 @@ import { ApiError, interpolationOf, translationKeyOf } from '../../core/errors/a
 
 /**
  * Renders failures the server or a validator reported. Both describe a failure
- * the same way — a code and its parameters — so one component shows either.
+ * the same way - a code and its parameters - so one component shows either.
  */
 @Component({
   selector: 'app-error-messages',
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (messages().length) {
-      <div role="alert" class="flex flex-col gap-1">
-        @for (message of messages(); track message.key) {
-          <p class="text-sm text-red-300">{{ message.key | translate: message.values }}</p>
-        }
-      </div>
-    }
-  `,
+  templateUrl: './error-messages.html',
+  styleUrl: './error-messages.scss',
 })
 export class ErrorMessages {
   readonly errors = input<readonly ApiError[]>([]);

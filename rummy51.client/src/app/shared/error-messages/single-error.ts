@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { ErrorMessages } from './error-messages';
 import { ApiError } from '../../core/errors/api-error';
+import { ErrorMessages } from './error-messages';
 
 /** Convenience wrapper for the one error a single form field can show. */
 @Component({
   selector: 'app-field-error',
   imports: [ErrorMessages],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '<app-error-messages [errors]="asList()" />',
+  templateUrl: './single-error.html',
+  styleUrl: './single-error.scss',
 })
 export class FieldError {
   readonly error = input<ApiError | null>(null);

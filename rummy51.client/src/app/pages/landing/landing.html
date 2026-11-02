@@ -1,25 +1,20 @@
 <app-page-shell>
-  <main class="flex flex-1 flex-col items-center justify-center px-6 pb-16 text-center">
-    <p class="mb-6 flex gap-3 text-2xl sm:text-3xl" aria-hidden="true">
-      <span class="text-white/80">&spades;</span>
-      <span class="text-red-400">&hearts;</span>
-      <span class="text-red-400">&diams;</span>
-      <span class="text-white/80">&clubs;</span>
+  <main class="landing">
+    <p class="landing__suits" aria-hidden="true">
+      <span>&spades;</span>
+      <span class="landing__suit--red">&hearts;</span>
+      <span class="landing__suit--red">&diams;</span>
+      <span>&clubs;</span>
     </p>
 
-    <h1 class="text-5xl font-black tracking-tight sm:text-7xl">{{ 'app.title' | translate }}</h1>
+    <h1 class="landing__title">{{ 'app.title' | translate }}</h1>
 
-    <p class="mt-4 max-w-md text-lg text-felt-50/80 sm:mt-6 sm:max-w-xl sm:text-2xl">
-      {{ 'app.tagline' | translate }}
-    </p>
+    <p class="landing__tagline">{{ 'app.tagline' | translate }}</p>
 
-    <p class="mt-3 max-w-md text-sm text-white/50 sm:text-base">{{ 'landing.intro' | translate }}</p>
+    <p class="landing__intro">{{ 'landing.intro' | translate }}</p>
 
-    <!-- Stacked and full width on a phone, side by side once there is room. -->
-    <div class="mt-10 flex w-full max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
-      <a routerLink="/register" class="btn-primary shadow-lg shadow-felt-500/20">
-        {{ 'landing.register' | translate }}
-      </a>
+    <div class="landing__actions">
+      <a routerLink="/register" class="btn-primary">{{ 'landing.register' | translate }}</a>
       <a routerLink="/login" class="btn-ghost">{{ 'landing.login' | translate }}</a>
     </div>
   </main>

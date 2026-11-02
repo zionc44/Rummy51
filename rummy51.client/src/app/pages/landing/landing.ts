@@ -8,5 +8,6 @@ import { PageShell } from '../../shared/page-shell/page-shell';
   imports: [RouterLink, TranslatePipe, PageShell],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './landing.html',
+  styleUrl: './landing.scss',
 })
 export class Landing {}

@@ -5,7 +5,8 @@ import { LanguageService } from './core/i18n/language-service';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
-  template: '<router-outlet />',
+  templateUrl: './app.html',
+  styleUrl: './app.scss',
 })
 export class App {
   // Constructing it is what applies the stored language and sets the document

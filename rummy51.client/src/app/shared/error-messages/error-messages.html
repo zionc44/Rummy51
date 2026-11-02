@@ -1,0 +1,7 @@
+@if (messages().length) {
+  <div role="alert" class="errors">
+    @for (message of messages(); track message.key) {
+      <p class="errors__item">{{ message.key | translate: message.values }}</p>
+    }
+  </div>
+}

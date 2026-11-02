@@ -12,24 +12,7 @@ import { LanguageSwitcher } from '../language-switcher/language-switcher';
   selector: 'app-page-shell',
   imports: [RouterLink, TranslatePipe, LanguageSwitcher],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="flex min-h-dvh flex-col bg-gradient-to-b from-felt-900 via-felt-950 to-black text-white">
-      <header class="flex items-center justify-between px-4 py-4 sm:px-8">
-        <a
-          routerLink="/"
-          class="text-sm font-bold tracking-wide text-white/70 transition hover:text-white"
-        >
-          {{ 'app.title' | translate }}
-        </a>
-
-        <div class="flex items-center gap-3">
-          <app-language-switcher />
-          <ng-content select="[shell-actions]" />
-        </div>
-      </header>
-
-      <ng-content />
-    </div>
-  `,
+  templateUrl: './page-shell.html',
+  styleUrl: './page-shell.scss',
 })
 export class PageShell {}
