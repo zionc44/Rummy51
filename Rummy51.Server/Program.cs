@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rummy51.Infrastructure;
 using Rummy51.Server.Authentication;
 using Rummy51.Server.Errors;
+using Rummy51.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCookieAuthentication();
+builder.Services.AddSignalR();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -54,6 +56,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<LobbyHub>(LobbyHub.Route);
 
 app.MapFallbackToFile("/index.html");
 

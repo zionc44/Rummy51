@@ -34,7 +34,13 @@
   },
   "lobby": {
     "welcome": "Hello, {{0}}",
-    "placeholder": "The lobby is next."
+    "placeholder": "Tables and games come next.",
+    "onlinePlayers": "Players online",
+    "nobodyHere": "Nobody else is here yet",
+    "you": "(you)",
+    "replacedTitle": "Signed in somewhere else",
+    "replacedBody": "This account was opened in another browser or device. You can carry on here, which will disconnect the other one.",
+    "reconnect": "Carry on here"
   },
   "errors": {
     "EmailRequired": "Enter an email address",

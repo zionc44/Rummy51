@@ -76,6 +76,13 @@ public sealed class PlayerAccountService(
         return player is null ? null : Summarise(player);
     }
 
+    public async Task<PlayerSummary?> FindPlayerAsync(Guid playerId)
+    {
+        var player = await userManager.FindByIdAsync(playerId.ToString());
+
+        return player is null ? null : Summarise(player);
+    }
+
     private Player NewPlayer(RegisterPlayerRequest request) => new()
     {
         // Version 7 is time-ordered, which keeps the primary key index from

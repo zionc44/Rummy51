@@ -23,4 +23,10 @@ public interface IPlayerAccountService
 
     /// <summary>The signed-in player, or null when there is no live session.</summary>
     Task<PlayerSummary?> GetCurrentPlayerAsync();
+
+    /// <summary>
+    /// For callers that hold an identity but not an HTTP request — a hub
+    /// connection, say. Null when no such player exists.
+    /// </summary>
+    Task<PlayerSummary?> FindPlayerAsync(Guid playerId);
 }

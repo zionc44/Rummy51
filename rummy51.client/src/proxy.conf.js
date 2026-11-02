@@ -5,12 +5,18 @@ const target = process.env.API_TARGET || 'https://localhost:7115';
 
 const PROXY_CONFIG = [
   {
-    context: [
-      "/api",
-    ],
+    context: ['/api'],
     target,
-    secure: false
-  }
-]
+    secure: false,
+  },
+  {
+    // The lobby hub negotiates over HTTP and then upgrades, so this entry has
+    // to carry WebSocket traffic as well as the handshake.
+    context: ['/hubs'],
+    target,
+    secure: false,
+    ws: true,
+  },
+];
 
 module.exports = PROXY_CONFIG;
