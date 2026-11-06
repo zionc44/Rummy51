@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { AuthService } from '../auth/auth-service';
-import { PlayerSummary } from '../auth/auth.models';
+import { AvatarSource, PlayerSummary } from '../auth/auth.models';
 import { failWithApiErrors } from '../errors/api-error';
 import { ChangeDisplayNameRequest, ChangePasswordRequest, SetPasswordRequest } from './account.models';
 
@@ -25,6 +25,23 @@ export class AccountService {
 
   changePassword(request: ChangePasswordRequest): Observable<PlayerSummary> {
     return this.adopting(this.http.put<PlayerSummary>(`${API}/password`, request));
+  }
+
+  /** The cropped square. The server draws its own copy from it regardless. */
+  uploadAvatar(image: Blob): Observable<PlayerSummary> {
+    const body = new FormData();
+    body.append('image', image, 'avatar');
+
+    return this.adopting(this.http.post<PlayerSummary>(`${API}/avatar`, body));
+  }
+
+  removeAvatar(): Observable<PlayerSummary> {
+    return this.adopting(this.http.delete<PlayerSummary>(`${API}/avatar`));
+  }
+
+  /** Which picture to show. Both are kept whichever is chosen. */
+  chooseAvatar(source: AvatarSource): Observable<PlayerSummary> {
+    return this.adopting(this.http.put<PlayerSummary>(`${API}/avatar/source`, { source }));
   }
 
   /**

@@ -16,6 +16,8 @@ public class Rummy51DbContext(DbContextOptions<Rummy51DbContext> options)
     /// </summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
+    public DbSet<PlayerAvatar> PlayerAvatars => Set<PlayerAvatar>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         // Identity builds its own model first; everything below refines it.

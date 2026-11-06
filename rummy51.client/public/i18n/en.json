@@ -46,7 +46,18 @@
     "passwordSetNote": "This account has no password, because it was created through Google. Adding one lets you sign in without it.",
     "passwordChangeNote": "Changing a password takes the current one.",
     "passwordSaved": "Password updated",
-    "backToLobby": "Back to the lobby"
+    "backToLobby": "Back to the lobby",
+    "avatarNote": "What other players see in the lobby and at the table.",
+    "chooseImage": "Choose a picture",
+    "removeImage": "Remove my picture",
+    "whichPicture": "Which picture to show",
+    "fromGoogle": "From Google",
+    "mine": "Mine",
+    "cropTitle": "Profile picture",
+    "cropHint": "Drag to position, the slider zooms, the button rotates",
+    "cropZoom": "Zoom",
+    "cancel": "Cancel",
+    "cropRotate": "Rotate a quarter turn"
   },
   "lobby": {
     "onlinePlayers": "Players online",
@@ -99,6 +110,8 @@
     "PasswordAlreadySet": "This account already has a password",
     "PasswordNotSet": "This account does not have a password yet",
     "CurrentPasswordRequired": "Enter your current password",
-    "PasswordMismatch": "That is not your current password"
+    "PasswordMismatch": "That is not your current password",
+    "AvatarNotAnImage": "We could not read that file as an image",
+    "NoUploadedAvatar": "You have not uploaded a picture"
   }
 }

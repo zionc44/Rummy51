@@ -1,0 +1,126 @@
+.cropper {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(2 44 34 / 0.8);
+  padding: var(--page-gutter);
+}
+
+.cropper__panel {
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--felt-900);
+  padding: 1rem;
+}
+
+.cropper__title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.cropper__hint {
+  margin: 0.25rem 0 0.875rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+// Square, so the frame and the stored picture are the same shape.
+.cropper__frame {
+  position: relative;
+  aspect-ratio: 1;
+  inline-size: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--felt-950);
+  // Geometry rather than reading order. The picture must not flip with the
+  // page, and every offset the component computes is in physical pixels.
+  direction: ltr;
+  // Without this the browser scrolls the page instead of letting us drag.
+  touch-action: none;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// Placed by the component, which sets its size and moves it by its centre.
+// Nothing here may size it, or the frame and the saved square would disagree.
+.cropper__picture {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform-origin: center;
+  user-select: none;
+}
+
+.cropper__mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgb(2 44 34 / 0.65);
+  mask: radial-gradient(circle closest-side at center, transparent 99%, #000 100%);
+  -webkit-mask: radial-gradient(circle closest-side at center, transparent 99%, #000 100%);
+}
+
+.cropper__ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgb(255 255 255 / 0.85);
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+
+.cropper__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block-start: 0.875rem;
+}
+
+.cropper__rotate {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  transition: background var(--transition), color var(--transition);
+
+  &:hover {
+    background: var(--surface-raised);
+    color: var(--text);
+  }
+}
+
+.cropper__zoom {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.cropper__slider {
+  display: block;
+  inline-size: 100%;
+  accent-color: var(--felt-500);
+}
+
+.cropper__actions {
+  display: flex;
+  gap: 0.625rem;
+  margin-block-start: 1rem;
+}
+
+.cropper__action {
+  flex: 1;
+  padding-inline: 0;
+}

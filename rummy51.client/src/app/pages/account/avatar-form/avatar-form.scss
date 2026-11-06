@@ -1,0 +1,77 @@
+.avatar-form__note {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.avatar-form__row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar-form__preview {
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+  font-size: 1.25rem;
+}
+
+.avatar-form__buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.avatar-form__pick {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+.avatar-form__remove {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--danger);
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.avatar-form__which {
+  margin: 1.25rem 0 0.625rem;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+}
+
+.avatar-form__options {
+  display: flex;
+  gap: 0.625rem;
+}
+
+.avatar-form__option {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  padding: 0.75rem 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.avatar-form__option--showing {
+  border-color: var(--felt-500);
+  color: var(--text);
+}
+
+.avatar-form__thumb {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  font-size: 0.8125rem;
+}

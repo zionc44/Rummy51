@@ -1,0 +1,79 @@
+@if (player(); as me) {
+  <p class="avatar-form__note">{{ 'account.avatarNote' | translate }}</p>
+
+  <div class="avatar-form__row">
+    <app-player-avatar
+      class="avatar-form__preview"
+      [displayName]="me.displayName"
+      [avatarUrl]="me.avatarUrl"
+    />
+
+    <div class="avatar-form__buttons">
+      <button
+        type="button"
+        class="btn-ghost avatar-form__pick"
+        [disabled]="busy()"
+        (click)="picker.click()"
+      >
+        {{ 'account.chooseImage' | translate }}
+      </button>
+
+      @if (me.uploadedAvatarUrl) {
+        <button type="button" class="avatar-form__remove" [disabled]="busy()" (click)="remove()">
+          {{ 'account.removeImage' | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <input
+    #picker
+    type="file"
+    accept="image/*"
+    class="visually-hidden"
+    (change)="pick(picker)"
+  />
+
+  <!-- Only worth asking once there are two to choose between. -->
+  @if (canChoose()) {
+    <p class="avatar-form__which">{{ 'account.whichPicture' | translate }}</p>
+
+    <div class="avatar-form__options">
+      <button
+        type="button"
+        class="avatar-form__option"
+        [class.avatar-form__option--showing]="me.avatarSource === 'provider'"
+        [disabled]="busy()"
+        (click)="choose('provider')"
+      >
+        <app-player-avatar
+          class="avatar-form__thumb"
+          [displayName]="me.displayName"
+          [avatarUrl]="me.providerAvatarUrl"
+        />
+        {{ 'account.fromGoogle' | translate }}
+      </button>
+
+      <button
+        type="button"
+        class="avatar-form__option"
+        [class.avatar-form__option--showing]="me.avatarSource === 'uploaded'"
+        [disabled]="busy()"
+        (click)="choose('uploaded')"
+      >
+        <app-player-avatar
+          class="avatar-form__thumb"
+          [displayName]="me.displayName"
+          [avatarUrl]="me.uploadedAvatarUrl"
+        />
+        {{ 'account.mine' | translate }}
+      </button>
+    </div>
+  }
+
+  <app-error-messages [errors]="errors()" />
+}
+
+@if (chosen(); as file) {
+  <app-avatar-cropper [file]="file" (cropped)="upload($event)" (cancelled)="chosen.set(null)" />
+}

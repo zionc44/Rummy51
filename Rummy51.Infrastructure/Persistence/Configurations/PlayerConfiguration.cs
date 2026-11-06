@@ -21,6 +21,20 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(p => p.AvatarUrl)
             .HasMaxLength(500);
 
+        // Stored as its name: the column reads for itself, and inserting a
+        // value above another one later cannot silently renumber the rest.
+        builder.Property(p => p.AvatarSource)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            // Spelled out, so every player who existed before the column did
+            // starts on the provider rather than on an empty string that maps
+            // to no value at all.
+            .HasDefaultValue(AvatarSource.Provider)
+            .IsRequired();
+
+        builder.Property(p => p.AvatarImageTag)
+            .HasMaxLength(32);
+
         // Identity names these two indexes explicitly, so the snake_case
         // convention leaves them alone; rename them to match the schema.
         builder.HasIndex(p => p.NormalizedUserName)

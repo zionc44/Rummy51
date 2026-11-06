@@ -9,6 +9,7 @@ using Rummy51.Application.Authentication;
 using Rummy51.Application.Authentication.External;
 using Rummy51.Application.Lobby;
 using Rummy51.Domain.Entities;
+using Rummy51.Infrastructure.Avatars;
 using Rummy51.Infrastructure.Identity;
 using Rummy51.Infrastructure.Lobby;
 using Rummy51.Infrastructure.Persistence;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IPlayerAccountService, PlayerAccountService>();
         services.AddScoped<IExternalLoginService, ExternalLoginService>();
         services.AddScoped<IPlayerProfileService, PlayerProfileService>();
+        services.AddScoped<IPlayerAvatarService, PlayerAvatarService>();
 
         // Singleton: the roster is the shared state, not a per-request view of it.
         services.AddSingleton<IPlayerConnections, InMemoryPlayerConnections>();

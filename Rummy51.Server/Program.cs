@@ -10,7 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+// Enums cross as their names here for the same reason they do over SignalR
+// below: a client switching on "uploaded" keeps working when a value is
+// inserted above it.
+builder.Services.AddControllers().AddJsonOptions(options =>
+    options.JsonSerializerOptions.Converters.Add(
+        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCookieAuthentication(builder.Configuration);
 builder.Services.AddSignalR().AddJsonProtocol(options =>

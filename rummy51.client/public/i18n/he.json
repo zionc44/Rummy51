@@ -46,7 +46,18 @@
     "passwordSetNote": "לחשבון הזה אין סיסמה, כי הוא נוצר דרך גוגל. הוספת סיסמה תאפשר לכם להיכנס גם בלעדיה.",
     "passwordChangeNote": "החלפת סיסמה דורשת את הנוכחית.",
     "passwordSaved": "הסיסמה עודכנה",
-    "backToLobby": "חזרה ללובי"
+    "backToLobby": "חזרה ללובי",
+    "avatarNote": "התמונה שרואים שאר השחקנים בלובי ובשולחן.",
+    "chooseImage": "בחירת תמונה",
+    "removeImage": "הסרת התמונה שלי",
+    "whichPicture": "איזו תמונה להציג",
+    "fromGoogle": "מגוגל",
+    "mine": "שלי",
+    "cropTitle": "תמונת פרופיל",
+    "cropHint": "גררו למיקום, המחוון מקרב, הכפתור מסובב",
+    "cropZoom": "קירוב",
+    "cancel": "ביטול",
+    "cropRotate": "סיבוב רבע סיבוב"
   },
   "lobby": {
     "onlinePlayers": "שחקנים מחוברים",
@@ -99,6 +110,8 @@
     "PasswordAlreadySet": "לחשבון כבר יש סיסמה",
     "PasswordNotSet": "לחשבון אין עדיין סיסמה",
     "CurrentPasswordRequired": "יש להזין את הסיסמה הנוכחית",
-    "PasswordMismatch": "הסיסמה הנוכחית שגויה"
+    "PasswordMismatch": "הסיסמה הנוכחית שגויה",
+    "AvatarNotAnImage": "לא הצלחנו לקרוא את הקובץ הזה כתמונה",
+    "NoUploadedAvatar": "לא העליתם תמונה משלכם"
   }
 }

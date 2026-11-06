@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using Rummy51.Application.Account;
 using Rummy51.Application.Authentication;
 using Rummy51.Domain.Entities;
 
@@ -25,15 +26,30 @@ internal sealed class PlayerSignIn(
         await userManager.UpdateAsync(player);
     }
 
-    public static PlayerSummary Summarise(Player player) =>
-        new(
+    public static PlayerSummary Summarise(Player player)
+    {
+        var uploaded = player.AvatarImageTag is { } tag
+            ? AvatarRoute.For(player.Id, tag)
+            : null;
+
+        // A player may hold both pictures at once, and their choice has to
+        // survive the provider refreshing its own on every sign-in.
+        var showing = player.AvatarSource == AvatarSource.Uploaded && uploaded is not null
+            ? uploaded
+            : player.AvatarUrl;
+
+        return new(
             player.Id,
             player.Email ?? string.Empty,
             player.DisplayName,
+            showing,
             player.AvatarUrl,
+            uploaded,
+            player.AvatarSource,
             // The test UserManager.HasPasswordAsync makes, made here so that
             // summarising a player does not have to become asynchronous.
             player.PasswordHash is not null);
+    }
 
     /// <summary>
     /// Verifying a password and issuing a cookie are deliberately separate:

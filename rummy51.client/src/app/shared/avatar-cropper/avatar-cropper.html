@@ -1,0 +1,69 @@
+<div class="cropper">
+  <div class="cropper__panel" role="dialog" aria-modal="true">
+    <p class="cropper__title">{{ 'account.cropTitle' | translate }}</p>
+    <p class="cropper__hint">{{ 'account.cropHint' | translate }}</p>
+
+    <!-- One finger drags; the slider below does what a pinch would, so there
+         is one interaction instead of one for touch and one for a mouse. -->
+    <div
+      #frame
+      class="cropper__frame"
+      (pointerdown)="startDrag($event)"
+      (pointermove)="drag($event)"
+      (pointerup)="endDrag()"
+      (pointercancel)="endDrag()"
+    >
+      @if (source(); as url) {
+        <img
+          class="cropper__picture"
+          [src]="url"
+          [style.width.px]="placement()?.width"
+          [style.height.px]="placement()?.height"
+          [style.transform]="placement()?.transform"
+          [style.opacity]="placement() ? 1 : 0"
+          (load)="measure()"
+          alt=""
+          draggable="false"
+        />
+      }
+
+      <!-- Shows the circle the picture will be seen through, because that is
+           what the player will actually be looking at. -->
+      <div class="cropper__mask"></div>
+      <div class="cropper__ring"></div>
+    </div>
+
+    <div class="cropper__controls">
+      <button
+        type="button"
+        class="cropper__rotate"
+        [attr.aria-label]="'account.cropRotate' | translate"
+        (click)="rotate()"
+      >
+        <app-icon-rotate />
+      </button>
+
+      <label class="cropper__zoom">
+        <span class="visually-hidden">{{ 'account.cropZoom' | translate }}</span>
+        <input
+          type="range"
+          [min]="limits().whole"
+          [max]="closest()"
+          step="any"
+          [value]="scale()"
+          (input)="zoomTo($any($event.target).value)"
+          class="cropper__slider"
+        />
+      </label>
+    </div>
+
+    <div class="cropper__actions">
+      <button type="button" class="btn-primary cropper__action" (click)="save()">
+        {{ 'account.save' | translate }}
+      </button>
+      <button type="button" class="btn-ghost cropper__action" (click)="cancelled.emit()">
+        {{ 'account.cancel' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

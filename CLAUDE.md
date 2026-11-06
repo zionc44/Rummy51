@@ -200,7 +200,15 @@ name, and a password that can be added as well as changed.
 
 Next: creating a table, then the game itself.
 
-Still open: the picture and the Google link on the account page; rate limiting
+A picture can be uploaded, cropped in the browser and re-encoded on the
+server, which keeps nothing of the original file - its EXIF, and the GPS a
+phone writes into it, included. It lives in 'player_avatars' rather than on
+the player row, which Identity reads on every authenticated request, and is
+served from a URL carrying a tag of its contents so the answer can be cached
+for good. A provider's picture and the player's own are both kept; the
+player says which to show.
+
+Still open: the Google link on the account page; rate limiting
 and CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.

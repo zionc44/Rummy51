@@ -20,6 +20,16 @@ public class Player : IdentityUser<Guid>
     /// </summary>
     public string? AvatarUrl { get; set; }
 
+    /// <summary>Which of the two pictures the player wants shown.</summary>
+    public AvatarSource AvatarSource { get; set; }
+
+    /// <summary>
+    /// Identifies the contents of the uploaded picture. It rides in that
+    /// picture's address, so the address changes whenever the picture does -
+    /// which is what lets the answer be cached and never asked for again.
+    /// </summary>
+    public string? AvatarImageTag { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>Null until the player signs in for the first time.</summary>
