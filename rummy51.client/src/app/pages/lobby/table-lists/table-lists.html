@@ -1,0 +1,38 @@
+<section class="tables">
+  <header class="tables__header">
+    <h2 class="tables__heading">{{ 'lobby.tables' | translate }}</h2>
+
+    <button type="button" class="btn-primary tables__create">
+      {{ 'lobby.newTable' | translate }}
+    </button>
+  </header>
+
+  <div class="tables__tabs" role="tablist">
+    @for (mode of modes; track mode) {
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.tab--open]="mode === openMode()"
+        [attr.aria-selected]="mode === openMode()"
+        [attr.aria-label]="'lobby.modes.' + mode | translate"
+        (click)="openMode.set(mode)"
+      >
+        <app-mode-icon class="tab__icon" [mode]="mode" />
+        <span class="tab__label">{{ 'lobby.modes.' + mode | translate }}</span>
+        <span class="tab__count">{{ counts()[mode] }}</span>
+      </button>
+    }
+  </div>
+
+  <div class="tables__lists">
+    @for (mode of modes; track mode) {
+      <app-table-list
+        class="tables__list"
+        [class.tables__list--open]="mode === openMode()"
+        [mode]="mode"
+        [count]="counts()[mode]"
+      />
+    }
+  </div>
+</section>

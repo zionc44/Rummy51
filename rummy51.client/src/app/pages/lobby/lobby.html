@@ -15,16 +15,15 @@
         </button>
       </div>
     } @else {
-      <h1 class="lobby__welcome">
-        {{ 'lobby.welcome' | translate: { '0': auth.currentPlayer()?.displayName } }}
-      </h1>
+      <div class="lobby__body">
+        <app-online-players
+          class="lobby__players"
+          [players]="lobby.onlinePlayers()"
+          [currentPlayerId]="auth.currentPlayer()?.playerId ?? null"
+        />
 
-      <app-online-players
-        [players]="lobby.onlinePlayers()"
-        [currentPlayerId]="auth.currentPlayer()?.playerId ?? null"
-      />
-
-      <p class="lobby__note">{{ 'lobby.placeholder' | translate }}</p>
+        <app-table-lists class="lobby__tables" />
+      </div>
     }
   </main>
 </app-page-shell>

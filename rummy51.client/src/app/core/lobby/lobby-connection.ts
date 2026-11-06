@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { PlayerSummary } from '../auth/auth.models';
+import { LobbyPlayer } from './lobby.models';
 
 const HUB_URL = '/hubs/lobby';
 
@@ -16,7 +16,7 @@ const enum LobbyEvent {
  */
 @Injectable({ providedIn: 'root' })
 export class LobbyConnection {
-  private readonly players = signal<readonly PlayerSummary[]>([]);
+  private readonly players = signal<readonly LobbyPlayer[]>([]);
   private readonly replaced = signal(false);
 
   readonly onlinePlayers = this.players.asReadonly();
@@ -54,7 +54,7 @@ export class LobbyConnection {
       .configureLogging(LogLevel.Warning)
       .build();
 
-    connection.on(LobbyEvent.OnlinePlayersChanged, (players: PlayerSummary[]) =>
+    connection.on(LobbyEvent.OnlinePlayersChanged, (players: LobbyPlayer[]) =>
       this.players.set(players),
     );
 

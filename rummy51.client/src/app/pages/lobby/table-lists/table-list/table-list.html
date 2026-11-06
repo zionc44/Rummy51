@@ -1,0 +1,9 @@
+<section class="list">
+  <h3 class="list__title">
+    <app-mode-icon class="list__icon" [mode]="mode()" />
+    <span>{{ 'lobby.modes.' + mode() | translate }}</span>
+    <span class="list__count">{{ count() }}</span>
+  </h3>
+
+  <p class="list__empty">{{ 'lobby.noTables' | translate }}</p>
+</section>

@@ -21,5 +21,5 @@ public interface IPlayerConnections
 
     void Remove(string connectionId);
 
-    IReadOnlyList<PlayerSummary> Online();
+    IReadOnlyList<LobbyPlayer> Online();
 }

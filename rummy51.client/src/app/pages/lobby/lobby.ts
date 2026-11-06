@@ -5,10 +5,11 @@ import { AuthService } from '../../core/auth/auth-service';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { OnlinePlayers } from './online-players/online-players';
+import { TableLists } from './table-lists/table-lists';
 
 @Component({
   selector: 'app-lobby',
-  imports: [TranslatePipe, PageShell, OnlinePlayers],
+  imports: [TranslatePipe, PageShell, OnlinePlayers, TableLists],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lobby.html',
   styleUrl: './lobby.scss',

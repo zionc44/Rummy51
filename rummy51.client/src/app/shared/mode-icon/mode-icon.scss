@@ -1,0 +1,9 @@
+:host {
+  display: inline-flex;
+}
+
+// The chosen icon fills whatever size the host was given.
+:host > * {
+  inline-size: 100%;
+  block-size: 100%;
+}

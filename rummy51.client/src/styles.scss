@@ -116,3 +116,13 @@ button {
   outline: 2px solid var(--felt-50);
   outline-offset: 2px;
 }
+
+// Someone who turned animation off in their system meant it here too.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

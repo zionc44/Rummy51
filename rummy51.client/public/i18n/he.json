@@ -33,14 +33,27 @@
     "hidePassword": "הסתרת הסיסמה"
   },
   "lobby": {
-    "welcome": "שלום, {{0}}",
-    "placeholder": "שולחנות ומשחקים יגיעו בשלב הבא.",
     "onlinePlayers": "שחקנים מחוברים",
     "nobodyHere": "אין כרגע שחקנים נוספים",
     "you": "(אתה)",
     "replacedTitle": "התחברת במקום אחר",
     "replacedBody": "החשבון נפתח בדפדפן או במכשיר אחר. אפשר להמשיך כאן, וזה ינתק את החיבור השני.",
-    "reconnect": "להמשיך כאן"
+    "reconnect": "להמשיך כאן",
+    "players": "שחקנים",
+    "tables": "רשימת שולחנות",
+    "newTable": "שולחן חדש",
+    "noTables": "אין שולחנות",
+    "modes": {
+      "discrete": "בדידים",
+      "survival": "הישרדות",
+      "series": "סדרות"
+    },
+    "status": {
+      "available": "זמין",
+      "idle": "לא פעיל",
+      "inGame": "במשחק",
+      "inGameIdle": "במשחק · לא פעיל"
+    }
   },
   "errors": {
     "EmailRequired": "יש להזין כתובת אימייל",

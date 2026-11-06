@@ -1,22 +1,18 @@
 <section class="players">
-  <h2 class="players__title">
-    {{ 'lobby.onlinePlayers' | translate }} ({{ players().length }})
-  </h2>
+  <h2 class="players__title">{{ 'lobby.players' | translate }} · {{ rows().length }}</h2>
 
-  @if (players().length) {
-    <ul class="players__list">
-      @for (player of players(); track player.playerId) {
-        <li class="players__row">
-          <span class="players__dot" aria-hidden="true"></span>
-          <span class="players__name">{{ player.displayName }}</span>
+  <ul class="players__list">
+    @for (row of rows(); track row.playerId) {
+      <li class="players__row" [class.players__row--self]="row.isSelf">
+        <span class="players__avatar" [class]="'players__avatar--' + row.status" aria-hidden="true">
+          {{ row.initials }}
+        </span>
 
-          @if (player.playerId === currentPlayerId()) {
-            <span class="players__self">{{ 'lobby.you' | translate }}</span>
-          }
-        </li>
-      }
-    </ul>
-  } @else {
-    <p class="players__empty">{{ 'lobby.nobodyHere' | translate }}</p>
-  }
+        <span class="players__who">
+          <span class="players__name">{{ row.displayName }}</span>
+          <span class="players__status">{{ 'lobby.status.' + row.status | translate }}</span>
+        </span>
+      </li>
+    }
+  </ul>
 </section>

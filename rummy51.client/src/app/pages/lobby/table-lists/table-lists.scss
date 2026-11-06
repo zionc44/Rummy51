@@ -1,0 +1,117 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.tables__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-block-end: 0.6875rem;
+}
+
+.tables__heading {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+
+  @include from(sm) {
+    color: var(--text);
+    font-size: 0.875rem;
+  }
+}
+
+.tables__create {
+  padding: 0.4375rem 0.875rem;
+  font-size: 0.8125rem;
+}
+
+// Tabs exist only where three lists will not fit beside each other.
+.tables__tabs {
+  display: flex;
+  gap: 0.3125rem;
+  margin-block-end: 0.6875rem;
+
+  @include from(sm) {
+    display: none;
+  }
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  // Closed: wide enough for a thumb, no wider. Open: everything left over.
+  flex: 0 0 3.25rem;
+  min-block-size: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  padding-inline: 0.5rem;
+  color: var(--text-muted);
+  transition: flex-grow var(--dur-expand) ease, flex-basis var(--dur-expand) ease,
+    background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.tab--open {
+  flex: 1 1 auto;
+  border-color: rgb(16 185 129 / 0.5);
+  background: rgb(16 185 129 / 0.18);
+  color: var(--text);
+}
+
+.tab__icon {
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+// The name is only worth its width on the open one; the count always earns it.
+.tab__label {
+  display: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+
+  .tab--open & {
+    display: inline;
+  }
+}
+
+.tab__count {
+  flex: none;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+
+  .tab--open & {
+    margin-inline-start: auto;
+    color: var(--felt-50);
+  }
+}
+
+.tables__lists {
+  @include from(sm) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5625rem;
+  }
+}
+
+// On a phone the open tab decides which one is on screen.
+.tables__list {
+  display: none;
+
+  @include from(sm) {
+    display: block;
+  }
+}
+
+.tables__list--open {
+  display: block;
+}

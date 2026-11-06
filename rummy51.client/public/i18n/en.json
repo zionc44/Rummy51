@@ -33,14 +33,27 @@
     "hidePassword": "Hide password"
   },
   "lobby": {
-    "welcome": "Hello, {{0}}",
-    "placeholder": "Tables and games come next.",
     "onlinePlayers": "Players online",
     "nobodyHere": "Nobody else is here yet",
     "you": "(you)",
     "replacedTitle": "Signed in somewhere else",
     "replacedBody": "This account was opened in another browser or device. You can carry on here, which will disconnect the other one.",
-    "reconnect": "Carry on here"
+    "reconnect": "Carry on here",
+    "players": "Players",
+    "tables": "Tables",
+    "newTable": "New table",
+    "noTables": "No tables",
+    "modes": {
+      "discrete": "Single deal",
+      "survival": "Survival",
+      "series": "Series"
+    },
+    "status": {
+      "available": "Available",
+      "idle": "Away",
+      "inGame": "In a game",
+      "inGameIdle": "In a game, away"
+    }
   },
   "errors": {
     "EmailRequired": "Enter an email address",

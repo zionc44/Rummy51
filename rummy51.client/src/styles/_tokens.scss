@@ -21,6 +21,13 @@
   --border-strong: rgb(255 255 255 / 0.25);
 
   --danger: #fca5a5;
+
+  // Lobby presence. Green, amber and red are the convention players already
+  // know from chat apps; the fourth is red darkened, for in a game and away.
+  --status-available: #10b981;
+  --status-idle: #f59e0b;
+  --status-in-game: #ef4444;
+  --status-in-game-idle: #8b2f2f;
   --suit-red: #f87171;
 
   --radius-sm: 0.5rem;
@@ -31,4 +38,5 @@
 
   --page-gutter: 1rem;
   --transition: 150ms ease;
+  --dur-expand: 220ms;
 }

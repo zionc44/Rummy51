@@ -53,11 +53,23 @@ public sealed class InMemoryPlayerConnections : IPlayerConnections
         }
     }
 
-    public IReadOnlyList<PlayerSummary> Online()
+    public IReadOnlyList<LobbyPlayer> Online()
     {
         lock (gate)
         {
-            return [.. byConnection.Values.OrderBy(player => player.DisplayName)];
+            // Ordinal, not the current culture: the server's locale must not
+            // decide what order Hebrew and Latin names appear in.
+            return
+            [
+                .. byConnection.Values
+                    .OrderBy(player => player.DisplayName, StringComparer.Ordinal)
+                    // Holding a connection is all we can observe so far. In a
+                    // game, and idle, arrive with the things that produce them.
+                    .Select(player => new LobbyPlayer(
+                        player.PlayerId,
+                        player.DisplayName,
+                        PlayerStatus.Available))
+            ];
         }
     }
 }

@@ -1,11 +1,45 @@
+@use 'breakpoints' as *;
+
+// flex and the zero minimum are what let the players column scroll inside the
+// page rather than making the whole page scroll.
 .lobby {
   display: flex;
   flex: 1;
   flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  padding-inline: 1.5rem;
-  padding-block: 2rem;
+  min-block-size: 0;
+  padding-block-end: 1rem;
+  padding-inline: 0.75rem;
+
+  @include from(sm) {
+    padding-inline: 1rem;
+  }
+}
+
+.lobby__body {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 0.5625rem;
+  min-block-size: 0;
+  inline-size: 100%;
+
+  @include from(sm) {
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 0.875rem;
+  }
+
+  @include from(lg) {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 1rem;
+    // Past this the eye loses the link between the two ends of a row.
+    max-inline-size: 1200px;
+    margin-inline: auto;
+  }
+}
+
+.lobby__tables {
+  min-inline-size: 0;
+  overflow-y: auto;
 }
 
 .lobby__logout {
@@ -24,24 +58,13 @@
   }
 }
 
-.lobby__welcome {
-  margin: 0;
-  font-size: 1.875rem;
-  font-weight: 900;
-}
-
-.lobby__note {
-  margin: 0;
-  color: var(--text-faint);
-  font-size: 0.875rem;
-}
-
 .lobby__replaced {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
   margin-block-start: 4rem;
+  margin-inline: auto;
   max-inline-size: 24rem;
   text-align: center;
 }
