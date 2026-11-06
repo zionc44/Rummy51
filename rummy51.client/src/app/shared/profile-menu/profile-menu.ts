@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { IconLogout } from '../icons/icon-logout/icon-logout';
@@ -12,7 +12,7 @@ import { PlayerAvatar } from '../player-avatar/player-avatar';
  */
 @Component({
   selector: 'app-profile-menu',
-  imports: [TranslatePipe, IconLogout, IconUser, PlayerAvatar],
+  imports: [RouterLink, TranslatePipe, IconLogout, IconUser, PlayerAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-menu.html',
   styleUrl: './profile-menu.scss',

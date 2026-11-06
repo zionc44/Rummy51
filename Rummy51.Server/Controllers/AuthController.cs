@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Authentication.Login;
 using Rummy51.Application.Authentication.Register;
-using Rummy51.Application.Common;
 using Rummy51.Server.Errors;
 
 namespace Rummy51.Server.Controllers;
@@ -24,7 +23,7 @@ public class AuthController(IPlayerAccountService accounts) : ControllerBase
 
         return result.IsSuccess
             ? StatusCode(StatusCodes.Status201Created, result.Value)
-            : Failure(result);
+            : this.Failure(result);
     }
 
     /// <summary>Signs in and issues the authentication cookie.</summary>
@@ -38,7 +37,7 @@ public class AuthController(IPlayerAccountService accounts) : ControllerBase
     {
         var result = await accounts.LoginAsync(request, cancellationToken);
 
-        return result.IsSuccess ? Ok(result.Value) : Failure(result);
+        return result.IsSuccess ? Ok(result.Value) : this.Failure(result);
     }
 
     [HttpPost("logout")]
@@ -71,17 +70,5 @@ public class AuthController(IPlayerAccountService accounts) : ControllerBase
         }
 
         return Ok(player);
-    }
-
-    private IActionResult Failure<T>(Result<T> result)
-    {
-        var (status, title) = result.Failure switch
-        {
-            FailureKind.Conflict => (StatusCodes.Status409Conflict, "Conflict"),
-            FailureKind.Unauthorized => (StatusCodes.Status401Unauthorized, "Unauthorized"),
-            _ => (StatusCodes.Status400BadRequest, "ValidationFailed")
-        };
-
-        return ApiProblem.Result(HttpContext, status, title, result.Errors);
     }
 }

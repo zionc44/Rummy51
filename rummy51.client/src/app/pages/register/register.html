@@ -31,25 +31,17 @@
           />
         </app-form-field>
 
-        <app-form-field controlId="password" label="auth.password" [error]="passwordError()">
-          <!-- ltr on the wrapper so the reveal button follows the text rather
-               than covering its first characters. -->
-          <div class="auth__password" dir="ltr">
-            <input
-              id="password"
-              [type]="passwordVisible() ? 'text' : 'password'"
-              formControlName="password"
-              autocomplete="new-password"
-              class="field-input field-input--with-action"
-            />
-            <app-password-visibility-toggle [(visible)]="passwordVisible" />
-          </div>
-        </app-form-field>
+        <app-password-field
+          [control]="form.controls.password"
+          controlId="password"
+          autocomplete="new-password"
+          [codes]="passwordCodes"
+        />
 
-        <app-error-messages [errors]="serverErrors()" />
+        <app-error-messages [errors]="submission.errors()" />
 
-        <button type="submit" [disabled]="submitting()" class="btn-primary auth__submit">
-          {{ (submitting() ? 'auth.registerPending' : 'auth.registerSubmit') | translate }}
+        <button type="submit" [disabled]="submission.submitting()" class="btn-primary auth__submit">
+          {{ (submission.submitting() ? 'auth.registerPending' : 'auth.registerSubmit') | translate }}
         </button>
       </form>
 

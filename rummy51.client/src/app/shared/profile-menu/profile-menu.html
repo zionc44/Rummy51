@@ -21,12 +21,10 @@
         <p class="profile__email">{{ me.email }}</p>
       </div>
 
-      <!-- Disabled until the account page exists: an item that looks alive and
-           does nothing is worse than one that says it is not ready. -->
-      <button type="button" role="menuitem" class="profile__item" disabled>
+      <a routerLink="/account" role="menuitem" class="profile__item" (click)="close()">
         <app-icon-user class="profile__icon" />
         {{ 'profile.account' | translate }}
-      </button>
+      </a>
 
       <button type="button" role="menuitem" class="profile__item" (click)="logout()">
         <app-icon-logout class="profile__icon" />

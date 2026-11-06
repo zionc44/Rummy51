@@ -1,7 +1,7 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, catchError, firstValueFrom, map, of, tap, throwError } from 'rxjs';
-import { ApiError, apiErrorsOf } from '../errors/api-error';
+import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
+import { failWithApiErrors } from '../errors/api-error';
 import { LoginRequest, PlayerSummary, RegisterRequest } from './auth.models';
 
 const API = '/api/auth';
@@ -14,6 +14,11 @@ export class AuthService {
 
   readonly currentPlayer = this.player.asReadonly();
   readonly isSignedIn = computed(() => this.player() !== null);
+
+  /** Adopts the player as an account endpoint has just rewritten them. */
+  updateCurrentPlayer(player: PlayerSummary): void {
+    this.player.set(player);
+  }
 
   /**
    * Asks the server who is signed in. The cookie is httpOnly and encrypted, so
@@ -67,9 +72,3 @@ export class AuthService {
     );
   }
 }
-
-/** Replaces the transport-level error with the codes the server sent. */
-const failWithApiErrors = <T>() =>
-  catchError<T, Observable<never>>((response: HttpErrorResponse) =>
-    throwError(() => apiErrorsOf(response) as ApiError[]),
-  );

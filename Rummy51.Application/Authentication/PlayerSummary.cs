@@ -5,4 +5,5 @@ public sealed record PlayerSummary(
     Guid PlayerId,
     string Email,
     string DisplayName,
-    string? AvatarUrl);
+    string? AvatarUrl,
+    bool HasPassword);

@@ -8,23 +8,12 @@
       </p>
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="auth__form">
-        <app-form-field controlId="password" label="auth.password" [error]="passwordError()">
-          <div class="auth__password" dir="ltr">
-            <input
-              id="password"
-              [type]="passwordVisible() ? 'text' : 'password'"
-              formControlName="password"
-              autocomplete="current-password"
-              class="field-input field-input--with-action"
-            />
-            <app-password-visibility-toggle [(visible)]="passwordVisible" />
-          </div>
-        </app-form-field>
+        <app-password-field [control]="form.controls.password" controlId="password" />
 
-        <app-error-messages [errors]="serverErrors()" />
+        <app-error-messages [errors]="submission.errors()" />
 
-        <button type="submit" [disabled]="submitting()" class="btn-primary auth__submit">
-          {{ (submitting() ? 'auth.linkGooglePending' : 'auth.linkGoogleSubmit') | translate }}
+        <button type="submit" [disabled]="submission.submitting()" class="btn-primary auth__submit">
+          {{ (submission.submitting() ? 'auth.linkGooglePending' : 'auth.linkGoogleSubmit') | translate }}
         </button>
       </form>
 

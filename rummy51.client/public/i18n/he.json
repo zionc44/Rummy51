@@ -6,8 +6,7 @@
   "landing": {
     "intro": "חפיסה, חמישים ואחת נקודות לפתיחה, והיד שתגמור ראשונה. הצטרפו לשולחן.",
     "register": "הרשמה",
-    "login": "התחברות",
-    "hasAccount": "כבר רשומים?"
+    "login": "התחברות"
   },
   "language": {
     "switch": "שינוי שפה"
@@ -38,10 +37,19 @@
     "linkGoogleSubmit": "חיבור החשבון",
     "linkGooglePending": "מחבר..."
   },
+  "account": {
+    "save": "שמירה",
+    "saving": "שומר…",
+    "displayNameSaved": "השם עודכן",
+    "currentPassword": "סיסמה נוכחית",
+    "newPassword": "סיסמה חדשה",
+    "passwordSetNote": "לחשבון הזה אין סיסמה, כי הוא נוצר דרך גוגל. הוספת סיסמה תאפשר לכם להיכנס גם בלעדיה.",
+    "passwordChangeNote": "החלפת סיסמה דורשת את הנוכחית.",
+    "passwordSaved": "הסיסמה עודכנה",
+    "backToLobby": "חזרה ללובי"
+  },
   "lobby": {
     "onlinePlayers": "שחקנים מחוברים",
-    "nobodyHere": "אין כרגע שחקנים נוספים",
-    "you": "(אתה)",
     "replacedTitle": "התחברת במקום אחר",
     "replacedBody": "החשבון נפתח בדפדפן או במכשיר אחר. אפשר להמשיך כאן, וזה ינתק את החיבור השני.",
     "reconnect": "להמשיך כאן",
@@ -86,6 +94,11 @@
     "NetworkError": "אין חיבור לשרת. בדקו את החיבור ונסו שוב",
     "UnexpectedError": "משהו השתבש. נסו שוב",
     "ExternalLoginUnavailable": "תהליך ההתחברות פג. נסו שוב",
-    "ExternalLoginWithoutEmail": "חשבון הגוגל לא מספק כתובת אימייל"
+    "ExternalLoginWithoutEmail": "חשבון הגוגל לא מספק כתובת אימייל",
+    "SessionExpired": "ההתחברות פגה. היכנסו שוב",
+    "PasswordAlreadySet": "לחשבון כבר יש סיסמה",
+    "PasswordNotSet": "לחשבון אין עדיין סיסמה",
+    "CurrentPasswordRequired": "יש להזין את הסיסמה הנוכחית",
+    "PasswordMismatch": "הסיסמה הנוכחית שגויה"
   }
 }

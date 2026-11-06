@@ -26,7 +26,14 @@ internal sealed class PlayerSignIn(
     }
 
     public static PlayerSummary Summarise(Player player) =>
-        new(player.Id, player.Email ?? string.Empty, player.DisplayName, player.AvatarUrl);
+        new(
+            player.Id,
+            player.Email ?? string.Empty,
+            player.DisplayName,
+            player.AvatarUrl,
+            // The test UserManager.HasPasswordAsync makes, made here so that
+            // summarising a player does not have to become asynchronous.
+            player.PasswordHash is not null);
 
     /// <summary>
     /// Verifying a password and issuing a cookie are deliberately separate:

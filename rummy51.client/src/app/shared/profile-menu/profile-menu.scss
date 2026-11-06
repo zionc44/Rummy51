@@ -64,6 +64,7 @@
   color: var(--text);
   font-size: 0.8125rem;
   text-align: start;
+  text-decoration: none;
   transition: background var(--transition);
 
   &:hover:not(:disabled) {

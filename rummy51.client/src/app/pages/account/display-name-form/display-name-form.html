@@ -1,0 +1,21 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate class="name-form">
+  <app-form-field controlId="displayName" label="auth.displayName" [error]="displayNameError()">
+    <input
+      id="displayName"
+      type="text"
+      formControlName="displayName"
+      autocomplete="nickname"
+      class="field-input"
+    />
+  </app-form-field>
+
+  @if (saved()) {
+    <p class="name-form__saved">{{ 'account.displayNameSaved' | translate }}</p>
+  }
+
+  <app-error-messages [errors]="submission.errors()" />
+
+  <button type="submit" [disabled]="submission.submitting()" class="btn-primary name-form__submit">
+    {{ (submission.submitting() ? 'account.saving' : 'account.save') | translate }}
+  </button>
+</form>

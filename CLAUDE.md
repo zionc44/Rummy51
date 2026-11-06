@@ -193,9 +193,14 @@ forms.
 ## State of play
 
 Done: project layout, player table, error contract, Swagger at `/swagger`,
-`/api/auth` (`register`, `login`, `logout`, `me`), and the client through
-sign-up, sign-in and a lobby stub.
+`/api/auth` (`register`, `login`, `logout`, `me`), signing in through Google
+and linking it to an account that already holds the address, the lobby roster
+over SignalR, and `/api/account` behind a profile menu in the header — display
+name, and a password that can be added as well as changed.
 
-Next: the lobby itself. Then rate limiting and CAPTCHA on registration — it
-cannot require a credential, so those are its only protection — and a mail
-sender, which unblocks password reset and email confirmation.
+Next: creating a table, then the game itself.
+
+Still open: the picture and the Google link on the account page; rate limiting
+and CAPTCHA on registration — it cannot require a credential, so those are its
+only protection — and a mail sender, which unblocks password reset, email
+confirmation and changing an address.

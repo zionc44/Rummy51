@@ -1,0 +1,12 @@
+<app-page-shell>
+  <app-profile-menu shell-actions />
+
+  <main class="account">
+    <h1 class="account__title">{{ 'profile.account' | translate }}</h1>
+
+    <app-display-name-form class="account__card" />
+    <app-password-form class="account__card" />
+
+    <a routerLink="/lobby" class="account__back">{{ 'account.backToLobby' | translate }}</a>
+  </main>
+</app-page-shell>

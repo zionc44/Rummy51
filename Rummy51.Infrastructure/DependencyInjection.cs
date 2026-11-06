@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Rummy51.Application.Account;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Authentication.External;
 using Rummy51.Application.Lobby;
@@ -33,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<PlayerSignIn>();
         services.AddScoped<IPlayerAccountService, PlayerAccountService>();
         services.AddScoped<IExternalLoginService, ExternalLoginService>();
+        services.AddScoped<IPlayerProfileService, PlayerProfileService>();
 
         // Singleton: the roster is the shared state, not a per-request view of it.
         services.AddSingleton<IPlayerConnections, InMemoryPlayerConnections>();

@@ -1,0 +1,36 @@
+@use 'breakpoints' as *;
+
+.account {
+  margin-inline: auto;
+  padding-block: 1.5rem 2.5rem;
+  padding-inline: var(--page-gutter);
+  max-inline-size: 32rem;
+}
+
+.account__title {
+  margin: 0 0 1.25rem;
+  font-size: 1.375rem;
+
+  @include from(sm) {
+    font-size: 1.625rem;
+  }
+}
+
+.account__card {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 1rem;
+
+  & + & {
+    margin-block-start: 1rem;
+  }
+}
+
+.account__back {
+  display: inline-block;
+  margin-block-start: 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}

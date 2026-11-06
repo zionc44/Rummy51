@@ -1,28 +1,25 @@
-import { ChangeDetectionStrategy, Component, inject, input, linkedSignal, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { ApiError } from '../../core/errors/api-error';
 import { FieldCodes, fieldErrorOf } from '../../core/errors/form-errors';
+import { FormSubmission } from '../../core/forms/form-submission';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { FormField } from '../../shared/form-field/form-field';
 import { GoogleSignInButton } from '../../shared/google-sign-in-button/google-sign-in-button';
 import { PageShell } from '../../shared/page-shell/page-shell';
-import { PasswordVisibilityToggle } from '../../shared/password-visibility-toggle/password-visibility-toggle';
+import { PasswordField } from '../../shared/password-field/password-field';
 
 const EMAIL_CODES: FieldCodes = {
   required: 'EmailRequired',
   email: 'EmailInvalid',
 };
 
-const PASSWORD_CODES: FieldCodes = {
-  required: 'PasswordRequired',
-};
-
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, FormField, GoogleSignInButton, PageShell, PasswordVisibilityToggle],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, FormField, GoogleSignInButton, PageShell, PasswordField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -47,35 +44,29 @@ export class Login {
     rememberMe: [false],
   });
 
-  protected readonly passwordVisible = signal(false);
-  protected readonly submitting = signal(false);
-  // Seeded from the redirect and overwritten by the form, so a failure carried
-  // back from Google is not still standing over the next attempt.
-  protected readonly serverErrors = linkedSignal<readonly ApiError[]>(() => {
+  protected readonly submission = new FormSubmission(this.form);
+
+  // The redirect's complaint stands until the player tries for themselves.
+  private readonly redirectError = linkedSignal<readonly ApiError[]>(() => {
     const code = this.error();
 
     return code ? [{ code, parameters: [] }] : [];
   });
 
+  protected readonly errors = computed(() => {
+    const reported = this.submission.errors();
+
+    return reported.length ? reported : this.redirectError();
+  });
+
   protected readonly emailError = () => fieldErrorOf(this.form.controls.email, EMAIL_CODES);
-  protected readonly passwordError = () => fieldErrorOf(this.form.controls.password, PASSWORD_CODES);
 
   protected submit(): void {
-    this.serverErrors.set([]);
+    this.redirectError.set([]);
 
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    this.submitting.set(true);
-
-    this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/lobby']),
-      error: (errors: ApiError[]) => {
-        this.serverErrors.set(errors);
-        this.submitting.set(false);
-      },
-    });
+    this.submission.send(
+      () => this.auth.login(this.form.getRawValue()),
+      () => this.router.navigate(['/lobby']),
+    );
   }
 }

@@ -1,5 +1,5 @@
 // Every icon is a square that inherits its size and its colour from whatever
-// contains it. Seven components said this identically before it moved here.
+// contains it. Each of them said this identically before it moved here.
 @mixin icon-host {
   display: inline-flex;
   inline-size: 1rem;

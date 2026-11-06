@@ -6,8 +6,7 @@
   "landing": {
     "intro": "One deck, fifty-one points to open, and the first hand to go out wins. Pull up a chair.",
     "register": "Sign up",
-    "login": "Sign in",
-    "hasAccount": "Already registered?"
+    "login": "Sign in"
   },
   "language": {
     "switch": "Change language"
@@ -38,10 +37,19 @@
     "linkGoogleSubmit": "Connect account",
     "linkGooglePending": "Connecting..."
   },
+  "account": {
+    "save": "Save",
+    "saving": "Saving…",
+    "displayNameSaved": "Name updated",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "passwordSetNote": "This account has no password, because it was created through Google. Adding one lets you sign in without it.",
+    "passwordChangeNote": "Changing a password takes the current one.",
+    "passwordSaved": "Password updated",
+    "backToLobby": "Back to the lobby"
+  },
   "lobby": {
     "onlinePlayers": "Players online",
-    "nobodyHere": "Nobody else is here yet",
-    "you": "(you)",
     "replacedTitle": "Signed in somewhere else",
     "replacedBody": "This account was opened in another browser or device. You can carry on here, which will disconnect the other one.",
     "reconnect": "Carry on here",
@@ -86,6 +94,11 @@
     "NetworkError": "No connection to the server. Check your connection and try again",
     "UnexpectedError": "Something went wrong. Please try again",
     "ExternalLoginUnavailable": "That sign-in attempt expired. Please try again",
-    "ExternalLoginWithoutEmail": "That Google account does not provide an email address"
+    "ExternalLoginWithoutEmail": "That Google account does not provide an email address",
+    "SessionExpired": "Your session has expired. Sign in again",
+    "PasswordAlreadySet": "This account already has a password",
+    "PasswordNotSet": "This account does not have a password yet",
+    "CurrentPasswordRequired": "Enter your current password",
+    "PasswordMismatch": "That is not your current password"
   }
 }

@@ -1,18 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
-import { ApiError } from '../../core/errors/api-error';
-import { FieldCodes, fieldErrorOf } from '../../core/errors/form-errors';
+import { FormSubmission } from '../../core/forms/form-submission';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
-import { FormField } from '../../shared/form-field/form-field';
 import { PageShell } from '../../shared/page-shell/page-shell';
-import { PasswordVisibilityToggle } from '../../shared/password-visibility-toggle/password-visibility-toggle';
-
-const PASSWORD_CODES: FieldCodes = {
-  required: 'PasswordRequired',
-};
+import { PasswordField } from '../../shared/password-field/password-field';
 
 /**
  * Where Google sends someone whose address is already registered with a
@@ -21,7 +15,7 @@ const PASSWORD_CODES: FieldCodes = {
  */
 @Component({
   selector: 'app-link-google',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, FormField, PageShell, PasswordVisibilityToggle],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, PageShell, PasswordField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './link-google.html',
   styleUrl: './link-google.scss',
@@ -37,28 +31,12 @@ export class LinkGoogle {
     password: ['', [Validators.required]],
   });
 
-  protected readonly passwordVisible = signal(false);
-  protected readonly submitting = signal(false);
-  protected readonly serverErrors = signal<readonly ApiError[]>([]);
-
-  protected readonly passwordError = () => fieldErrorOf(this.form.controls.password, PASSWORD_CODES);
+  protected readonly submission = new FormSubmission(this.form);
 
   protected submit(): void {
-    this.serverErrors.set([]);
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    this.submitting.set(true);
-
-    this.auth.linkGoogle(this.form.getRawValue().password).subscribe({
-      next: () => this.router.navigate(['/lobby']),
-      error: (errors: ApiError[]) => {
-        this.serverErrors.set(errors);
-        this.submitting.set(false);
-      },
-    });
+    this.submission.send(
+      () => this.auth.linkGoogle(this.form.getRawValue().password),
+      () => this.router.navigate(['/lobby']),
+    );
   }
 }

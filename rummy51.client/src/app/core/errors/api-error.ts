@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
 
 /**
  * A failure as the server reports it. The server never sends display text —
@@ -36,3 +37,9 @@ export const interpolationOf = (error: ApiError): Record<string, string> =>
   Object.fromEntries(error.parameters.map((value, index) => [index, value]));
 
 export const translationKeyOf = (error: ApiError): string => `errors.${error.code}`;
+
+/** Replaces the transport-level error with the codes the server sent. */
+export const failWithApiErrors = <T>() =>
+  catchError<T, Observable<never>>((response: HttpErrorResponse) =>
+    throwError(() => apiErrorsOf(response) as ApiError[]),
+  );

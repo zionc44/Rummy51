@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Authentication.External;
-using Rummy51.Application.Common;
 using Rummy51.Domain.Entities;
 using Rummy51.Server.Errors;
 
@@ -63,16 +62,7 @@ public class GoogleAuthController(
     {
         var result = await external.LinkToExistingAccountAsync(request);
 
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-
-        var status = result.Failure == FailureKind.Unauthorized
-            ? StatusCodes.Status401Unauthorized
-            : StatusCodes.Status400BadRequest;
-
-        return ApiProblem.Result(HttpContext, status, "Unauthorized", result.Errors);
+        return result.IsSuccess ? Ok(result.Value) : this.Failure(result);
     }
 
     private static string LinkPageFor(string email) =>

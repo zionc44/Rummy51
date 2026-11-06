@@ -109,7 +109,7 @@ internal sealed class PlayerAccountService(
 
         return Result<PlayerSummary>.Fail(
             taken ? FailureKind.Conflict : FailureKind.Validation,
-            [.. deduplicated.Select(Translate).DistinctBy(e => e.Code)]);
+            IdentityErrors.From(deduplicated, userManager.Options.Password));
     }
 
     private async Task<Result<PlayerSummary>> RejectionFor(SignInResult attempt, Player player) =>
@@ -134,18 +134,6 @@ internal sealed class PlayerAccountService(
         // Round up, and never report zero: "locked for 0 minutes" reads as a bug.
         return Number(Math.Max(1, (int)Math.Ceiling(((lockoutEnd ?? now) - now).TotalMinutes)));
     }
-
-    /// <summary>
-    /// Identity bakes its limits into English prose ("at least 8 characters").
-    /// The client is given the code and the limit separately, read back from the
-    /// options that produced the error, so the two can never disagree.
-    /// </summary>
-    private Error Translate(IdentityError error) => error.Code switch
-    {
-        "PasswordTooShort" => Error.With(error.Code, Number(userManager.Options.Password.RequiredLength)),
-        "PasswordRequiresUniqueChars" => Error.With(error.Code, Number(userManager.Options.Password.RequiredUniqueChars)),
-        _ => new Error(error.Code)
-    };
 
     private static Result<PlayerSummary> InvalidCredentials =>
         Result<PlayerSummary>.Fail(FailureKind.Unauthorized, new Error("InvalidCredentials"));

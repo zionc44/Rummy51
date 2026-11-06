@@ -4,8 +4,9 @@ import { LobbyPlayer } from '../../../core/lobby/lobby.models';
 import { PlayerAvatar } from '../../../shared/player-avatar/player-avatar';
 
 /**
- * One name per line with a ring showing where the player is. The column keeps
- * its own scroll, so a crowded lobby does not push the tables off the screen.
+ * One player per line: their picture or their initials, ringed in the colour
+ * of where they are. The column keeps its own scroll, so a crowded lobby does
+ * not push the tables off the screen.
  */
 @Component({
   selector: 'app-online-players',
