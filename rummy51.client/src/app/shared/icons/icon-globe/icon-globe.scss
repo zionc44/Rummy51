@@ -1,10 +1,5 @@
-:host {
-  display: inline-flex;
-  inline-size: 1rem;
-  block-size: 1rem;
-}
+@use 'icon' as *;
 
-svg {
-  inline-size: 100%;
-  block-size: 100%;
+:host {
+  @include icon-host;
 }

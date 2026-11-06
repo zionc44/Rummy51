@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiError } from '../../core/errors/api-error';
-import { FieldError } from '../error-messages/single-error';
+import { FieldError } from '../field-error/field-error';
 
 /**
  * Label, hint and error around a projected input. The input stays with the

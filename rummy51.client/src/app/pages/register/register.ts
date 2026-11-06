@@ -8,7 +8,7 @@ import { FieldCodes, fieldErrorOf } from '../../core/errors/form-errors';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { FormField } from '../../shared/form-field/form-field';
 import { PageShell } from '../../shared/page-shell/page-shell';
-import { PasswordVisibilityToggle } from '../../shared/password-input/password-visibility-toggle';
+import { PasswordVisibilityToggle } from '../../shared/password-visibility-toggle/password-visibility-toggle';
 
 // The rules mirror the server's. Validating here answers before the round
 // trip; the server still decides, and says so in the same vocabulary.

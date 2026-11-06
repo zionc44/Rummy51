@@ -155,6 +155,12 @@ state must be a `signal`, or an async assignment will never render. Use `@if` /
 **Three files per component, always**: `.ts`, `.html`, `.scss`. No inline
 template, no inline styles, even where the stylesheet is nearly empty.
 
+**One component to a folder**, and folder, files, class and selector all say
+the same name: `field-error/field-error.ts` holds `FieldError`, selected as
+`app-field-error`. A wrapper small enough to feel like it belongs beside its
+sibling still gets its own folder. The one exception is the root, `app.ts`
+sitting directly in `src/app` as `app-root`, which is Angular's own layout.
+
 SCSS, no utility framework. Tokens are custom properties in
 `styles/_tokens.scss`, so a stylesheet uses `var(--felt-500)` without importing
 anything. `styles.scss` holds the reset and the few element styles that several
