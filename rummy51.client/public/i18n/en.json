@@ -30,7 +30,13 @@
     "back": "Back to home",
     "logout": "Sign out",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "linkGoogleTitle": "Connect your Google account",
+    "linkGoogleBody": "{{0}} is already registered here. Enter its password to connect your Google account to it.",
+    "linkGoogleSubmit": "Connect account",
+    "linkGooglePending": "Connecting..."
   },
   "lobby": {
     "onlinePlayers": "Players online",
@@ -55,6 +61,10 @@
       "inGameIdle": "In a game, away"
     }
   },
+  "profile": {
+    "open": "Account menu",
+    "account": "Your account"
+  },
   "errors": {
     "EmailRequired": "Enter an email address",
     "EmailInvalid": "That email address is not valid",
@@ -74,6 +84,8 @@
     "LoginNotAllowed": "This account cannot sign in right now",
     "MalformedRequest": "The request was not valid",
     "NetworkError": "No connection to the server. Check your connection and try again",
-    "UnexpectedError": "Something went wrong. Please try again"
+    "UnexpectedError": "Something went wrong. Please try again",
+    "ExternalLoginUnavailable": "That sign-in attempt expired. Please try again",
+    "ExternalLoginWithoutEmail": "That Google account does not provide an email address"
   }
 }

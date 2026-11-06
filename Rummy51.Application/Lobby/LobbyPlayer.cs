@@ -13,4 +13,8 @@ public enum PlayerStatus
     InGameIdle,
 }
 
-public sealed record LobbyPlayer(Guid PlayerId, string DisplayName, PlayerStatus Status);
+public sealed record LobbyPlayer(
+    Guid PlayerId,
+    string DisplayName,
+    string? AvatarUrl,
+    PlayerStatus Status);

@@ -1,0 +1,31 @@
+// No size of its own: whoever places the circle gives it one, along with the
+// font size the initials fall back to.
+:host {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid var(--status-available);
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+}
+
+:host(.avatar--idle) {
+  border-color: var(--status-idle);
+}
+
+:host(.avatar--inGame) {
+  border-color: var(--status-in-game);
+}
+
+:host(.avatar--inGameIdle) {
+  border-color: var(--status-in-game-idle);
+  color: var(--text-faint);
+}
+
+.avatar__picture {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}

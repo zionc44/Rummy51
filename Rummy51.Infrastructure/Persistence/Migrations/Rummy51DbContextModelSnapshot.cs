@@ -218,6 +218,11 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("access_failed_count");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("avatar_url");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text")

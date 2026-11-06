@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Rummy51.Application.Authentication;
+using Rummy51.Application.Authentication.External;
 using Rummy51.Application.Lobby;
 using Rummy51.Domain.Entities;
 using Rummy51.Infrastructure.Identity;
@@ -29,7 +30,9 @@ public static class DependencyInjection
         // pin the clock.
         services.TryAddSingleton(TimeProvider.System);
 
+        services.AddScoped<PlayerSignIn>();
         services.AddScoped<IPlayerAccountService, PlayerAccountService>();
+        services.AddScoped<IExternalLoginService, ExternalLoginService>();
 
         // Singleton: the roster is the shared state, not a per-request view of it.
         services.AddSingleton<IPlayerConnections, InMemoryPlayerConnections>();

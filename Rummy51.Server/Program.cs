@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddCookieAuthentication();
+builder.Services.AddCookieAuthentication(builder.Configuration);
 builder.Services.AddSignalR().AddJsonProtocol(options =>
     // Enums cross as their names, not their ordinals: a client switching on
     // "inGame" keeps working when a value is inserted above it.

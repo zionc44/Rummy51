@@ -14,6 +14,12 @@ public class Player : IdentityUser<Guid>
     /// </summary>
     public required string DisplayName { get; set; }
 
+    /// <summary>
+    /// Supplied by whoever signed the player in, when they offer one. Null for
+    /// an account created with a password, until pictures can be chosen.
+    /// </summary>
+    public string? AvatarUrl { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>Null until the player signs in for the first time.</summary>

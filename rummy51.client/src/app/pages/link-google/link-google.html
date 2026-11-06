@@ -1,0 +1,36 @@
+<app-page-shell>
+  <main class="auth">
+    <div class="auth__card">
+      <h1 class="auth__title">{{ 'auth.linkGoogleTitle' | translate }}</h1>
+
+      <p class="auth__intro">
+        {{ 'auth.linkGoogleBody' | translate: { '0': email() } }}
+      </p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="auth__form">
+        <app-form-field controlId="password" label="auth.password" [error]="passwordError()">
+          <div class="auth__password" dir="ltr">
+            <input
+              id="password"
+              [type]="passwordVisible() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              class="field-input field-input--with-action"
+            />
+            <app-password-visibility-toggle [(visible)]="passwordVisible" />
+          </div>
+        </app-form-field>
+
+        <app-error-messages [errors]="serverErrors()" />
+
+        <button type="submit" [disabled]="submitting()" class="btn-primary auth__submit">
+          {{ (submitting() ? 'auth.linkGooglePending' : 'auth.linkGoogleSubmit') | translate }}
+        </button>
+      </form>
+
+      <p class="auth__switch">
+        <a routerLink="/login" class="auth__link">{{ 'auth.back' | translate }}</a>
+      </p>
+    </div>
+  </main>
+</app-page-shell>

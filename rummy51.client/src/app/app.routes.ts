@@ -17,6 +17,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register').then((m) => m.Register),
   },
   {
+    path: 'link-google',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/link-google/link-google').then((m) => m.LinkGoogle),
+  },
+  {
     path: 'lobby',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/lobby/lobby').then((m) => m.Lobby),

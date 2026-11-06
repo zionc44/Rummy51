@@ -1,7 +1,5 @@
 using System.Globalization;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Authentication.Login;
 using Rummy51.Application.Authentication.Register;
@@ -10,10 +8,10 @@ using Rummy51.Domain.Entities;
 
 namespace Rummy51.Infrastructure.Identity;
 
-public sealed class PlayerAccountService(
+internal sealed class PlayerAccountService(
     UserManager<Player> userManager,
     SignInManager<Player> signInManager,
-    IOptionsMonitor<AuthenticationSettings> settings,
+    PlayerSignIn signIn,
     TimeProvider timeProvider) : IPlayerAccountService
 {
     public async Task<Result<PlayerSummary>> RegisterAsync(
@@ -27,7 +25,7 @@ public sealed class PlayerAccountService(
         var created = await userManager.CreateAsync(player, request.Password);
 
         return created.Succeeded
-            ? Result<PlayerSummary>.Success(Summarise(player))
+            ? Result<PlayerSummary>.Success(PlayerSignIn.Summarise(player))
             : RegistrationFailure(created.Errors);
     }
 
@@ -52,10 +50,9 @@ public sealed class PlayerAccountService(
             return await RejectionFor(attempt, player);
         }
 
-        await IssueCookieAsync(player, request.RememberMe);
-        await RecordSignInAsync(player);
+        await signIn.IssueAsync(player, request.RememberMe);
 
-        return Result<PlayerSummary>.Success(Summarise(player));
+        return Result<PlayerSummary>.Success(PlayerSignIn.Summarise(player));
     }
 
     public Task LogoutAsync() => signInManager.SignOutAsync();
@@ -73,14 +70,14 @@ public sealed class PlayerAccountService(
         // have changed, and the account may have been removed since sign-in.
         var player = await userManager.GetUserAsync(principal);
 
-        return player is null ? null : Summarise(player);
+        return player is null ? null : PlayerSignIn.Summarise(player);
     }
 
     public async Task<PlayerSummary?> FindPlayerAsync(Guid playerId)
     {
         var player = await userManager.FindByIdAsync(playerId.ToString());
 
-        return player is null ? null : Summarise(player);
+        return player is null ? null : PlayerSignIn.Summarise(player);
     }
 
     private Player NewPlayer(RegisterPlayerRequest request) => new()
@@ -129,27 +126,6 @@ public sealed class PlayerAccountService(
             _ => InvalidCredentials
         };
 
-    /// <summary>
-    /// CheckPasswordSignInAsync only verifies. Issuing the cookie separately is
-    /// what lets "remember me" set its own lifetime rather than inheriting the
-    /// idle timeout.
-    /// </summary>
-    private Task IssueCookieAsync(Player player, bool rememberMe) =>
-        signInManager.SignInAsync(player, new AuthenticationProperties
-        {
-            IsPersistent = rememberMe,
-            ExpiresUtc = rememberMe
-                ? timeProvider.GetUtcNow().AddDays(settings.CurrentValue.RememberMeDays)
-                : null
-        });
-
-    private Task RecordSignInAsync(Player player)
-    {
-        player.LastLoginAt = timeProvider.GetUtcNow();
-
-        return userManager.UpdateAsync(player);
-    }
-
     private async Task<string> MinutesLockedAsync(Player player)
     {
         var lockoutEnd = await userManager.GetLockoutEndDateAsync(player);
@@ -173,9 +149,6 @@ public sealed class PlayerAccountService(
 
     private static Result<PlayerSummary> InvalidCredentials =>
         Result<PlayerSummary>.Fail(FailureKind.Unauthorized, new Error("InvalidCredentials"));
-
-    private static PlayerSummary Summarise(Player player) =>
-        new(player.Id, player.Email ?? string.Empty, player.DisplayName);
 
     private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
 }

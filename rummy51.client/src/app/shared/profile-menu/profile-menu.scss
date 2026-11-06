@@ -1,0 +1,87 @@
+:host {
+  position: relative;
+  display: flex;
+}
+
+.profile__trigger {
+  display: flex;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.profile__avatar {
+  inline-size: 2.125rem;
+  block-size: 2.125rem;
+  font-size: 0.75rem;
+}
+
+// Hangs from the trigger's end edge and grows towards the start, so it stays
+// on screen whichever way the page reads.
+.profile__menu {
+  position: absolute;
+  inset-block-start: calc(100% + 0.375rem);
+  inset-inline-end: 0;
+  z-index: 10;
+  overflow: hidden;
+  inline-size: 13.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--felt-900);
+}
+
+.profile__who {
+  border-block-end: 1px solid var(--border);
+  padding: 0.625rem 0.75rem;
+}
+
+.profile__name {
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__email {
+  margin: 0.125rem 0 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  inline-size: 100%;
+  border: none;
+  background: none;
+  padding: 0.5625rem 0.75rem;
+  color: var(--text);
+  font-size: 0.8125rem;
+  text-align: start;
+  transition: background var(--transition);
+
+  &:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+
+  &:disabled {
+    color: var(--text-ghost);
+    cursor: default;
+  }
+
+  & + & {
+    border-block-start: 1px solid var(--border);
+  }
+}
+
+// Dimmer than the label it leads, so the word is what the eye lands on.
+.profile__icon {
+  flex: none;
+  color: var(--text-muted);
+}

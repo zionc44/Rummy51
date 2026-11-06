@@ -7,6 +7,7 @@ import { ApiError } from '../../core/errors/api-error';
 import { FieldCodes, fieldErrorOf } from '../../core/errors/form-errors';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { FormField } from '../../shared/form-field/form-field';
+import { GoogleSignInButton } from '../../shared/google-sign-in-button/google-sign-in-button';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { PasswordVisibilityToggle } from '../../shared/password-visibility-toggle/password-visibility-toggle';
 
@@ -31,7 +32,7 @@ const PASSWORD_CODES: FieldCodes = {
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, FormField, PageShell, PasswordVisibilityToggle],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorMessages, FormField, GoogleSignInButton, PageShell, PasswordVisibilityToggle],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './register.html',
   styleUrl: './register.scss',

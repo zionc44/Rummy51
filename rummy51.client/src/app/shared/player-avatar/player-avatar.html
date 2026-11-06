@@ -1,0 +1,13 @@
+@if (picture(); as url) {
+  <!-- no-referrer: the picture is served by whoever signed the player in, and
+       they have no business learning which of our pages it appears on. -->
+  <img
+    class="avatar__picture"
+    [src]="url"
+    alt=""
+    referrerpolicy="no-referrer"
+    (error)="forgetPicture()"
+  />
+} @else {
+  <span class="avatar__initials">{{ initials() }}</span>
+}

@@ -28,9 +28,15 @@
     "haveAccount": "כבר רשומים?",
     "registered": "החשבון נוצר. אפשר להתחבר.",
     "back": "חזרה לדף הבית",
-    "logout": "התנתקות",
+    "logout": "יציאה",
     "showPassword": "הצגת הסיסמה",
-    "hidePassword": "הסתרת הסיסמה"
+    "hidePassword": "הסתרת הסיסמה",
+    "or": "או",
+    "continueWithGoogle": "התחברות עם גוגל",
+    "linkGoogleTitle": "חיבור חשבון גוגל",
+    "linkGoogleBody": "הכתובת {{0}} כבר רשומה אצלנו. הזינו את הסיסמה כדי לחבר אליה את חשבון הגוגל.",
+    "linkGoogleSubmit": "חיבור החשבון",
+    "linkGooglePending": "מחבר..."
   },
   "lobby": {
     "onlinePlayers": "שחקנים מחוברים",
@@ -55,6 +61,10 @@
       "inGameIdle": "במשחק · לא פעיל"
     }
   },
+  "profile": {
+    "open": "תפריט החשבון",
+    "account": "החשבון שלי"
+  },
   "errors": {
     "EmailRequired": "יש להזין כתובת אימייל",
     "EmailInvalid": "כתובת האימייל אינה תקינה",
@@ -74,6 +84,8 @@
     "LoginNotAllowed": "לא ניתן להתחבר לחשבון הזה כרגע",
     "MalformedRequest": "הבקשה לא תקינה",
     "NetworkError": "אין חיבור לשרת. בדקו את החיבור ונסו שוב",
-    "UnexpectedError": "משהו השתבש. נסו שוב"
+    "UnexpectedError": "משהו השתבש. נסו שוב",
+    "ExternalLoginUnavailable": "תהליך ההתחברות פג. נסו שוב",
+    "ExternalLoginWithoutEmail": "חשבון הגוגל לא מספק כתובת אימייל"
   }
 }

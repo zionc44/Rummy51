@@ -1,0 +1,37 @@
+@if (player(); as me) {
+  <button
+    type="button"
+    class="profile__trigger"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="'profile.open' | translate"
+    (click)="toggle()"
+  >
+    <app-player-avatar
+      class="profile__avatar"
+      [displayName]="me.displayName"
+      [avatarUrl]="me.avatarUrl"
+    />
+  </button>
+
+  @if (open()) {
+    <div class="profile__menu" role="menu">
+      <div class="profile__who">
+        <p class="profile__name">{{ me.displayName }}</p>
+        <p class="profile__email">{{ me.email }}</p>
+      </div>
+
+      <!-- Disabled until the account page exists: an item that looks alive and
+           does nothing is worse than one that says it is not ready. -->
+      <button type="button" role="menuitem" class="profile__item" disabled>
+        <app-icon-user class="profile__icon" />
+        {{ 'profile.account' | translate }}
+      </button>
+
+      <button type="button" role="menuitem" class="profile__item" (click)="logout()">
+        <app-icon-logout class="profile__icon" />
+        {{ 'auth.logout' | translate }}
+      </button>
+    </div>
+  }
+}

@@ -4,9 +4,12 @@
   <ul class="players__list">
     @for (row of rows(); track row.playerId) {
       <li class="players__row" [class.players__row--self]="row.isSelf">
-        <span class="players__avatar" [class]="'players__avatar--' + row.status" aria-hidden="true">
-          {{ row.initials }}
-        </span>
+        <app-player-avatar
+          class="players__avatar"
+          [displayName]="row.displayName"
+          [avatarUrl]="row.avatarUrl"
+          [status]="row.status"
+        />
 
         <span class="players__who">
           <span class="players__name">{{ row.displayName }}</span>

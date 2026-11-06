@@ -2,6 +2,8 @@ export interface PlayerSummary {
   readonly playerId: string;
   readonly email: string;
   readonly displayName: string;
+  /** Supplied by whoever signed the player in. Null until pictures can be chosen. */
+  readonly avatarUrl: string | null;
 }
 
 export interface RegisterRequest {

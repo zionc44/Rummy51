@@ -8,6 +8,7 @@ export type PlayerStatus = 'available' | 'idle' | 'inGame' | 'inGameIdle';
 export interface LobbyPlayer {
   readonly playerId: string;
   readonly displayName: string;
+  readonly avatarUrl: string | null;
   readonly status: PlayerStatus;
 }
 

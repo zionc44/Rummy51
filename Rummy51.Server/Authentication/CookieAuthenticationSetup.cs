@@ -12,10 +12,16 @@ namespace Rummy51.Server.Authentication;
 /// </summary>
 internal static class CookieAuthenticationSetup
 {
-    public static IServiceCollection AddCookieAuthentication(this IServiceCollection services)
+    public static IServiceCollection AddCookieAuthentication(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        services.AddAuthentication(IdentityConstants.ApplicationScheme)
-            .AddIdentityCookies();
+        // AddIdentityCookies returns a builder of its own, so the provider is
+        // chained off the authentication builder rather than off its result.
+        var authentication = services.AddAuthentication(IdentityConstants.ApplicationScheme);
+
+        authentication.AddIdentityCookies();
+        authentication.AddGoogleIfConfigured(configuration);
 
         services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme)
             .Configure<IOptionsMonitor<AuthenticationSettings>>(Configure);

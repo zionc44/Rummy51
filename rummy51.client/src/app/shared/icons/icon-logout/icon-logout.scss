@@ -1,0 +1,11 @@
+@use 'icon' as *;
+
+:host {
+  @include icon-host;
+}
+
+// The one icon here that means a direction. Mirroring it is the same reason
+// the layout uses logical properties: on an rtl page, out is the other way.
+:host-context([dir='rtl']) svg {
+  transform: scaleX(-1);
+}

@@ -17,6 +17,10 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(p => p.CreatedAt)
             .IsRequired();
 
+        // Long enough for a provider's URL without inviting anything else.
+        builder.Property(p => p.AvatarUrl)
+            .HasMaxLength(500);
+
         // Identity names these two indexes explicitly, so the snake_case
         // convention leaves them alone; rename them to match the schema.
         builder.HasIndex(p => p.NormalizedUserName)

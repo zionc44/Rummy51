@@ -42,22 +42,6 @@
   overflow-y: auto;
 }
 
-.lobby__logout {
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-pill);
-  background: none;
-  padding: 0.375rem 1rem;
-  color: rgb(255 255 255 / 0.8);
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: background var(--transition), color var(--transition);
-
-  &:hover {
-    background: var(--surface-raised);
-    color: var(--text);
-  }
-}
-
 .lobby__replaced {
   display: flex;
   flex-direction: column;

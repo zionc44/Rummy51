@@ -68,6 +68,7 @@ public sealed class InMemoryPlayerConnections : IPlayerConnections
                     .Select(player => new LobbyPlayer(
                         player.PlayerId,
                         player.DisplayName,
+                        player.AvatarUrl,
                         PlayerStatus.Available))
             ];
         }

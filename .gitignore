@@ -37,6 +37,11 @@ appsettings.*.local.json
 *.pem
 *.key
 
+## Credentials. Nothing under Secret/ is ever committed, and the pattern below
+## catches a provider file downloaded straight into the project by mistake.
+Secret/
+client_secret*.json
+
 ## OS files
 .DS_Store
 Thumbs.db

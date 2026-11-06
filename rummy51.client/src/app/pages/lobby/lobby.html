@@ -1,7 +1,5 @@
 <app-page-shell>
-  <button shell-actions type="button" class="lobby__logout" (click)="logout()">
-    {{ 'auth.logout' | translate }}
-  </button>
+  <app-profile-menu shell-actions />
 
   <main class="lobby">
     @if (lobby.signedInElsewhere()) {

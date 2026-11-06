@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block: 1.25rem;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+
+  &::before,
+  &::after {
+    flex: 1;
+    border-block-start: 1px solid var(--border);
+    content: '';
+  }
+}
+
+// The button takes the asset's own background colour, so the rounded square
+// the mark sits on dissolves into it and the G appears to sit on the button
+// itself. Change the asset and this value has to follow it.
+.google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  inline-size: 100%;
+  border: none;
+  border-radius: var(--radius-md);
+  background: #f2f2f2;
+  block-size: 3.125rem;
+  padding-inline: 1.5rem;
+  color: #1f1f1f;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background var(--transition);
+
+  &:hover {
+    background: #e4e4e4;
+  }
+}
+
+// As tall as the button itself: the asset keeps a margin inside its own
+// square, so the G still reads smaller than the box it ships in.
+.google__mark {
+  flex: none;
+  inline-size: 3.125rem;
+  block-size: 3.125rem;
+}

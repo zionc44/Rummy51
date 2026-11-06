@@ -30,6 +30,22 @@ export class AuthService {
     this.player.set(player);
   }
 
+  /**
+   * A full navigation, not a request: the browser has to visit Google and come
+   * back, which it cannot do inside an XHR.
+   */
+  startGoogleSignIn(): void {
+    window.location.href = `${API}/google/start`;
+  }
+
+  /** Confirms ownership of the account that already holds the Google address. */
+  linkGoogle(password: string): Observable<PlayerSummary> {
+    return this.http.post<PlayerSummary>(`${API}/google/link`, { password }).pipe(
+      tap((player) => this.player.set(player)),
+      failWithApiErrors(),
+    );
+  }
+
   register(request: RegisterRequest): Observable<PlayerSummary> {
     // Registering does not sign the player in; they continue to the login form.
     return this.http.post<PlayerSummary>(`${API}/register`, request).pipe(failWithApiErrors());
