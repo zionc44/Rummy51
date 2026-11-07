@@ -39,6 +39,10 @@ public sealed class Hand
         deck = [.. order.Select(index => fresh[index])];
         Backs = [.. order.Select(index => backs[index])];
         DeckSize = deck.Count;
+
+        // Taken now, because the cut rearranges the deck and would move them.
+        JokerPositions =
+            [.. deck.Select((card, at) => (card, at)).Where(e => e.card is Card.Joker).Select(e => e.at)];
     }
 
     public int Seats { get; }
@@ -53,6 +57,13 @@ public sealed class Hand
 
     /// <summary>One or two for each card in the deck, by position.</summary>
     public IReadOnlyList<int> Backs { get; }
+
+    /// <summary>
+    /// Where the jokers are lying in the deck. It is the one thing here that
+    /// nobody at the table may know, and it reaches a client only where a
+    /// development setting has asked for it so the cut can be tested.
+    /// </summary>
+    public IReadOnlyList<int> JokerPositions { get; }
 
     public HandPhase Phase { get; private set; } = HandPhase.Cutting;
 

@@ -107,7 +107,6 @@
     "yourCut": "Cut the deck — the card you stop on becomes the finishing card",
     "waitingForCut": "{{0}} is cutting the deck",
     "finishingCard": "Finishing card",
-    "jokersToCutter": "The jokers from the cut belong to {{0}}",
     "dealer": "Dealer"
   },
   "profile": {

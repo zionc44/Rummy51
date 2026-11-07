@@ -22,13 +22,23 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool isDevelopment)
     {
         services.AddPersistence(configuration);
         services.AddPlayerIdentity();
 
         services.Configure<AuthenticationSettings>(
             configuration.GetSection(AuthenticationSettings.SectionName));
+
+        // Bound only in development, so the section cannot be written into a
+        // deployed configuration and switch a testing aid on in a real game.
+        var testing = services.AddOptions<TestingSettings>();
+
+        if (isDevelopment)
+        {
+            testing.Bind(configuration.GetSection(TestingSettings.SectionName));
+        }
 
         // Injected rather than read from DateTimeOffset.UtcNow, so a test can
         // pin the clock.

@@ -14,10 +14,13 @@ namespace Rummy51.Infrastructure.Tables;
 internal sealed class OpenTable
 {
     private readonly PlayerSummary?[] seats;
+    private readonly bool markJokers;
     private Hand? hand;
 
-    public OpenTable(CreateTableRequest request)
+    public OpenTable(CreateTableRequest request, bool markJokers)
     {
+        this.markJokers = markJokers;
+
         // Version 7 is time-ordered, so listing tables by id lists them in the
         // order they were opened.
         Id = Guid.CreateVersion7();
@@ -90,6 +93,7 @@ internal sealed class OpenTable
                 hand.DeckSize,
                 hand.CutPosition,
                 [.. hand.Backs.Select(back => $"{back}B")],
+                markJokers ? hand.JokerPositions : [],
                 [.. hand.RevealedAtCut.Select(card => card.Code)],
                 hand.FinishingCard?.Code);
 

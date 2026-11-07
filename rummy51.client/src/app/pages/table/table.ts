@@ -18,16 +18,19 @@ import { TableSeat } from './table-seat/table-seat';
  */
 const FanRows = 6;
 
-/** The card the cutter stopped on turns over where it lies. */
+/** Each card the cut turns up turns over where it lies, then is read. */
 const Turn = 350;
-const SweepAfter = Turn + 80;
+const Read = 80;
 
 /** Then the rest of the deck gathers: one card's journey, and the gap between two. */
 const Travel = 240;
 const Stagger = 3;
 
-/** Last of all, the finishing card turns a quarter and goes to its place. */
+/** A card that leaves the fan - to the cutter, or to the finishing slot. */
 const Place = 380;
+
+/** Shared, so a seat holding nothing is not handed a new array every pass. */
+const Nothing: readonly (string | null)[] = [];
 
 /**
  * The table, before and after it fills. Nothing changes screens when the last
@@ -57,13 +60,20 @@ export class Table implements OnDestroy {
   /** True from the cut until the deck has settled, which keeps both on screen. */
   protected readonly collapsing = signal(false);
 
-  /** The cards the cut turned up are showing their faces where they lie. */
-  protected readonly turning = signal(false);
+  /**
+   * How many of the cards the cut turned up have been turned over so far.
+   * They go one at a time: a joker is gone to the cutter before the card
+   * beneath it is touched, which is the order a hand is really cut in.
+   */
+  private readonly turned = signal(0);
 
   private readonly fanCards = viewChildren<ElementRef<HTMLElement>>('fanCard');
   private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
+  private readonly nearSpot = viewChild<TableSeat>('nearSpot');
+  private readonly otherSpots = viewChildren<TableSeat>('seatSpot');
   private readonly finishingSlot = viewChild<ElementRef<HTMLElement>>('finishingSlot');
   private readonly timers: number[] = [];
+  private readonly flying: HTMLElement[] = [];
   private seenPhase: HandPhase | null = null;
 
   /** Null while the hub has not said, and once the table has closed. */
@@ -116,27 +126,30 @@ export class Table implements OnDestroy {
   protected readonly near = computed(() => this.seats()[this.nearSeat()] ?? null);
 
   /**
-   * Which positions in the fan turned out to be something, and what. Jokers
-   * come first from where the cutter stopped and the finishing card after
-   * them, wrapping past the end of the deck exactly as the cut itself does.
+   * Where in the fan the cut turned something up, in the order it turns up.
+   * Jokers come first from where the cutter stopped and the finishing card
+   * after them, wrapping past the end of the deck as the cut itself does.
    */
-  private readonly revealedAt = computed<ReadonlyMap<number, string>>(() => {
+  private readonly revealedOrder = computed<readonly number[]>(() => {
     const hand = this.hand();
 
     if (!hand || hand.cutAt === null) {
-      return new Map();
+      return [];
     }
 
     const start = hand.cutAt;
-    const found = new Map<number, string>();
+    const upTo = hand.revealedAtCut.length + (hand.finishingCard ? 1 : 0);
 
-    hand.revealedAtCut.forEach((code, step) => found.set((start + step) % hand.deckSize, code));
+    return Array.from({ length: upTo }, (_, step) => (start + step) % hand.deckSize);
+  });
 
-    if (hand.finishingCard) {
-      found.set((start + hand.revealedAtCut.length) % hand.deckSize, hand.finishingCard);
-    }
+  /** The same cards by the position they lie at, which is how they are drawn. */
+  private readonly revealedAt = computed<ReadonlyMap<number, string>>(() => {
+    const hand = this.hand();
+    const jokers = hand?.revealedAtCut ?? [];
+    const codes = hand?.finishingCard ? [...jokers, hand.finishingCard] : jokers;
 
-    return found;
+    return new Map(this.revealedOrder().map((position, step) => [position, codes[step]]));
   });
 
   /** Where in the fan the finishing card is lying, before it is sent away. */
@@ -148,13 +161,60 @@ export class Table implements OnDestroy {
       : (hand.cutAt + hand.revealedAtCut.length) % hand.deckSize;
   });
 
+  /**
+   * The jokers, shown where they lie so a cut onto one can be aimed at. One
+   * falls at the cut about twice in a hundred hands, which is no way to work
+   * on that path. Empty unless the server was asked to send them.
+   */
+  protected readonly jokers = computed(() => new Set(this.hand()?.jokerPositions ?? []));
+
   /** The face a position turned up, or null while it is still face down. */
   protected faceAt(position: number): string | null {
     return this.revealedAt().get(position) ?? null;
   }
 
+  /** Whether the card lying there has had its turn yet. */
+  protected isTurned(position: number): boolean {
+    const step = this.revealedOrder().indexOf(position);
+
+    return step !== -1 && step < this.turned();
+  }
+
+  /**
+   * The one card the sequence is on. It belongs above every other, its
+   * neighbours in the fan and the cards the cut turned up before it alike,
+   * or it turns over half hidden beneath the one lying on top of it.
+   */
+  protected isTurning(position: number): boolean {
+    return this.revealedOrder()[this.turned() - 1] === position;
+  }
+
   /** -1 until a hand has begun, which no seat ever matches. */
   protected readonly dealerSeat = computed(() => this.hand()?.dealerSeat ?? -1);
+
+  protected readonly cutterSeat = computed(() => this.hand()?.cutterSeat ?? -1);
+
+  /**
+   * The jokers the cut gave the cutter, as their seat is to show them. While
+   * they are still arriving only the ones that have landed are there, each
+   * taking over from the card that flew to it.
+   */
+  private readonly jokersAtCutter = computed<readonly (string | null)[]>(() => {
+    const jokers = this.hand()?.revealedAtCut ?? [];
+    const landed = this.collapsing() ? this.turned() - 1 : jokers.length;
+
+    return jokers.map((code, step) => (step < landed ? code : null));
+  });
+
+  /**
+   * What a seat is holding face up. Only the cutter holds anything, and only
+   * until the deal is over and those jokers are in a hand like any others.
+   */
+  protected heldAt(seat: number): readonly (string | null)[] {
+    const dealing = this.hand()?.phase === 'dealing';
+
+    return dealing && seat === this.cutterSeat() ? this.jokersAtCutter() : Nothing;
+  }
 
   /**
    * Everyone else, counting round the table from the player's own seat, so
@@ -227,14 +287,15 @@ export class Table implements OnDestroy {
 
   ngOnDestroy(): void {
     this.timers.forEach((timer) => window.clearTimeout(timer));
+    this.landAll();
     void this.lobby.unwatch(this.tableId());
   }
 
   /**
-   * Three beats, in the order a hand is actually cut. The card the cutter
-   * stopped on turns over where it lies; then the rest of the deck gathers
-   * itself into the pile; and only then does that card turn a quarter and
-   * take its place beside it.
+   * The cut played out in the order it happens at a table. Every joker the
+   * cutter turns over goes to them before the card beneath it is touched;
+   * then the rest of the deck gathers itself into the pile; and last of all
+   * the finishing card turns a quarter and takes its place beside it.
    */
   private sweepIntoThePile(): void {
     // Whoever turned animation off in their system meant it here too; the
@@ -248,25 +309,108 @@ export class Table implements OnDestroy {
     // Two frames: one for the cards to be drawn face down before they are
     // asked to turn, and so the board exists to be measured against.
     requestAnimationFrame(() => {
-      this.turning.set(true);
+      this.turned.set(1);
 
       requestAnimationFrame(() => {
         const cards = this.fanCards();
-        const revealed = this.revealedAt();
 
         if (cards.length === 0) {
           this.endSweep();
           return;
         }
 
-        const facedown = cards.filter((_, position) => !revealed.has(position));
-        const sweeping = facedown.length * Stagger + Travel;
-
-        this.after(SweepAfter, () => this.gatherToPile(facedown));
-        this.after(SweepAfter + sweeping, () => this.sendTheFinishingCard(cards));
-        this.after(SweepAfter + sweeping + Place, () => this.endSweep());
+        this.scheduleTheCut(cards);
       });
     });
+  }
+
+  /** From the first card already turning, laid end to end. */
+  private scheduleTheCut(cards: readonly ElementRef<HTMLElement>[]): void {
+    const revealed = this.revealedAt();
+    const jokers = this.revealedOrder().slice(0, this.hand()?.revealedAtCut.length ?? 0);
+    const facedown = cards.filter((_, position) => !revealed.has(position));
+    let at = Turn + Read;
+
+    jokers.forEach((position, step) => {
+      this.after(at, () => this.sendJokerToCutter(cards[position], step));
+      at += Place;
+      this.after(at, () => this.turned.set(step + 2));
+      at += Turn + Read;
+    });
+
+    this.after(at, () => this.gatherToPile(facedown));
+    at += facedown.length * Stagger + Travel;
+    this.after(at, () => this.sendTheFinishingCard(cards));
+    at += Place;
+    this.after(at, () => this.endSweep());
+  }
+
+  /**
+   * A joker at the cut is the cutter's, so it travels to the place waiting
+   * for it at their seat and stays there, face up, for the whole table to
+   * read until the deal is over.
+   */
+  private sendJokerToCutter(card: ElementRef<HTMLElement> | undefined, step: number): void {
+    const spot = this.cutterSpot(step)?.getBoundingClientRect();
+    const element = card?.nativeElement;
+
+    if (!spot || !element) {
+      return;
+    }
+
+    const from = element.getBoundingClientRect();
+    const flying = this.liftOutOfTheFan(element, from);
+
+    // Down to the size of the place it is going to, which is cut to the
+    // seat it belongs to and is not the size a card is in the fan.
+    const sized = `scale(${spot.width / from.width})`;
+
+    flying.style.transform = `${this.betweenCentres(from, spot)} ${sized}`;
+  }
+
+  /**
+   * The card leaves the fan as a copy fixed to the window. The fan scrolls,
+   * inside a felt that clips, and the seat is outside both: flown as it
+   * lies, the card would be cut off at the edge and would raise a scrollbar
+   * on its way out. The one it leaves behind keeps its place in the row.
+   */
+  private liftOutOfTheFan(element: HTMLElement, at: DOMRect): HTMLElement {
+    const flying = element.cloneNode(true) as HTMLElement;
+
+    // Window pixels, which have neither a start nor an end to speak of.
+    flying.style.position = 'fixed';
+    flying.style.left = `${at.left}px`;
+    flying.style.top = `${at.top}px`;
+    flying.style.width = `${at.width}px`;
+    flying.style.margin = '0';
+    flying.style.transform = 'none';
+    flying.style.transition = `transform ${Place}ms ease-in-out`;
+    flying.setAttribute('inert', '');
+
+    element.style.visibility = 'hidden';
+    document.body.append(flying);
+    this.flying.push(flying);
+
+    // Reading the copy back settles the browser on where it is before it is
+    // asked to move. Without that it is given both ends of the journey in
+    // one go, has nothing to move from, and arrives without travelling.
+    flying.getBoundingClientRect();
+
+    return flying;
+  }
+
+  /** The seat's own card is beneath them by now, so the copies can go. */
+  private landAll(): void {
+    this.flying.splice(0).forEach((card) => card.remove());
+  }
+
+  /** Where the joker is going: the place waiting for it at the cutter's seat. */
+  private cutterSpot(step: number): HTMLElement | undefined {
+    const cutter = this.cutterSeat();
+    const among = this.others().findIndex((place) => place.at === cutter);
+    const seat = cutter === this.nearSeat() ? this.nearSpot() : this.otherSpots()[among];
+
+    return seat?.landingSpot(step);
   }
 
   /** Everything still face down, from the far end of the deck back. */
@@ -288,10 +432,7 @@ export class Table implements OnDestroy {
     });
   }
 
-  /**
-   * Matched by their centres, because the place it is going to is already
-   * turned and its box is the box of a turned card.
-   */
+  /** The last card left in the fan, and the only one still to be placed. */
   private sendTheFinishingCard(cards: readonly ElementRef<HTMLElement>[]): void {
     const slot = this.finishingSlot()?.nativeElement.getBoundingClientRect();
     const where = this.finishingPosition();
@@ -306,18 +447,18 @@ export class Table implements OnDestroy {
     element.style.zIndex = '20';
     element.style.transitionDuration = `${Place}ms`;
     element.style.transitionDelay = '0ms';
-    element.style.transform =
-      `translate(${slot.left + slot.width / 2 - from.left - from.width / 2}px, `
-      + `${slot.top + slot.height / 2 - from.top - from.height / 2}px) rotate(90deg)`;
+    element.style.transform = `${this.betweenCentres(from, slot)} rotate(90deg)`;
+  }
 
-    // A joker at the cut belongs to the cutter and is listed on the board, so
-    // the one lying in the fan only has to stop being there.
-    cards.forEach((card, position) => {
-      if (position !== where && this.revealedAt().has(position)) {
-        card.nativeElement.style.transitionDuration = `${Place}ms`;
-        card.nativeElement.style.opacity = '0';
-      }
-    });
+  /**
+   * Centre to centre, because a card lying on its side does not have the box
+   * an upright one has and matching their corners would set it adrift.
+   */
+  private betweenCentres(from: DOMRect, to: DOMRect): string {
+    const across = to.left + to.width / 2 - from.left - from.width / 2;
+    const down = to.top + to.height / 2 - from.top - from.height / 2;
+
+    return `translate(${across}px, ${down}px)`;
   }
 
   private after(delay: number, run: () => void): void {
@@ -326,7 +467,8 @@ export class Table implements OnDestroy {
 
   private endSweep(): void {
     this.collapsing.set(false);
-    this.turning.set(false);
+    this.turned.set(0);
+    this.landAll();
   }
 
   protected cut(position: number): void {

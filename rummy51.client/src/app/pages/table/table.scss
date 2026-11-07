@@ -6,6 +6,7 @@
 .table {
   // One card size, shared by the deck, the fan and the finishing card.
   --card: 4rem;
+  --card-tall: calc(var(--card) * 336 / 240);
 
   display: flex;
   flex: 1;
@@ -74,10 +75,13 @@
 }
 
 // The near seat, where the player's own hand will go once there is one.
+// The line is kept at the height of a card from the start, so dealing one
+// into it takes nothing away from the felt.
 .table__near {
   --seat-size: 2.875rem;
 
   flex: none;
+  min-block-size: var(--card-tall);
   margin-block-start: 0.625rem;
 }
 
@@ -177,11 +181,28 @@
   }
 }
 
+// Marks a joker for whoever is testing the cut; see Table.jokers. Nothing
+// is marked unless the server sent the positions, and only a development
+// setting asks it to.
+.fan__card--joker > img {
+  outline: 2px solid #ff2d95;
+  outline-offset: -2px;
+  border-radius: 0.25rem;
+}
+
 // Above its neighbours from the moment it is turned up. Every card in a row
 // is drawn over the one before it, so without this the card everybody is
 // looking at would turn over behind the one beside it.
 .fan__card--turned {
   z-index: 10;
+}
+
+// And above those in turn while it is the one being turned. The cards the
+// cut turned up before it overlap it and carry the same lift, so without
+// this the next one along covers the half that is turning. After the rule
+// it beats, because they weigh the same and the last one written wins.
+.fan__card--turning {
+  z-index: 20;
 }
 
 // A card the cut turned up, which turns where it lies before anything moves.
@@ -276,27 +297,6 @@
   inset: 0;
   inline-size: 100%;
   border-radius: 0.1875rem;
-}
-
-.board__jokers {
-  position: absolute;
-  inset-block-end: 0;
-  inset-inline-start: 0;
-}
-
-.board__jokers--waiting {
-  opacity: 0;
-}
-
-.board__joker-cards {
-  display: flex;
-  gap: 0.375rem;
-  margin-block-start: 0.375rem;
-
-  img {
-    inline-size: 2.75rem;
-    border-radius: 0.1875rem;
-  }
 }
 
 // Nothing to sit at, so the page says so and offers the way back.

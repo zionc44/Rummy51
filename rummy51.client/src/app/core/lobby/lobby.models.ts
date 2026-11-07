@@ -76,6 +76,12 @@ export interface HandView {
   readonly cutAt: number | null;
   /** The back each of those cards wears, by position. Decoration only. */
   readonly backs: readonly string[];
+  /**
+   * Where the jokers are lying in the deck, marked in the fan so a cut onto
+   * one can be aimed at. Empty unless the server was asked for them, which
+   * only a development setting does.
+   */
+  readonly jokerPositions: readonly number[];
   readonly revealedAtCut: readonly string[];
   readonly finishingCard: string | null;
 }

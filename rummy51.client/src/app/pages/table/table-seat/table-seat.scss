@@ -1,14 +1,45 @@
-// Sized by wherever it is placed: the player's own seat is nearer and larger
-// than the ones across the table.
+// A player and what they are holding, side by side. Sized by wherever it is
+// placed: the player's own seat is nearer and larger than the ones across
+// the table.
 :host {
   --seat-size: 3rem;
+  // The picture with one line for the name beneath it. A card across the
+  // table is cut to exactly this, so the strip is the same height whether
+  // anybody is holding anything or not and the felt never gives up room.
+  --name-line: 1.0625rem;
+  --who: calc(var(--seat-size) + 0.3125rem + var(--name-line));
 
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+// The near place has the width of the table, so the picture goes to the far
+// side and the cards have the rest of the line to themselves.
+:host(.seat--near) {
+  inline-size: 100%;
+
+  .seat__who {
+    order: 1;
+    margin-inline-start: auto;
+  }
+
+  // Near enough to read, and the room for them is kept whether they are
+  // there or not, so the felt does not shrink as a hand is dealt.
+  .seat__card {
+    block-size: var(--card-tall);
+  }
+}
+
+.seat__who {
   position: relative;
   display: flex;
+  flex: none;
   flex-direction: column;
   align-items: center;
   gap: 0.3125rem;
   inline-size: calc(var(--seat-size) + 1.5rem);
+  block-size: var(--who);
 }
 
 .seat__avatar {
@@ -53,6 +84,8 @@
 
 .seat__name {
   max-inline-size: 100%;
+  block-size: var(--name-line);
+  line-height: var(--name-line);
   overflow: hidden;
   font-size: 0.6875rem;
   text-overflow: ellipsis;
@@ -66,4 +99,20 @@
 
 .seat__name--empty {
   color: var(--text-faint);
+}
+
+.seat__held {
+  display: flex;
+  gap: 0.25rem;
+}
+
+// As tall as the player beside it, and no taller: the width follows from
+// the shape of a card, so the strip cannot grow when one arrives.
+.seat__card {
+  display: block;
+  flex: none;
+  block-size: var(--who);
+  inline-size: auto;
+  aspect-ratio: 240 / 336;
+  border-radius: 0.1875rem;
 }

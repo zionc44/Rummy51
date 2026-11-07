@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Common;
 using Rummy51.Application.Tables;
@@ -10,8 +11,10 @@ namespace Rummy51.Infrastructure.Tables;
 /// dealt a card holds nothing worth restoring. A series carrying scores across
 /// several hands will be a different question, and this is where it gets asked.
 /// </summary>
-public sealed class InMemoryTables : ITables
+public sealed class InMemoryTables(IOptions<TestingSettings> testing) : ITables
 {
+    private readonly bool markJokers = testing.Value.MarkJokers;
+
     // Two views of the same fact under one lock. The second answers the rule
     // that runs through everything here - a player sits at one table - without
     // walking every table to find out.
@@ -44,7 +47,7 @@ public sealed class InMemoryTables : ITables
                 return Refused("AlreadyAtATable", FailureKind.Conflict);
             }
 
-            var table = new OpenTable(request);
+            var table = new OpenTable(request, markJokers);
             table.Seat(player);
 
             tables[table.Id] = table;
