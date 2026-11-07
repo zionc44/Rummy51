@@ -1,0 +1,73 @@
+.new-table {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(2 44 34 / 0.8);
+  padding: var(--page-gutter);
+}
+
+.new-table__panel {
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--felt-900);
+  padding: 1rem;
+}
+
+.new-table__title {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.new-table__label {
+  margin: 0 0 0.5rem;
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+// Three to a row at every width. The rows are the same shape whatever they
+// ask, so the third one appearing reads as one more row and not as a jump.
+.new-table__choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-block-end: 1.125rem;
+}
+
+.choice {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  padding: 0.625rem 0.125rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+}
+
+.choice--picked {
+  border-color: var(--felt-500);
+  background: rgb(16 185 129 / 0.12);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.new-table__actions {
+  display: flex;
+  gap: 0.625rem;
+}
+
+.new-table__action {
+  flex: 1;
+  padding-inline: 0;
+}

@@ -2,10 +2,17 @@
   <header class="tables__header">
     <h2 class="tables__heading">{{ 'lobby.tables' | translate }}</h2>
 
-    <button type="button" class="btn-primary tables__create">
+    <button
+      type="button"
+      class="btn-primary tables__create"
+      [disabled]="seatedAt() !== null"
+      (click)="creating.set(true)"
+    >
       {{ 'lobby.newTable' | translate }}
     </button>
   </header>
+
+  <app-error-messages [errors]="errors()" />
 
   <div class="tables__tabs" role="tablist">
     @for (mode of modes; track mode) {
@@ -31,8 +38,14 @@
         class="tables__list"
         [class.tables__list--open]="mode === openMode()"
         [mode]="mode"
-        [count]="counts()[mode]"
+        [tables]="byMode()[mode]"
+        [seatedAt]="seatedAt()"
+        (joined)="join($event)"
       />
     }
   </div>
 </section>
+
+@if (creating()) {
+  <app-new-table (created)="create($event)" (cancelled)="creating.set(false)" />
+}

@@ -8,6 +8,8 @@ public static class LobbyEvents
 {
     public const string OnlinePlayersChanged = "OnlinePlayersChanged";
 
+    public const string TablesChanged = "TablesChanged";
+
     /// <summary>Sent to a connection that a newer one has just replaced.</summary>
     public const string SignedInElsewhere = "SignedInElsewhere";
 }

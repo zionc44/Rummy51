@@ -2,8 +2,22 @@
   <h3 class="list__title">
     <app-mode-icon class="list__icon" [mode]="mode()" />
     <span>{{ 'lobby.modes.' + mode() | translate }}</span>
-    <span class="list__count">{{ count() }}</span>
+    <span class="list__count">{{ rows().length }}</span>
   </h3>
 
-  <p class="list__empty">{{ 'lobby.noTables' | translate }}</p>
+  @if (rows().length) {
+    <ul class="list__rows">
+      @for (table of rows(); track table.tableId) {
+        <li>
+          <app-table-row
+            [table]="table"
+            [seatedAt]="seatedAt()"
+            (joined)="joined.emit($event)"
+          />
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="list__empty">{{ 'lobby.noTables' | translate }}</p>
+  }
 </section>

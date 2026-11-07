@@ -31,5 +31,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/account/account').then((m) => m.Account),
   },
+  {
+    path: 'table/:tableId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/table/table').then((m) => m.Table),
+  },
   { path: '**', redirectTo: '' },
 ];

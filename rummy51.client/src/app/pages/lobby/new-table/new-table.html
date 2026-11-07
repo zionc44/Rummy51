@@ -1,0 +1,62 @@
+<div class="new-table">
+  <div class="new-table__panel" role="dialog" aria-modal="true">
+    <p class="new-table__title">{{ 'lobby.newTable' | translate }}</p>
+
+    <p class="new-table__label" id="seat-choice">{{ 'lobby.seats' | translate }}</p>
+    <div class="new-table__choices" role="group" aria-labelledby="seat-choice">
+      @for (choice of seatChoices; track choice) {
+        <button
+          type="button"
+          class="choice"
+          [class.choice--picked]="choice === seats()"
+          [attr.aria-pressed]="choice === seats()"
+          (click)="seats.set(choice)"
+        >
+          {{ choice }}
+        </button>
+      }
+    </div>
+
+    <p class="new-table__label" id="mode-choice">{{ 'lobby.gameType' | translate }}</p>
+    <div class="new-table__choices" role="group" aria-labelledby="mode-choice">
+      @for (choice of modes; track choice) {
+        <button
+          type="button"
+          class="choice"
+          [class.choice--picked]="choice === mode()"
+          [attr.aria-pressed]="choice === mode()"
+          (click)="mode.set(choice)"
+        >
+          {{ 'lobby.modes.' + choice | translate }}
+        </button>
+      }
+    </div>
+
+    <!-- A single hand asks nothing further, so the form is simply shorter. -->
+    @if (limitLabel(); as label) {
+      <p class="new-table__label" id="limit-choice">{{ label | translate }}</p>
+      <div class="new-table__choices" role="group" aria-labelledby="limit-choice">
+        @for (choice of limitChoices(); track choice) {
+          <button
+            type="button"
+            class="choice"
+            [class.choice--picked]="choice === limit()"
+            [attr.aria-pressed]="choice === limit()"
+            (click)="limit.set(choice)"
+          >
+            {{ choice }}
+          </button>
+        }
+      </div>
+    }
+
+    <div class="new-table__actions">
+      <button type="button" class="btn-primary new-table__action" (click)="open()">
+        {{ 'lobby.openTable' | translate }}
+      </button>
+      <button type="button" class="btn-ghost new-table__action" (click)="cancelled.emit()">
+        {{ 'common.cancel' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

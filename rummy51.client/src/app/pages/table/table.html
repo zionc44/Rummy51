@@ -1,0 +1,50 @@
+<app-page-shell>
+  @if (table()) {
+    <button shell-actions type="button" class="table__leave" (click)="leave()">
+      {{ 'table.leave' | translate }}
+    </button>
+  }
+  <app-profile-menu shell-actions />
+
+  <main class="table">
+    @if (table(); as current) {
+      <p class="table__mode">
+        {{ 'lobby.modes.' + current.mode | translate }}
+        @if (detail(); as detail) {
+          <span class="table__limit">{{ detail.key | translate: detail.amount }}</span>
+        }
+      </p>
+
+      <div class="table__others">
+        @for (seat of others(); track $index) {
+          <app-table-seat class="table__other" [seat]="seat" />
+        }
+      </div>
+
+      <!-- Everything left over, which is where the melds will be laid. -->
+      <div class="table__felt">
+        @if (!current.started) {
+          <p class="table__waiting">
+            {{ 'table.waiting' | translate }}
+            <span class="table__count">
+              {{ 'table.seatedOf' | translate: { '0': taken(), '1': current.seats.length } }}
+            </span>
+          </p>
+        }
+      </div>
+
+      @if (near(); as mySeat) {
+        <app-table-seat class="table__near" [seat]="mySeat" [mine]="seated()" />
+      }
+    } @else if (gone()) {
+      <div class="table__gone">
+        <p class="table__waiting">{{ 'table.gone' | translate }}</p>
+        <button type="button" class="btn-primary" (click)="backToLobby()">
+          {{ 'table.backToLobby' | translate }}
+        </button>
+      </div>
+    }
+
+    <app-error-messages [errors]="errors()" />
+  </main>
+</app-page-shell>

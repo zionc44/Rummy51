@@ -8,6 +8,9 @@
     "register": "Sign up",
     "login": "Sign in"
   },
+  "common": {
+    "cancel": "Cancel"
+  },
   "language": {
     "switch": "Change language"
   },
@@ -56,7 +59,6 @@
     "cropTitle": "Profile picture",
     "cropHint": "Drag to position, the slider zooms, the button rotates",
     "cropZoom": "Zoom",
-    "cancel": "Cancel",
     "cropRotate": "Rotate a quarter turn"
   },
   "lobby": {
@@ -69,7 +71,7 @@
     "newTable": "New table",
     "noTables": "No tables",
     "modes": {
-      "discrete": "Single deal",
+      "single": "Single hand",
       "survival": "Survival",
       "series": "Series"
     },
@@ -78,7 +80,27 @@
       "idle": "Away",
       "inGame": "In a game",
       "inGameIdle": "In a game, away"
-    }
+    },
+    "seats": "Players",
+    "gameType": "Game type",
+    "pointsToFinish": "Points to finish",
+    "handCount": "Hands",
+    "openTable": "Open table",
+    "join": "Join",
+    "inPlay": "In play",
+    "points": "{{0}} points",
+    "hands": "{{0}} hands",
+    "stillSeated": "You are sitting at a table.",
+    "backToTable": "Back to the table",
+    "yourTable": "Your table"
+  },
+  "table": {
+    "waiting": "Waiting for players",
+    "seatedOf": "{{0}} of {{1}}",
+    "leave": "Leave the table",
+    "emptySeat": "Empty seat",
+    "gone": "That table is gone",
+    "backToLobby": "Back to the lobby"
   },
   "profile": {
     "open": "Account menu",
@@ -112,6 +134,11 @@
     "CurrentPasswordRequired": "Enter your current password",
     "PasswordMismatch": "That is not your current password",
     "AvatarNotAnImage": "We could not read that file as an image",
-    "NoUploadedAvatar": "You have not uploaded a picture"
+    "NoUploadedAvatar": "You have not uploaded a picture",
+    "TableSeatsInvalid": "That is not a valid number of players",
+    "TableLimitInvalid": "That setting does not fit this game type",
+    "AlreadyAtATable": "You are already sitting at a table",
+    "TableNotFound": "That table is gone",
+    "TableStarted": "That table has already started"
   }
 }

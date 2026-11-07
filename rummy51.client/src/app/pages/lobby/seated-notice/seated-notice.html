@@ -1,0 +1,16 @@
+@if (table()) {
+  <div class="seated" role="status">
+    <p class="seated__text">{{ 'lobby.stillSeated' | translate }}</p>
+
+    <div class="seated__actions">
+      <button type="button" class="seated__return" (click)="returnToTable()">
+        {{ 'lobby.backToTable' | translate }}
+      </button>
+      <button type="button" class="seated__leave" [disabled]="leaving()" (click)="leave()">
+        {{ 'table.leave' | translate }}
+      </button>
+    </div>
+
+    <app-error-messages [errors]="errors()" />
+  </div>
+}

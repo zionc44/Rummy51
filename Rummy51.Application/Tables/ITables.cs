@@ -1,0 +1,27 @@
+using Rummy51.Application.Authentication;
+using Rummy51.Application.Common;
+
+namespace Rummy51.Application.Tables;
+
+/// <summary>
+/// Every table that is open, and who is sitting at each. One rule runs through
+/// all of it: a player occupies at most one seat, so opening a table and
+/// joining one are the same move and neither is possible while already seated.
+/// </summary>
+public interface ITables
+{
+    Result<LobbyTable> Open(CreateTableRequest request, PlayerSummary player);
+
+    Result<LobbyTable> Join(Guid tableId, PlayerSummary player);
+
+    /// <summary>
+    /// Empties whichever seat the player holds. The table closes behind them
+    /// when it was the last one taken.
+    /// </summary>
+    /// <returns>True when a seat was actually given up.</returns>
+    bool Leave(Guid playerId);
+
+    IReadOnlyList<LobbyTable> All();
+
+    LobbyTable? Find(Guid tableId);
+}

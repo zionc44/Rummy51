@@ -34,22 +34,26 @@ public sealed class InMemoryPlayerConnections : IPlayerConnections
         }
     }
 
-    public void Remove(string connectionId)
+    public PlayerSummary? Remove(string connectionId)
     {
         lock (gate)
         {
             if (!byConnection.Remove(connectionId, out var player))
             {
-                return;
+                return null;
             }
 
             // A displaced connection reports its disconnect after the new one
             // has already claimed the player, so only clear the player's entry
-            // while it still points here.
+            // while it still points here. When it does not, the player is
+            // still with us on a newer connection and has left nothing.
             if (byPlayer.TryGetValue(player.PlayerId, out var current) && current == connectionId)
             {
                 byPlayer.Remove(player.PlayerId);
+                return player;
             }
+
+            return null;
         }
     }
 

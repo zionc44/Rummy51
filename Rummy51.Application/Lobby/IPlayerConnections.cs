@@ -19,7 +19,15 @@ public interface IPlayerConnections
     /// </returns>
     string? Register(PlayerSummary player, string connectionId);
 
-    void Remove(string connectionId);
+    /// <summary>
+    /// Forgets the connection.
+    /// </summary>
+    /// <returns>
+    /// The player, when this was the connection they were actually holding.
+    /// Null when a newer one had already replaced it, in which case they have
+    /// not gone anywhere and nothing of theirs should be given up.
+    /// </returns>
+    PlayerSummary? Remove(string connectionId);
 
     IReadOnlyList<LobbyPlayer> Online();
 }

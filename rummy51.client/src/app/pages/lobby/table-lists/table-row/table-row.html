@@ -1,0 +1,37 @@
+<div class="row" [class.row--playing]="table().started" [class.row--mine]="mine()">
+  <div class="row__seats">
+    @for (seat of table().seats; track $index) {
+      @if (seat.playerId) {
+        <app-player-avatar
+          class="row__seat"
+          [displayName]="seat.displayName ?? ''"
+          [avatarUrl]="seat.avatarUrl"
+        />
+      } @else {
+        <span class="row__seat row__seat--empty"></span>
+      }
+    }
+  </div>
+
+  <span class="row__detail">
+    @if (detail(); as detail) {
+      {{ detail.key | translate: detail.amount }}
+    }
+  </span>
+
+  <!-- Their own table is answered by the notice above the list, not here. -->
+  @if (mine()) {
+    <span class="row__state row__state--mine">{{ 'lobby.yourTable' | translate }}</span>
+  } @else if (table().started) {
+    <span class="row__state">{{ 'lobby.inPlay' | translate }}</span>
+  } @else {
+    <button
+      type="button"
+      class="row__join"
+      [disabled]="!canJoin()"
+      (click)="joined.emit(table().tableId)"
+    >
+      {{ 'lobby.join' | translate }}
+    </button>
+  }
+</div>

@@ -1,0 +1,11 @@
+@if (seat().playerId) {
+  <app-player-avatar
+    class="seat__avatar"
+    [displayName]="seat().displayName ?? ''"
+    [avatarUrl]="seat().avatarUrl"
+  />
+  <span class="seat__name" [class.seat__name--mine]="mine()">{{ seat().displayName }}</span>
+} @else {
+  <span class="seat__waiting" [attr.aria-label]="'table.emptySeat' | translate"></span>
+  <span class="seat__name seat__name--empty">{{ 'table.emptySeat' | translate }}</span>
+}

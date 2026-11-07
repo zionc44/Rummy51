@@ -33,6 +33,15 @@
   color: var(--text-faint);
 }
 
+.list__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 // Side by side, an empty list is in plain view and has to look deliberate.
 .list__empty {
   margin: 0;

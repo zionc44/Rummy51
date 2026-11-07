@@ -8,6 +8,9 @@
     "register": "הרשמה",
     "login": "התחברות"
   },
+  "common": {
+    "cancel": "ביטול"
+  },
   "language": {
     "switch": "שינוי שפה"
   },
@@ -56,7 +59,6 @@
     "cropTitle": "תמונת פרופיל",
     "cropHint": "גררו למיקום, המחוון מקרב, הכפתור מסובב",
     "cropZoom": "קירוב",
-    "cancel": "ביטול",
     "cropRotate": "סיבוב רבע סיבוב"
   },
   "lobby": {
@@ -69,7 +71,7 @@
     "newTable": "שולחן חדש",
     "noTables": "אין שולחנות",
     "modes": {
-      "discrete": "בדידים",
+      "single": "יד בודדת",
       "survival": "הישרדות",
       "series": "סדרות"
     },
@@ -78,7 +80,27 @@
       "idle": "לא פעיל",
       "inGame": "במשחק",
       "inGameIdle": "במשחק · לא פעיל"
-    }
+    },
+    "seats": "מספר שחקנים",
+    "gameType": "סוג המשחק",
+    "pointsToFinish": "נקודות לסיום",
+    "handCount": "מספר ידיים",
+    "openTable": "פתיחת שולחן",
+    "join": "הצטרפות",
+    "inPlay": "במשחק",
+    "points": "{{0}} נקודות",
+    "hands": "{{0}} ידיים",
+    "stillSeated": "אתם יושבים בשולחן.",
+    "backToTable": "חזרה לשולחן",
+    "yourTable": "השולחן שלכם"
+  },
+  "table": {
+    "waiting": "ממתינים לשחקנים",
+    "seatedOf": "{{0}} מתוך {{1}}",
+    "leave": "עזיבת השולחן",
+    "emptySeat": "מקום פנוי",
+    "gone": "השולחן כבר לא קיים",
+    "backToLobby": "חזרה ללובי"
   },
   "profile": {
     "open": "תפריט החשבון",
@@ -112,6 +134,11 @@
     "CurrentPasswordRequired": "יש להזין את הסיסמה הנוכחית",
     "PasswordMismatch": "הסיסמה הנוכחית שגויה",
     "AvatarNotAnImage": "לא הצלחנו לקרוא את הקובץ הזה כתמונה",
-    "NoUploadedAvatar": "לא העליתם תמונה משלכם"
+    "NoUploadedAvatar": "לא העליתם תמונה משלכם",
+    "TableSeatsInvalid": "מספר שחקנים לא תקין",
+    "TableLimitInvalid": "ההגדרה הזאת לא מתאימה לסוג המשחק",
+    "AlreadyAtATable": "אתם כבר יושבים בשולחן",
+    "TableNotFound": "השולחן כבר לא קיים",
+    "TableStarted": "המשחק בשולחן הזה כבר התחיל"
   }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Lobby;
+using Rummy51.Application.Tables;
 
 namespace Rummy51.Server.Hubs;
 
@@ -13,6 +14,7 @@ namespace Rummy51.Server.Hubs;
 [Authorize]
 public sealed class LobbyHub(
     IPlayerConnections connections,
+    ITables tables,
     IPlayerAccountService accounts) : Hub
 {
     public const string Route = "/hubs/lobby";
@@ -36,12 +38,24 @@ public sealed class LobbyHub(
         }
 
         await BroadcastOnline();
+
+        // Only the arrival needs the tables; nobody else's view changed.
+        await Clients.Caller.SendAsync(LobbyEvents.TablesChanged, tables.All());
+
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        connections.Remove(Context.ConnectionId);
+        var departed = connections.Remove(Context.ConnectionId);
+
+        // A seat is given up only when the player has actually gone. A second
+        // tab displacing the first returns null here, and displaces nobody
+        // from their chair.
+        if (departed is not null && tables.Leave(departed.PlayerId))
+        {
+            await BroadcastTables();
+        }
 
         await BroadcastOnline();
         await base.OnDisconnectedAsync(exception);
@@ -57,6 +71,9 @@ public sealed class LobbyHub(
 
     private Task BroadcastOnline() =>
         Clients.All.SendAsync(LobbyEvents.OnlinePlayersChanged, connections.Online());
+
+    private Task BroadcastTables() =>
+        Clients.All.SendAsync(LobbyEvents.TablesChanged, tables.All());
 
     private async Task<PlayerSummary?> CurrentPlayerAsync()
     {
