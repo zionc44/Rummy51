@@ -26,6 +26,7 @@
             [seat]="place.seat"
             [dealer]="place.at === dealerSeat()"
             [held]="heldAt(place.at)"
+            [holding]="holdingAt(place.at)"
           />
         }
       </div>
@@ -120,6 +121,7 @@
           [mine]="seated()"
           [dealer]="nearSeat() === dealerSeat()"
           [held]="heldAt(nearSeat())"
+          [holding]="holdingAt(nearSeat())"
           [near]="true"
         />
       }

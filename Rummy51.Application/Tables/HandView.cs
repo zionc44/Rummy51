@@ -25,6 +25,14 @@ namespace Rummy51.Application.Tables;
 /// the card underneath; a deck of one colour just looks like a printer's
 /// mistake.
 /// </param>
+/// <param name="CardsPerSeat">
+/// How many cards each seat is holding. Public: at a real table anybody can
+/// count them, and the backs have to be drawn somewhere.
+/// </param>
+/// <param name="Passes">
+/// The deal pass by pass, so the eye can follow it round the table. It says
+/// how many cards went where and never which.
+/// </param>
 public sealed record HandView(
     HandPhase Phase,
     int DealerSeat,
@@ -34,4 +42,7 @@ public sealed record HandView(
     IReadOnlyList<string> Backs,
     IReadOnlyList<int> JokerPositions,
     IReadOnlyList<string> RevealedAtCut,
-    string? FinishingCard);
+    string? FinishingCard,
+    IReadOnlyList<int> CardsPerSeat,
+    IReadOnlyList<DealPass> Passes,
+    int StockSize);

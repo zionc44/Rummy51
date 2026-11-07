@@ -10,6 +10,7 @@ const enum LobbyEvent {
   OnlinePlayersChanged = 'OnlinePlayersChanged',
   TablesChanged = 'TablesChanged',
   HandChanged = 'HandChanged',
+  CardsDealt = 'CardsDealt',
   SignedInElsewhere = 'SignedInElsewhere',
 }
 
@@ -27,12 +28,20 @@ export class LobbyConnection {
   private readonly replaced = signal(false);
   private readonly live = signal(false);
   private readonly playing = signal<HandView | null>(null);
+  private readonly mine = signal<readonly string[]>([]);
 
   readonly onlinePlayers = this.players.asReadonly();
   readonly tables = this.open.asReadonly();
 
   /** The hand at the table being watched, if one is. */
   readonly hand = this.playing.asReadonly();
+
+  /**
+   * The signed-in player's own cards at that table. They arrive on their own
+   * message rather than inside the hand, because the hand goes to everybody
+   * watching the table and these go to one connection.
+   */
+  readonly myCards = this.mine.asReadonly();
 
   /**
    * True once the hub has answered. Until then an empty list of tables means
@@ -87,6 +96,7 @@ export class LobbyConnection {
     this.players.set([]);
     this.open.set([]);
     this.playing.set(null);
+    this.mine.set([]);
     await connection?.stop();
   }
 
@@ -103,6 +113,7 @@ export class LobbyConnection {
 
   async unwatch(tableId: string): Promise<void> {
     this.playing.set(null);
+    this.mine.set([]);
     await this.connection?.invoke('Unwatch', tableId);
   }
 
@@ -122,6 +133,8 @@ export class LobbyConnection {
     connection.on(LobbyEvent.TablesChanged, (tables: LobbyTable[]) => this.open.set(tables));
 
     connection.on(LobbyEvent.HandChanged, (hand: HandView | null) => this.playing.set(hand));
+
+    connection.on(LobbyEvent.CardsDealt, (cards: string[]) => this.mine.set(cards));
 
     connection.on(LobbyEvent.SignedInElsewhere, () => {
       this.replaced.set(true);

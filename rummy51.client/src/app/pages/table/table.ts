@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, effect, inject, input, signal, viewChild, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, WritableSignal, computed, effect, inject, input, signal, viewChild, viewChildren } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { ApiError } from '../../core/errors/api-error';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
-import { HandPhase } from '../../core/lobby/lobby.models';
+import { DealPass, HandPhase } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { PageShell } from '../../shared/page-shell/page-shell';
@@ -18,6 +18,11 @@ import { TableSeat } from './table-seat/table-seat';
  */
 const FanRows = 6;
 
+/** A seat nothing has reached yet is not in the list at all. */
+function countAt(counts: readonly number[], seat: number): number {
+  return counts[seat] ?? 0;
+}
+
 /** Each card the cut turns up turns over where it lies, then is read. */
 const Turn = 350;
 const Read = 80;
@@ -30,7 +35,12 @@ const Stagger = 3;
 const Place = 380;
 
 /** Shared, so a seat holding nothing is not handed a new array every pass. */
-const Nothing: readonly (string | null)[] = [];
+const Nothing: readonly string[] = [];
+
+/** The deal: a card's journey, the gap inside a pass, and between two. */
+const Pass = 260;
+const BetweenCards = 50;
+const BetweenPasses = 150;
 
 /**
  * The table, before and after it fills. Nothing changes screens when the last
@@ -59,6 +69,26 @@ export class Table implements OnDestroy {
 
   /** True from the cut until the deck has settled, which keeps both on screen. */
   protected readonly collapsing = signal(false);
+
+  /** True while the cards are going round the table. */
+  protected readonly dealing = signal(false);
+
+  /**
+   * Cards that have reached each seat, and cards still on their way there.
+   * A card in the air has its place kept for it, so the row it is joining
+   * is already the width it will be and nothing shifts as it lands.
+   */
+  private readonly arrived = signal<readonly number[]>([]);
+  private readonly inFlight = signal<readonly number[]>([]);
+
+  /**
+   * While anything is moving, a seat shows what has reached it. Otherwise it
+   * shows everything - which is what somebody opening the page afterwards
+   * must see, since for them nothing is going to arrive.
+   */
+  private readonly animating = computed(() => this.collapsing() || this.dealing());
+
+  protected readonly myCards = this.lobby.myCards;
 
   /**
    * How many of the cards the cut turned up have been turned over so far.
@@ -194,26 +224,57 @@ export class Table implements OnDestroy {
 
   protected readonly cutterSeat = computed(() => this.hand()?.cutterSeat ?? -1);
 
-  /**
-   * The jokers the cut gave the cutter, as their seat is to show them. While
-   * they are still arriving only the ones that have landed are there, each
-   * taking over from the card that flew to it.
-   */
-  private readonly jokersAtCutter = computed<readonly (string | null)[]>(() => {
-    const jokers = this.hand()?.revealedAtCut ?? [];
-    const landed = this.collapsing() ? this.turned() - 1 : jokers.length;
-
-    return jokers.map((code, step) => (step < landed ? code : null));
-  });
+  /** The place along the bottom, which is the viewer's own only if they sit. */
+  private isMine(seat: number): boolean {
+    return this.seated() && seat === this.nearSeat();
+  }
 
   /**
-   * What a seat is holding face up. Only the cutter holds anything, and only
-   * until the deal is over and those jokers are in a hand like any others.
+   * What a seat shows face up: your own hand at your own place, and at
+   * anybody else's only the jokers the cut gave them.
    */
+  private faceUpCards(seat: number): readonly string[] {
+    if (this.isMine(seat)) {
+      return this.myCards();
+    }
+
+    return seat === this.cutterSeat() ? this.hand()?.revealedAtCut ?? Nothing : Nothing;
+  }
+
+  /** Those cards, with a gap kept for each one still on its way. */
   protected heldAt(seat: number): readonly (string | null)[] {
-    const dealing = this.hand()?.phase === 'dealing';
+    const cards = this.faceUpCards(seat);
 
-    return dealing && seat === this.cutterSeat() ? this.jokersAtCutter() : Nothing;
+    if (!this.animating()) {
+      return cards;
+    }
+
+    const landed = countAt(this.arrived(), seat);
+    const upTo = Math.min(landed + countAt(this.inFlight(), seat), cards.length);
+
+    return upTo === 0
+      ? Nothing
+      : Array.from({ length: upTo }, (_, step) => (step < landed ? cards[step] : null));
+  }
+
+  /**
+   * How many cards a seat is holding. Null before the deal, when nobody is
+   * holding anything and the answer would only be a nought.
+   */
+  protected holdingAt(seat: number): number | null {
+    const hand = this.hand();
+
+    if (hand === null || hand.phase === 'cutting') {
+      return null;
+    }
+
+    // Not while the deck is still being swept up: an empty pile at every
+    // seat before a card has been dealt is a promise nothing has made yet.
+    if (this.collapsing() && !this.dealing()) {
+      return null;
+    }
+
+    return this.animating() ? countAt(this.arrived(), seat) : hand.cardsPerSeat[seat] ?? 0;
   }
 
   /**
@@ -279,6 +340,11 @@ export class Table implements OnDestroy {
 
       // The change is the event, not the state. Somebody opening the page
       // after the cut should not be shown it happening again.
+      if (phase === 'cutting') {
+        this.arrived.set([]);
+        this.inFlight.set([]);
+      }
+
       if (before === 'cutting' && phase === 'dealing') {
         this.sweepIntoThePile();
       }
@@ -331,10 +397,17 @@ export class Table implements OnDestroy {
     const facedown = cards.filter((_, position) => !revealed.has(position));
     let at = Turn + Read;
 
+    // Every joker's place at the seat is kept from the start, so each one
+    // has somewhere measured to fly to when its turn comes.
+    this.bump(this.inFlight, this.cutterSeat(), jokers.length);
+
     jokers.forEach((position, step) => {
       this.after(at, () => this.sendJokerToCutter(cards[position], step));
       at += Place;
-      this.after(at, () => this.turned.set(step + 2));
+      this.after(at, () => {
+        this.land(this.cutterSeat(), 1);
+        this.turned.set(step + 2);
+      });
       at += Turn + Read;
     });
 
@@ -406,11 +479,13 @@ export class Table implements OnDestroy {
 
   /** Where the joker is going: the place waiting for it at the cutter's seat. */
   private cutterSpot(step: number): HTMLElement | undefined {
-    const cutter = this.cutterSeat();
-    const among = this.others().findIndex((place) => place.at === cutter);
-    const seat = cutter === this.nearSeat() ? this.nearSpot() : this.otherSpots()[among];
+    return this.seatAt(this.cutterSeat())?.landingSpot(step);
+  }
 
-    return seat?.landingSpot(step);
+  private seatAt(seat: number): TableSeat | undefined {
+    const among = this.others().findIndex((place) => place.at === seat);
+
+    return seat === this.nearSeat() ? this.nearSpot() : this.otherSpots()[among];
   }
 
   /** Everything still face down, from the far end of the deck back. */
@@ -466,9 +541,150 @@ export class Table implements OnDestroy {
   }
 
   private endSweep(): void {
+    // The deal follows the cut with nobody deciding anything in between,
+    // here as on the server, and it starts before the fan is taken away so
+    // there is no still moment between the two.
+    this.dealTheHand();
     this.collapsing.set(false);
     this.turned.set(0);
     this.landAll();
+  }
+
+  /**
+   * The deal as the server counted it out: pass after pass round the table,
+   * three cards at a time and fewer where the cut already gave somebody a
+   * joker. Nothing here decides who gets what; it only shows it happening.
+   */
+  private dealTheHand(): void {
+    const passes = this.hand()?.passes ?? [];
+
+    if (passes.length === 0) {
+      return;
+    }
+
+    this.dealing.set(true);
+
+    let at = 0;
+    let dealt = 0;
+
+    passes.forEach((pass) => {
+      const before = dealt;
+
+      this.after(at, () => this.flyPass(pass, before));
+      at += BetweenPasses;
+      dealt += pass.count;
+    });
+
+    // Clear of the last card landing, so no copy is taken away in the air.
+    this.after(at + Pass + BetweenPasses * 2, () => this.endDeal());
+  }
+
+  /** One pass: a seat's three cards, one just behind the other. */
+  private flyPass(pass: DealPass, dealt: number): void {
+    this.bump(this.inFlight, pass.seat, pass.count);
+
+    // Two frames, so the places the cards are going have been laid out
+    // before anything measures them.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const from = this.pile()?.nativeElement.getBoundingClientRect();
+        const landed = countAt(this.arrived(), pass.seat);
+        const sent: HTMLElement[] = [];
+
+        Array.from({ length: pass.count }, (_, step) => {
+          const to = this.landingFor(pass.seat, landed + step)?.getBoundingClientRect();
+
+          if (from && to) {
+            sent.push(this.flyCard(this.backOfDealt(dealt + step), from, to, step * BetweenCards));
+          }
+        });
+
+        this.after(Pass + pass.count * BetweenCards, () => {
+          this.land(pass.seat, pass.count);
+          // A frame later, so the card it is standing in for is drawn first.
+          requestAnimationFrame(() => sent.forEach((card) => card.remove()));
+        });
+      }),
+    );
+  }
+
+  /** Face up in your own row, or onto the pile nobody else may look at. */
+  private landingFor(seat: number, step: number): HTMLElement | undefined {
+    const place = this.seatAt(seat);
+
+    return this.isMine(seat) ? place?.landingSpot(step) : place?.pileSpot();
+  }
+
+  /**
+   * The back the next card off the deck wears. The deal starts just past the
+   * finishing card and runs on round the deck, so each one keeps the back of
+   * the pack it came from rather than being given one.
+   */
+  private backOfDealt(step: number): string {
+    const hand = this.hand();
+
+    if (!hand || hand.cutAt === null) {
+      return '1B';
+    }
+
+    const from = hand.cutAt + hand.revealedAtCut.length + 1 + step;
+
+    return hand.backs[from % hand.deckSize];
+  }
+
+  /**
+   * A card on its way, fixed to the window. Everything it has to cross
+   * clips: the felt hides what leaves it, and the seats are outside.
+   */
+  private flyCard(back: string, from: DOMRect, to: DOMRect, delay: number): HTMLElement {
+    const card = document.createElement('img');
+
+    card.src = `cards/${back}.svg`;
+    card.alt = '';
+    card.setAttribute('inert', '');
+
+    // Window pixels, which have neither a start nor an end to speak of.
+    card.style.position = 'fixed';
+    card.style.left = `${from.left}px`;
+    card.style.top = `${from.top}px`;
+    card.style.width = `${from.width}px`;
+    card.style.zIndex = '30';
+    card.style.transition = `transform ${Pass}ms ease-in-out ${delay}ms`;
+
+    document.body.append(card);
+    this.flying.push(card);
+
+    // Settled where it starts before it is told where to go, or it is given
+    // both ends of the journey at once and arrives without travelling.
+    card.getBoundingClientRect();
+    card.style.transform =
+      `${this.betweenCentres(from, to)} scale(${to.width / from.width})`;
+
+    return card;
+  }
+
+  private endDeal(): void {
+    this.dealing.set(false);
+    this.landAll();
+  }
+
+  private land(seat: number, count: number): void {
+    this.bump(this.inFlight, seat, -count);
+    this.bump(this.arrived, seat, count);
+  }
+
+  private bump(counts: WritableSignal<readonly number[]>, seat: number, by: number): void {
+    counts.update((current) => {
+      const next = [...current];
+
+      while (next.length <= seat) {
+        next.push(0);
+      }
+
+      next[seat] += by;
+
+      return next;
+    });
   }
 
   protected cut(position: number): void {

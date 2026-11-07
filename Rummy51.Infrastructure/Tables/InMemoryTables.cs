@@ -156,6 +156,14 @@ public sealed class InMemoryTables(IOptions<TestingSettings> testing) : ITables
         }
     }
 
+    public IReadOnlyList<string> CardsOf(Guid tableId, Guid playerId)
+    {
+        lock (gate)
+        {
+            return tables.TryGetValue(tableId, out var table) ? table.CardsOf(playerId) : [];
+        }
+    }
+
     public LobbyTable? Find(Guid tableId)
     {
         lock (gate)

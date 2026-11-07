@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, input, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, viewChildren } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TableSeat as Seat } from '../../../core/lobby/lobby.models';
 import { PlayerAvatar } from '../../../shared/player-avatar/player-avatar';
@@ -39,10 +39,25 @@ export class TableSeat {
    */
   readonly held = input<readonly (string | null)[]>([]);
 
+  /**
+   * How many cards this player is holding. Across the table that is a pile
+   * of backs with the number on it; at the near place the cards are already
+   * there to be seen, so it is only the number, under the picture. Null
+   * before the deal, when there is nothing to say.
+   */
+  readonly holding = input<number | null>(null);
+
   private readonly landings = viewChildren<ElementRef<HTMLElement>>('landing');
+
+  private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
 
   /** Where a card flying to this seat comes to rest, place by place. */
   landingSpot(step: number): HTMLElement | undefined {
     return this.landings()[step]?.nativeElement;
+  }
+
+  /** Where a card nobody may see comes to rest instead. */
+  pileSpot(): HTMLElement | undefined {
+    return this.pile()?.nativeElement;
   }
 }

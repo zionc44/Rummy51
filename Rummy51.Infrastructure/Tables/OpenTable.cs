@@ -81,7 +81,32 @@ internal sealed class OpenTable
     public int SeatOf(Guid playerId) =>
         Array.FindIndex(seats, seat => seat?.PlayerId == playerId);
 
-    public bool CutAt(int position) => hand?.CutAt(position) ?? false;
+    /// <summary>
+    /// The cut, and the deal that follows it. Nobody decides anything in
+    /// between: at a table the cards are already going out.
+    /// </summary>
+    public bool CutAt(int position)
+    {
+        if (hand?.CutAt(position) != true)
+        {
+            return false;
+        }
+
+        hand.Deal();
+
+        return true;
+    }
+
+    /// <summary>
+    /// One player's own cards, which is the one thing here that never goes
+    /// into <see cref="DescribeHand"/>.
+    /// </summary>
+    public IReadOnlyList<string> CardsOf(Guid playerId)
+    {
+        var seat = SeatOf(playerId);
+
+        return hand is null || seat == -1 ? [] : [.. hand.Hands[seat].Select(card => card.Code)];
+    }
 
     public HandView? DescribeHand() =>
         hand is null
@@ -95,7 +120,10 @@ internal sealed class OpenTable
                 [.. hand.Backs.Select(back => $"{back}B")],
                 markJokers ? hand.JokerPositions : [],
                 [.. hand.RevealedAtCut.Select(card => card.Code)],
-                hand.FinishingCard?.Code);
+                hand.FinishingCard?.Code,
+                [.. hand.Hands.Select(cards => cards.Count)],
+                hand.Passes,
+                hand.Stock.Count);
 
     public LobbyTable Describe() =>
         new(Id, Mode, Limit, Jokers, [.. seats.Select(Occupant)], Started);

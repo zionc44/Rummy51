@@ -19,11 +19,13 @@ public enum HandPhase
 public sealed class Hand
 {
     private IReadOnlyList<Card> deck;
+    private IReadOnlyList<IReadOnlyList<Card>> hands;
     private Cut? cut;
 
     public Hand(int seats, int jokers, int dealerSeat, int seed)
     {
         Seats = seats;
+        hands = [.. Enumerable.Range(0, seats).Select(IReadOnlyList<Card> (_) => [])];
         DealerSeat = dealerSeat;
         CutterSeat = (dealerSeat + seats - 1) % seats;
         Seed = seed;
@@ -79,6 +81,19 @@ public sealed class Hand
     public IReadOnlyList<Card> RevealedAtCut => cut?.Revealed ?? [];
 
     /// <summary>
+    /// What each seat is holding, in the order it arrived. Every list is
+    /// empty until the deal. This is the one thing a hand knows that belongs
+    /// to one player rather than to the table.
+    /// </summary>
+    public IReadOnlyList<IReadOnlyList<Card>> Hands => hands;
+
+    /// <summary>What is left to draw from once the deal is done.</summary>
+    public IReadOnlyList<Card> Stock { get; private set; } = [];
+
+    /// <summary>The deal as the eye should see it, pass by pass.</summary>
+    public IReadOnlyList<DealPass> Passes { get; private set; } = [];
+
+    /// <summary>
     /// The cutter chose a card. False when the hand is past this point, which
     /// is what a second click on a deck already cut looks like from here.
     /// </summary>
@@ -93,6 +108,29 @@ public sealed class Hand
         CutPosition = ((position % DeckSize) + DeckSize) % DeckSize;
         deck = cut.Remaining;
         Phase = HandPhase.Dealing;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Deals what the cut left. A joker the cut gave the cutter is already
+    /// theirs and opens the hand they are dealt the rest of, which is also
+    /// why they are dealt one card fewer for each of them. False when the
+    /// hand has not been cut, or has been dealt already.
+    /// </summary>
+    public bool Deal()
+    {
+        if (Phase != HandPhase.Dealing || Passes.Count > 0)
+        {
+            return false;
+        }
+
+        var dealt = Dealing.Deal(deck, Seats, DealerSeat, RevealedAtCut.Count);
+
+        hands = [.. dealt.Hands.Select(IReadOnlyList<Card> (cards, seat) =>
+            seat == CutterSeat ? [.. RevealedAtCut, .. cards] : cards)];
+        Stock = dealt.Stock;
+        Passes = dealt.Passes;
 
         return true;
     }

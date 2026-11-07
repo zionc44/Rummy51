@@ -81,6 +81,13 @@ public sealed class LobbyHub(
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, tableId.ToString());
 
+        // Their own cards come back on the same message the deal uses, so
+        // the client has one way of learning them and not two.
+        if (PlayerId() is { } playerId)
+        {
+            await Clients.Caller.SendAsync(LobbyEvents.CardsDealt, tables.CardsOf(tableId, playerId));
+        }
+
         return tables.Hand(tableId);
     }
 
@@ -90,12 +97,11 @@ public sealed class LobbyHub(
     private Task BroadcastTables() =>
         Clients.All.SendAsync(LobbyEvents.TablesChanged, tables.All());
 
-    private async Task<PlayerSummary?> CurrentPlayerAsync()
-    {
-        var claim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+    private async Task<PlayerSummary?> CurrentPlayerAsync() =>
+        PlayerId() is { } playerId ? await accounts.FindPlayerAsync(playerId) : null;
 
-        return Guid.TryParse(claim, out var playerId)
-            ? await accounts.FindPlayerAsync(playerId)
+    private Guid? PlayerId() =>
+        Guid.TryParse(Context.User?.FindFirstValue(ClaimTypes.NameIdentifier), out var playerId)
+            ? playerId
             : null;
-    }
 }

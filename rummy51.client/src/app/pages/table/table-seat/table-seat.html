@@ -9,19 +9,40 @@
       <span class="seat__dealer">{{ 'table.dealer' | translate }}</span>
     }
     <span class="seat__name" [class.seat__name--mine]="mine()">{{ seat().displayName }}</span>
+    @if (near() && holding() !== null) {
+      <!-- Under the picture, in the place the name gave up: your own hand
+           is a number you want without stopping to count it. -->
+      <span class="seat__count">{{ holding() }}</span>
+    }
   </span>
   @if (held().length) {
-    <div class="seat__held">
+    <div class="seat__held" [style.--cards]="held().length">
       <!-- A place for every card, filled or still on its way, so the row is
            already the width it will be and nothing shifts as they land. -->
       @for (code of held(); track $index) {
         @if (code) {
-          <img #landing class="seat__card" [src]="'cards/' + code + '.svg'" alt="" />
+          <img
+            #landing
+            class="seat__card"
+            [style.--at]="$index"
+            [src]="'cards/' + code + '.svg'"
+            alt=""
+          />
         } @else {
-          <span #landing class="seat__card"></span>
+          <span #landing class="seat__card" [style.--at]="$index"></span>
         }
       }
     </div>
+  }
+  @if (!near() && holding() !== null) {
+    <!-- What they are holding, which is a number and a pile of backs. -->
+    <span #pile class="seat__pile">
+      <img class="seat__back" src="cards/2B.svg" alt="" />
+      <img class="seat__back" src="cards/1B.svg" alt="" />
+      @if (holding()) {
+        <span class="seat__tally">{{ holding() }}</span>
+      }
+    </span>
   }
 } @else {
   <span class="seat__who">

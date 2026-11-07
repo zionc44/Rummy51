@@ -32,5 +32,13 @@ public interface ITables
     /// </summary>
     Result<HandView> CutDeck(Guid tableId, Guid playerId, int position);
 
+    /// <summary>
+    /// One player's own cards. They go to that player's own connection and
+    /// never to a group, which is why they are asked for separately rather
+    /// than carried by <see cref="HandView"/>. Empty before the deal, and
+    /// for anybody not seated at that table.
+    /// </summary>
+    IReadOnlyList<string> CardsOf(Guid tableId, Guid playerId);
+
     LobbyTable? Find(Guid tableId);
 }

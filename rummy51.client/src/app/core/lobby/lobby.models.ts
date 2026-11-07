@@ -62,6 +62,12 @@ export interface LobbyTable {
 /** Mirrors HandPhase on the server, which sends the name rather than the ordinal. */
 export type HandPhase = 'cutting' | 'dealing' | 'playing';
 
+/** One pass of the deal: how many cards landed at which seat. */
+export interface DealPass {
+  readonly seat: number;
+  readonly count: number;
+}
+
 /**
  * The hand as everyone at the table may see it. Cards arrive as their code,
  * which is also the name of the picture, so there is one name and not two.
@@ -84,6 +90,11 @@ export interface HandView {
   readonly jokerPositions: readonly number[];
   readonly revealedAtCut: readonly string[];
   readonly finishingCard: string | null;
+  /** How many cards each seat holds. Anybody at a table can count them. */
+  readonly cardsPerSeat: readonly number[];
+  /** The deal pass by pass. It says how many went where and never which. */
+  readonly passes: readonly DealPass[];
+  readonly stockSize: number;
 }
 
 export interface CreateTableRequest {
