@@ -57,6 +57,21 @@
   white-space: nowrap;
 }
 
+.row__jokers {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.125rem;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+}
+
+// A card, so it keeps a card's proportions and nothing else decides them.
+.row__joker {
+  inline-size: 1.0625rem;
+  block-size: 1.5rem;
+}
+
 .row__join {
   flex: none;
   border: none;

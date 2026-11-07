@@ -10,6 +10,12 @@ public static class TableOptions
     public static readonly IReadOnlyList<int> Seats = [2, 3, 4];
 
     /// <summary>
+    /// How many jokers go into the deck. Even numbers only, because a deck is
+    /// made of whole packs and each brings its pair.
+    /// </summary>
+    public static readonly IReadOnlyList<int> Jokers = [0, 2, 4];
+
+    /// <summary>
     /// A score that ends the game. The winner of a hand takes minus thirty, so
     /// a total climbs with bad play: these are ceilings, not targets.
     /// </summary>

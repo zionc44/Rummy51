@@ -92,7 +92,10 @@
     "hands": "{{0}} ידיים",
     "stillSeated": "אתם יושבים בשולחן.",
     "backToTable": "חזרה לשולחן",
-    "yourTable": "השולחן שלכם"
+    "yourTable": "השולחן שלכם",
+    "jokers": "מספר ג׳וקרים",
+    "withJokers": "{{0}} ג׳וקרים",
+    "noJokers": "בלי ג׳וקרים"
   },
   "table": {
     "waiting": "ממתינים לשחקנים",
@@ -100,7 +103,11 @@
     "leave": "עזיבת השולחן",
     "emptySeat": "מקום פנוי",
     "gone": "השולחן כבר לא קיים",
-    "backToLobby": "חזרה ללובי"
+    "backToLobby": "חזרה ללובי",
+    "yourCut": "בחרו קלף — הוא יהיה קלף הגמירה",
+    "waitingForCut": "{{0}} חותך את החבילה",
+    "finishingCard": "קלף גמירה",
+    "jokersToCutter": "הג׳וקרים שעלו בחיתוך שייכים ל{{0}}"
   },
   "profile": {
     "open": "תפריט החשבון",
@@ -139,6 +146,10 @@
     "TableLimitInvalid": "ההגדרה הזאת לא מתאימה לסוג המשחק",
     "AlreadyAtATable": "אתם כבר יושבים בשולחן",
     "TableNotFound": "השולחן כבר לא קיים",
-    "TableStarted": "המשחק בשולחן הזה כבר התחיל"
+    "TableStarted": "המשחק בשולחן הזה כבר התחיל",
+    "TableJokersInvalid": "מספר הג׳וקרים לא תקין",
+    "HandNotStarted": "המשחק בשולחן הזה עוד לא התחיל",
+    "NotYoursToCut": "החיתוך הוא לא שלכם",
+    "AlreadyCut": "החבילה כבר נחתכה"
   }
 }

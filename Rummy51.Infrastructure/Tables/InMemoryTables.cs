@@ -26,6 +26,11 @@ public sealed class InMemoryTables : ITables
             return Refused("TableSeatsInvalid", FailureKind.Validation);
         }
 
+        if (!TableOptions.Jokers.Contains(request.Jokers))
+        {
+            return Refused("TableJokersInvalid", FailureKind.Validation);
+        }
+
         // The form offers only what fits, but the form is not what decides.
         if (!TableOptions.Allows(request.Mode, request.Seats, request.Limit))
         {
@@ -109,6 +114,42 @@ public sealed class InMemoryTables : ITables
         {
             // By id, which for version 7 is the order they were opened in.
             return [.. tables.Values.OrderBy(table => table.Id).Select(table => table.Describe())];
+        }
+    }
+
+    public HandView? Hand(Guid tableId)
+    {
+        lock (gate)
+        {
+            return tables.TryGetValue(tableId, out var table) ? table.DescribeHand() : null;
+        }
+    }
+
+    public Result<HandView> CutDeck(Guid tableId, Guid playerId, int position)
+    {
+        lock (gate)
+        {
+            if (!tables.TryGetValue(tableId, out var table))
+            {
+                return Result<HandView>.Fail(FailureKind.Validation, new Error("TableNotFound"));
+            }
+
+            if (table.CutterSeat is not { } cutter)
+            {
+                return Result<HandView>.Fail(FailureKind.Validation, new Error("HandNotStarted"));
+            }
+
+            if (table.SeatOf(playerId) != cutter)
+            {
+                return Result<HandView>.Fail(FailureKind.Validation, new Error("NotYoursToCut"));
+            }
+
+            if (!table.CutAt(position))
+            {
+                return Result<HandView>.Fail(FailureKind.Conflict, new Error("AlreadyCut"));
+            }
+
+            return Result<HandView>.Success(table.DescribeHand()!);
         }
     }
 

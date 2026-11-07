@@ -72,6 +72,21 @@ public sealed class LobbyHub(
     private Task BroadcastOnline() =>
         Clients.All.SendAsync(LobbyEvents.OnlinePlayersChanged, connections.Online());
 
+    /// <summary>
+    /// The table page asks to hear about one table. A group rather than a
+    /// broadcast, because a hand is nobody else's business - and because the
+    /// cards it will carry are about to be somebody's secret.
+    /// </summary>
+    public async Task<HandView?> Watch(Guid tableId)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, tableId.ToString());
+
+        return tables.Hand(tableId);
+    }
+
+    public Task Unwatch(Guid tableId) =>
+        Groups.RemoveFromGroupAsync(Context.ConnectionId, tableId.ToString());
+
     private Task BroadcastTables() =>
         Clients.All.SendAsync(LobbyEvents.TablesChanged, tables.All());
 

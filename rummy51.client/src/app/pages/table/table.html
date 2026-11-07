@@ -13,6 +13,9 @@
         @if (detail(); as detail) {
           <span class="table__limit">{{ detail.key | translate: detail.amount }}</span>
         }
+        @if (deck(); as deck) {
+          <span class="table__limit">{{ deck.key | translate: deck.amount }}</span>
+        }
       </p>
 
       <div class="table__others">
@@ -23,7 +26,61 @@
 
       <!-- Everything left over, which is where the melds will be laid. -->
       <div class="table__felt">
-        @if (!current.started) {
+        @if (hand(); as hand) {
+          @if (hand.phase === 'cutting') {
+            <div class="cut">
+              <p class="cut__hint">
+                {{ (canCut() ? 'table.yourCut' : 'table.waitingForCut') | translate: { '0': cutter() } }}
+              </p>
+
+              <!-- Face down, so these are a hundred backs and a position. -->
+              <div class="fan" [style.--per-row]="perRow()">
+                @for (row of fan(); track $index) {
+                  <div class="fan__row">
+                    @for (position of row; track position) {
+                      <button
+                        type="button"
+                        class="fan__card"
+                        [disabled]="!canCut()"
+                        (click)="cut(position)"
+                      >
+                        <img [src]="'cards/' + hand.backs[position] + '.svg'" alt="" />
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="board">
+              <!-- The finishing card first, so the pile drawn after it covers
+                   the half that is meant to be hidden. -->
+              <div class="stack">
+                @if (hand.finishingCard; as code) {
+                  <img class="stack__finishing" [src]="'cards/' + code + '.svg'" alt="" />
+                }
+                <span class="stack__pile">
+                  <img src="cards/1B.svg" alt="" />
+                  <img src="cards/2B.svg" alt="" />
+                  <img src="cards/1B.svg" alt="" />
+                </span>
+              </div>
+
+              @if (hand.revealedAtCut.length) {
+                <div class="board__jokers">
+                  <p class="cut__hint">
+                    {{ 'table.jokersToCutter' | translate: { '0': cutter() } }}
+                  </p>
+                  <div class="board__joker-cards">
+                    @for (code of hand.revealedAtCut; track $index) {
+                      <img [src]="'cards/' + code + '.svg'" alt="" />
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        } @else if (!current.started) {
           <p class="table__waiting">
             {{ 'table.waiting' | translate }}
             <span class="table__count">

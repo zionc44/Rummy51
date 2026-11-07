@@ -4,6 +4,7 @@ import {
   CreateTableRequest,
   GAME_MODES,
   GameMode,
+  JOKER_COUNTS,
   SERIES_HANDS,
   SURVIVAL_POINTS,
   TABLE_SEATS,
@@ -31,9 +32,11 @@ export class NewTable {
   readonly cancelled = output<void>();
 
   protected readonly seatChoices = TABLE_SEATS;
+  protected readonly jokerChoices = JOKER_COUNTS;
   protected readonly modes = GAME_MODES;
 
   protected readonly seats = signal(4);
+  protected readonly jokers = signal(2);
   protected readonly mode = signal<GameMode>('single');
 
   protected readonly limitChoices = computed<readonly number[]>(() => {
@@ -70,6 +73,7 @@ export class NewTable {
   protected open(): void {
     this.created.emit({
       seats: this.seats(),
+      jokers: this.jokers(),
       mode: this.mode(),
       limit: this.limit(),
     });

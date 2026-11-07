@@ -78,6 +78,37 @@ public class TablesController(
 
         await AnnounceAsync();
 
+        // Taking the last seat starts the hand, and whoever is already
+        // watching this table has to be told.
+        await TellTheTableAsync(tableId);
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// The cutter chose where to cut. The card there becomes the finishing
+    /// card, and the one after it is the first that will be dealt.
+    /// </summary>
+    [HttpPost("{tableId:guid}/cut")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Cut(Guid tableId, CutRequest request)
+    {
+        if (await accounts.GetCurrentPlayerAsync() is not { } player)
+        {
+            return Unauthorized();
+        }
+
+        var result = tables.CutDeck(tableId, player.PlayerId, request.Position);
+
+        if (!result.IsSuccess)
+        {
+            return this.Failure(result);
+        }
+
+        await TellTheTableAsync(tableId);
+
         return Ok(result.Value);
     }
 
@@ -104,4 +135,7 @@ public class TablesController(
 
     private Task AnnounceAsync() =>
         lobby.Clients.All.SendAsync(LobbyEvents.TablesChanged, tables.All());
+
+    private Task TellTheTableAsync(Guid tableId) =>
+        lobby.Clients.Group(tableId.ToString()).SendAsync(LobbyEvents.HandChanged, tables.Hand(tableId));
 }

@@ -19,6 +19,17 @@
     }
   </span>
 
+  <!-- Absent rather than zero: no jokers is the quieter fact of the two. -->
+  @if (table().jokers; as jokers) {
+    <span
+      class="row__jokers"
+      [attr.aria-label]="'lobby.withJokers' | translate: { '0': jokers }"
+    >
+      <img class="row__joker" src="cards/J-01.svg" alt="" width="17" height="24" />
+      ×{{ jokers }}
+    </span>
+  }
+
   <!-- Their own table is answered by the notice above the list, not here. -->
   @if (mine()) {
     <span class="row__state row__state--mine">{{ 'lobby.yourTable' | translate }}</span>

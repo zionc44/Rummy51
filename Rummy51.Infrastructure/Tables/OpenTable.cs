@@ -1,6 +1,7 @@
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Tables;
 using Rummy51.Domain.Entities;
+using Rummy51.Domain.Game;
 
 namespace Rummy51.Infrastructure.Tables;
 
@@ -13,6 +14,7 @@ namespace Rummy51.Infrastructure.Tables;
 internal sealed class OpenTable
 {
     private readonly PlayerSummary?[] seats;
+    private Hand? hand;
 
     public OpenTable(CreateTableRequest request)
     {
@@ -21,12 +23,14 @@ internal sealed class OpenTable
         Id = Guid.CreateVersion7();
         Mode = request.Mode;
         Limit = request.Limit;
+        Jokers = request.Jokers;
         seats = new PlayerSummary?[request.Seats];
     }
 
     public Guid Id { get; }
     public GameMode Mode { get; }
     public int? Limit { get; }
+    public int Jokers { get; }
 
     /// <summary>
     /// Set the moment the last seat is taken, and never unset: a game that has
@@ -47,6 +51,13 @@ internal sealed class OpenTable
 
         seats[free] = player;
         Started = seats.All(seat => seat is not null);
+
+        if (Started)
+        {
+            // Filling the table is what starts the hand. There is no button
+            // and nobody waits for anybody.
+            hand = new Hand(seats.Length, Jokers, Random.Shared.Next(seats.Length), Random.Shared.Next());
+        }
     }
 
     public void Unseat(Guid playerId)
@@ -59,8 +70,30 @@ internal sealed class OpenTable
         }
     }
 
+    /// <summary>Null until the table has filled and a hand has begun.</summary>
+    public int? CutterSeat => hand?.CutterSeat;
+
+    public bool AwaitingCut => hand?.Phase == HandPhase.Cutting;
+
+    public int SeatOf(Guid playerId) =>
+        Array.FindIndex(seats, seat => seat?.PlayerId == playerId);
+
+    public bool CutAt(int position) => hand?.CutAt(position) ?? false;
+
+    public HandView? DescribeHand() =>
+        hand is null
+            ? null
+            : new HandView(
+                hand.Phase,
+                hand.DealerSeat,
+                hand.CutterSeat,
+                hand.DeckSize,
+                [.. hand.Backs.Select(back => $"{back}B")],
+                [.. hand.RevealedAtCut.Select(card => card.Code)],
+                hand.FinishingCard?.Code);
+
     public LobbyTable Describe() =>
-        new(Id, Mode, Limit, [.. seats.Select(Occupant)], Started);
+        new(Id, Mode, Limit, Jokers, [.. seats.Select(Occupant)], Started);
 
     private static TableSeat Occupant(PlayerSummary? player) =>
         player is null

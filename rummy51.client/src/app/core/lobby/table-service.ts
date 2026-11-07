@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { failWithApiErrors } from '../errors/api-error';
-import { CreateTableRequest, LobbyTable } from './lobby.models';
+import { CreateTableRequest, HandView, LobbyTable } from './lobby.models';
 
 const API = '/api/tables';
 
@@ -21,6 +21,16 @@ export class TableService {
 
   join(tableId: string): Observable<LobbyTable> {
     return this.http.post<LobbyTable>(`${API}/${tableId}/join`, {}).pipe(failWithApiErrors());
+  }
+
+  /**
+   * The cutter chose where to cut. The card there becomes the finishing card,
+   * and the one after it is the first that will be dealt.
+   */
+  cut(tableId: string, position: number): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/cut`, { position })
+      .pipe(failWithApiErrors());
   }
 
   /** Leaves whichever table the player is at, which is at most one. */

@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { AuthService } from '../auth/auth-service';
-import { LobbyPlayer, LobbyTable } from './lobby.models';
+import { HandView, LobbyPlayer, LobbyTable } from './lobby.models';
 
 const HUB_URL = '/hubs/lobby';
 
@@ -9,6 +9,7 @@ const HUB_URL = '/hubs/lobby';
 const enum LobbyEvent {
   OnlinePlayersChanged = 'OnlinePlayersChanged',
   TablesChanged = 'TablesChanged',
+  HandChanged = 'HandChanged',
   SignedInElsewhere = 'SignedInElsewhere',
 }
 
@@ -25,9 +26,13 @@ export class LobbyConnection {
   private readonly open = signal<readonly LobbyTable[]>([]);
   private readonly replaced = signal(false);
   private readonly live = signal(false);
+  private readonly playing = signal<HandView | null>(null);
 
   readonly onlinePlayers = this.players.asReadonly();
   readonly tables = this.open.asReadonly();
+
+  /** The hand at the table being watched, if one is. */
+  readonly hand = this.playing.asReadonly();
 
   /**
    * True once the hub has answered. Until then an empty list of tables means
@@ -81,7 +86,24 @@ export class LobbyConnection {
     this.live.set(false);
     this.players.set([]);
     this.open.set([]);
+    this.playing.set(null);
     await connection?.stop();
+  }
+
+  /**
+   * Asks the hub for this one table's hand and to be told when it changes.
+   * A group rather than a broadcast, because the cards it will carry are
+   * about to be somebody's secret.
+   */
+  async watch(tableId: string): Promise<void> {
+    const hand = await this.connection?.invoke<HandView | null>('Watch', tableId);
+
+    this.playing.set(hand ?? null);
+  }
+
+  async unwatch(tableId: string): Promise<void> {
+    this.playing.set(null);
+    await this.connection?.invoke('Unwatch', tableId);
   }
 
   private build(): HubConnection {
@@ -98,6 +120,8 @@ export class LobbyConnection {
     );
 
     connection.on(LobbyEvent.TablesChanged, (tables: LobbyTable[]) => this.open.set(tables));
+
+    connection.on(LobbyEvent.HandChanged, (hand: HandView | null) => this.playing.set(hand));
 
     connection.on(LobbyEvent.SignedInElsewhere, () => {
       this.replaced.set(true);

@@ -17,6 +17,21 @@
       }
     </div>
 
+    <p class="new-table__label" id="joker-choice">{{ 'lobby.jokers' | translate }}</p>
+    <div class="new-table__choices" role="group" aria-labelledby="joker-choice">
+      @for (choice of jokerChoices; track choice) {
+        <button
+          type="button"
+          class="choice"
+          [class.choice--picked]="choice === jokers()"
+          [attr.aria-pressed]="choice === jokers()"
+          (click)="jokers.set(choice)"
+        >
+          {{ choice }}
+        </button>
+      }
+    </div>
+
     <p class="new-table__label" id="mode-choice">{{ 'lobby.gameType' | translate }}</p>
     <div class="new-table__choices" role="group" aria-labelledby="mode-choice">
       @for (choice of modes; track choice) {

@@ -92,7 +92,10 @@
     "hands": "{{0}} hands",
     "stillSeated": "You are sitting at a table.",
     "backToTable": "Back to the table",
-    "yourTable": "Your table"
+    "yourTable": "Your table",
+    "jokers": "Jokers",
+    "withJokers": "{{0}} jokers",
+    "noJokers": "No jokers"
   },
   "table": {
     "waiting": "Waiting for players",
@@ -100,7 +103,11 @@
     "leave": "Leave the table",
     "emptySeat": "Empty seat",
     "gone": "That table is gone",
-    "backToLobby": "Back to the lobby"
+    "backToLobby": "Back to the lobby",
+    "yourCut": "Pick a card — it becomes the finishing card",
+    "waitingForCut": "{{0}} is cutting the deck",
+    "finishingCard": "Finishing card",
+    "jokersToCutter": "The jokers from the cut belong to {{0}}"
   },
   "profile": {
     "open": "Account menu",
@@ -139,6 +146,10 @@
     "TableLimitInvalid": "That setting does not fit this game type",
     "AlreadyAtATable": "You are already sitting at a table",
     "TableNotFound": "That table is gone",
-    "TableStarted": "That table has already started"
+    "TableStarted": "That table has already started",
+    "TableJokersInvalid": "That is not a valid number of jokers",
+    "HandNotStarted": "The hand at that table has not begun",
+    "NotYoursToCut": "The cut is not yours to make",
+    "AlreadyCut": "The deck has already been cut"
   }
 }

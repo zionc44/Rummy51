@@ -23,5 +23,14 @@ public interface ITables
 
     IReadOnlyList<LobbyTable> All();
 
+    /// <summary>The hand at that table, or null while it has not begun.</summary>
+    HandView? Hand(Guid tableId);
+
+    /// <summary>
+    /// The cutter chose where to cut. The card there becomes the finishing
+    /// card, and the one after it is the first that will be dealt.
+    /// </summary>
+    Result<HandView> CutDeck(Guid tableId, Guid playerId, int position);
+
     LobbyTable? Find(Guid tableId);
 }

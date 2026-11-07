@@ -14,5 +14,6 @@ public sealed record LobbyTable(
     Guid TableId,
     GameMode Mode,
     int? Limit,
+    int Jokers,
     IReadOnlyList<TableSeat> Seats,
     bool Started);

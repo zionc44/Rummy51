@@ -19,6 +19,9 @@ export const GAME_MODES: readonly GameMode[] = ['single', 'survival', 'series'];
 
 export const TABLE_SEATS: readonly number[] = [2, 3, 4];
 
+/** Even numbers only: a deck is made of whole packs, and each brings its pair. */
+export const JOKER_COUNTS: readonly number[] = [0, 2, 4];
+
 /** What ends a survival game. The winner of a hand takes minus thirty, so a
     score climbs with bad play and these are ceilings, not targets. */
 export const SURVIVAL_POINTS: readonly number[] = [100, 200, 500];
@@ -51,12 +54,33 @@ export interface LobbyTable {
   readonly mode: GameMode;
   /** Points that end a survival game, or hands in a series. Null for one hand. */
   readonly limit: number | null;
+  readonly jokers: number;
   readonly seats: readonly TableSeat[];
   readonly started: boolean;
 }
 
+/** Mirrors HandPhase on the server, which sends the name rather than the ordinal. */
+export type HandPhase = 'cutting' | 'dealing' | 'playing';
+
+/**
+ * The hand as everyone at the table may see it. Cards arrive as their code,
+ * which is also the name of the picture, so there is one name and not two.
+ */
+export interface HandView {
+  readonly phase: HandPhase;
+  readonly dealerSeat: number;
+  readonly cutterSeat: number;
+  /** Face down, so the count is all anyone is told. */
+  readonly deckSize: number;
+  /** The back each of those cards wears, by position. Decoration only. */
+  readonly backs: readonly string[];
+  readonly revealedAtCut: readonly string[];
+  readonly finishingCard: string | null;
+}
+
 export interface CreateTableRequest {
   readonly seats: number;
+  readonly jokers: number;
   readonly mode: GameMode;
   /** Points that end a survival game, or hands in a series. Null for one hand. */
   readonly limit: number | null;

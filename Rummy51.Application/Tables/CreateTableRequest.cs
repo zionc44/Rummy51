@@ -6,6 +6,8 @@ public sealed record CreateTableRequest
 {
     public int Seats { get; init; }
 
+    public int Jokers { get; init; }
+
     public GameMode Mode { get; init; }
 
     /// <summary>
