@@ -72,6 +72,8 @@ export interface HandView {
   readonly cutterSeat: number;
   /** Face down, so the count is all anyone is told. */
   readonly deckSize: number;
+  /** Where the cutter chose, as a position in the deck. Null until they have. */
+  readonly cutAt: number | null;
   /** The back each of those cards wears, by position. Decoration only. */
   readonly backs: readonly string[];
   readonly revealedAtCut: readonly string[];

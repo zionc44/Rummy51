@@ -19,16 +19,22 @@
       </p>
 
       <div class="table__others">
-        @for (seat of others(); track $index) {
-          <app-table-seat class="table__other" [seat]="seat" />
+        @for (place of others(); track place.at) {
+          <app-table-seat
+            class="table__other"
+            [seat]="place.seat"
+            [dealer]="place.at === dealerSeat()"
+          />
         }
       </div>
 
       <!-- Everything left over, which is where the melds will be laid. -->
       <div class="table__felt">
         @if (hand(); as hand) {
-          @if (hand.phase === 'cutting') {
-            <div class="cut">
+          <!-- Both are on screen while the deck sweeps away: the cards need
+               somewhere to fly to, and the pile is it. -->
+          @if (hand.phase === 'cutting' || collapsing()) {
+            <div class="cut" [class.cut--sweeping]="collapsing()">
               <p class="cut__hint">
                 {{ (canCut() ? 'table.yourCut' : 'table.waitingForCut') | translate: { '0': cutter() } }}
               </p>
@@ -39,27 +45,52 @@
                   <div class="fan__row">
                     @for (position of row; track position) {
                       <button
+                        #fanCard
                         type="button"
                         class="fan__card"
-                        [disabled]="!canCut()"
+                        [class.fan__card--turned]="faceAt(position)"
+                        [disabled]="!canCut() || collapsing()"
                         (click)="cut(position)"
                       >
-                        <img [src]="'cards/' + hand.backs[position] + '.svg'" alt="" />
+                        @if (faceAt(position); as face) {
+                          <!-- Turned up by the cut. Both sides are drawn and
+                               whichever faces away is not painted. -->
+                          <span class="fan__turn" [class.fan__turn--over]="turning()">
+                            <img
+                              class="fan__side fan__side--back"
+                              [src]="'cards/' + hand.backs[position] + '.svg'"
+                              alt=""
+                            />
+                            <img class="fan__side" [src]="'cards/' + face + '.svg'" alt="" />
+                          </span>
+                        } @else {
+                          <img [src]="'cards/' + hand.backs[position] + '.svg'" alt="" />
+                        }
                       </button>
                     }
                   </div>
                 }
               </div>
             </div>
-          } @else {
+          }
+
+          @if (hand.phase !== 'cutting') {
             <div class="board">
               <!-- The finishing card first, so the pile drawn after it covers
                    the half that is meant to be hidden. -->
               <div class="stack">
                 @if (hand.finishingCard; as code) {
-                  <img class="stack__finishing" [src]="'cards/' + code + '.svg'" alt="" />
+                  <!-- Where the card is going. It waits, invisible, while the
+                       one in the deck travels here, so there is never two. -->
+                  <div
+                    #finishingSlot
+                    class="stack__finishing"
+                    [class.stack__finishing--waiting]="collapsing()"
+                  >
+                    <img class="stack__face" [src]="'cards/' + code + '.svg'" alt="" />
+                  </div>
                 }
-                <span class="stack__pile">
+                <span #pile class="stack__pile">
                   <img src="cards/1B.svg" alt="" />
                   <img src="cards/2B.svg" alt="" />
                   <img src="cards/1B.svg" alt="" />
@@ -67,7 +98,7 @@
               </div>
 
               @if (hand.revealedAtCut.length) {
-                <div class="board__jokers">
+                <div class="board__jokers" [class.board__jokers--waiting]="collapsing()">
                   <p class="cut__hint">
                     {{ 'table.jokersToCutter' | translate: { '0': cutter() } }}
                   </p>
@@ -91,7 +122,12 @@
       </div>
 
       @if (near(); as mySeat) {
-        <app-table-seat class="table__near" [seat]="mySeat" [mine]="seated()" />
+        <app-table-seat
+          class="table__near"
+          [seat]="mySeat"
+          [mine]="seated()"
+          [dealer]="nearSeat() === dealerSeat()"
+        />
       }
     } @else if (gone()) {
       <div class="table__gone">

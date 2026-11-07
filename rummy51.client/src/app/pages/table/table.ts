@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, effect, inject, input, signal, viewChild, viewChildren } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { ApiError } from '../../core/errors/api-error';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
+import { HandPhase } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { PageShell } from '../../shared/page-shell/page-shell';
@@ -16,6 +17,17 @@ import { TableSeat } from './table-seat/table-seat';
  * and aimed at.
  */
 const FanRows = 6;
+
+/** The card the cutter stopped on turns over where it lies. */
+const Turn = 350;
+const SweepAfter = Turn + 80;
+
+/** Then the rest of the deck gathers: one card's journey, and the gap between two. */
+const Travel = 240;
+const Stagger = 3;
+
+/** Last of all, the finishing card turns a quarter and goes to its place. */
+const Place = 380;
 
 /**
  * The table, before and after it fills. Nothing changes screens when the last
@@ -41,6 +53,18 @@ export class Table implements OnDestroy {
   protected readonly errors = signal<readonly ApiError[]>([]);
 
   protected readonly hand = this.lobby.hand;
+
+  /** True from the cut until the deck has settled, which keeps both on screen. */
+  protected readonly collapsing = signal(false);
+
+  /** The cards the cut turned up are showing their faces where they lie. */
+  protected readonly turning = signal(false);
+
+  private readonly fanCards = viewChildren<ElementRef<HTMLElement>>('fanCard');
+  private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
+  private readonly finishingSlot = viewChild<ElementRef<HTMLElement>>('finishingSlot');
+  private readonly timers: number[] = [];
+  private seenPhase: HandPhase | null = null;
 
   /** Null while the hub has not said, and once the table has closed. */
   protected readonly table = computed(
@@ -87,7 +111,50 @@ export class Table implements OnDestroy {
 
   protected readonly seated = computed(() => this.ownSeat() !== -1);
 
-  protected readonly near = computed(() => this.seats()[Math.max(0, this.ownSeat())] ?? null);
+  protected readonly nearSeat = computed(() => Math.max(0, this.ownSeat()));
+
+  protected readonly near = computed(() => this.seats()[this.nearSeat()] ?? null);
+
+  /**
+   * Which positions in the fan turned out to be something, and what. Jokers
+   * come first from where the cutter stopped and the finishing card after
+   * them, wrapping past the end of the deck exactly as the cut itself does.
+   */
+  private readonly revealedAt = computed<ReadonlyMap<number, string>>(() => {
+    const hand = this.hand();
+
+    if (!hand || hand.cutAt === null) {
+      return new Map();
+    }
+
+    const start = hand.cutAt;
+    const found = new Map<number, string>();
+
+    hand.revealedAtCut.forEach((code, step) => found.set((start + step) % hand.deckSize, code));
+
+    if (hand.finishingCard) {
+      found.set((start + hand.revealedAtCut.length) % hand.deckSize, hand.finishingCard);
+    }
+
+    return found;
+  });
+
+  /** Where in the fan the finishing card is lying, before it is sent away. */
+  private readonly finishingPosition = computed(() => {
+    const hand = this.hand();
+
+    return hand === null || hand.cutAt === null
+      ? null
+      : (hand.cutAt + hand.revealedAtCut.length) % hand.deckSize;
+  });
+
+  /** The face a position turned up, or null while it is still face down. */
+  protected faceAt(position: number): string | null {
+    return this.revealedAt().get(position) ?? null;
+  }
+
+  /** -1 until a hand has begun, which no seat ever matches. */
+  protected readonly dealerSeat = computed(() => this.hand()?.dealerSeat ?? -1);
 
   /**
    * Everyone else, counting round the table from the player's own seat, so
@@ -97,10 +164,11 @@ export class Table implements OnDestroy {
     const seats = this.seats();
     const from = Math.max(0, this.ownSeat());
 
-    return Array.from(
-      { length: Math.max(0, seats.length - 1) },
-      (_, step) => seats[(from + step + 1) % seats.length],
-    );
+    return Array.from({ length: Math.max(0, seats.length - 1) }, (_, step) => {
+      const at = (from + step + 1) % seats.length;
+
+      return { seat: seats[at], at };
+    });
   });
 
   protected readonly canCut = computed(() => {
@@ -143,10 +211,122 @@ export class Table implements OnDestroy {
         void this.lobby.watch(table);
       }
     });
+
+    effect(() => {
+      const phase = this.hand()?.phase ?? null;
+      const before = this.seenPhase;
+      this.seenPhase = phase;
+
+      // The change is the event, not the state. Somebody opening the page
+      // after the cut should not be shown it happening again.
+      if (before === 'cutting' && phase === 'dealing') {
+        this.sweepIntoThePile();
+      }
+    });
   }
 
   ngOnDestroy(): void {
+    this.timers.forEach((timer) => window.clearTimeout(timer));
     void this.lobby.unwatch(this.tableId());
+  }
+
+  /**
+   * Three beats, in the order a hand is actually cut. The card the cutter
+   * stopped on turns over where it lies; then the rest of the deck gathers
+   * itself into the pile; and only then does that card turn a quarter and
+   * take its place beside it.
+   */
+  private sweepIntoThePile(): void {
+    // Whoever turned animation off in their system meant it here too; the
+    // deck simply is in the pile.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    this.collapsing.set(true);
+
+    // Two frames: one for the cards to be drawn face down before they are
+    // asked to turn, and so the board exists to be measured against.
+    requestAnimationFrame(() => {
+      this.turning.set(true);
+
+      requestAnimationFrame(() => {
+        const cards = this.fanCards();
+        const revealed = this.revealedAt();
+
+        if (cards.length === 0) {
+          this.endSweep();
+          return;
+        }
+
+        const facedown = cards.filter((_, position) => !revealed.has(position));
+        const sweeping = facedown.length * Stagger + Travel;
+
+        this.after(SweepAfter, () => this.gatherToPile(facedown));
+        this.after(SweepAfter + sweeping, () => this.sendTheFinishingCard(cards));
+        this.after(SweepAfter + sweeping + Place, () => this.endSweep());
+      });
+    });
+  }
+
+  /** Everything still face down, from the far end of the deck back. */
+  private gatherToPile(cards: readonly ElementRef<HTMLElement>[]): void {
+    const target = this.pile()?.nativeElement.getBoundingClientRect();
+
+    if (!target) {
+      return;
+    }
+
+    cards.forEach((card, index) => {
+      const element = card.nativeElement;
+      const from = element.getBoundingClientRect();
+
+      element.style.transitionDuration = `${Travel}ms`;
+      element.style.transitionDelay = `${(cards.length - 1 - index) * Stagger}ms`;
+      element.style.transform =
+        `translate(${target.left - from.left}px, ${target.top - from.top}px)`;
+    });
+  }
+
+  /**
+   * Matched by their centres, because the place it is going to is already
+   * turned and its box is the box of a turned card.
+   */
+  private sendTheFinishingCard(cards: readonly ElementRef<HTMLElement>[]): void {
+    const slot = this.finishingSlot()?.nativeElement.getBoundingClientRect();
+    const where = this.finishingPosition();
+    const element = where === null ? undefined : cards[where]?.nativeElement;
+
+    if (!slot || !element) {
+      return;
+    }
+
+    const from = element.getBoundingClientRect();
+
+    element.style.zIndex = '20';
+    element.style.transitionDuration = `${Place}ms`;
+    element.style.transitionDelay = '0ms';
+    element.style.transform =
+      `translate(${slot.left + slot.width / 2 - from.left - from.width / 2}px, `
+      + `${slot.top + slot.height / 2 - from.top - from.height / 2}px) rotate(90deg)`;
+
+    // A joker at the cut belongs to the cutter and is listed on the board, so
+    // the one lying in the fan only has to stop being there.
+    cards.forEach((card, position) => {
+      if (position !== where && this.revealedAt().has(position)) {
+        card.nativeElement.style.transitionDuration = `${Place}ms`;
+        card.nativeElement.style.opacity = '0';
+      }
+    });
+  }
+
+  private after(delay: number, run: () => void): void {
+    this.timers.push(window.setTimeout(run, delay));
+  }
+
+  private endSweep(): void {
+    this.collapsing.set(false);
+    this.turning.set(false);
   }
 
   protected cut(position: number): void {

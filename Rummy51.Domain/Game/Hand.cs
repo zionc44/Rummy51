@@ -58,6 +58,13 @@ public sealed class Hand
 
     public Card? FinishingCard => cut?.FinishingCard;
 
+    /// <summary>
+    /// Where in the deck the cutter chose, counted from the top as the deck
+    /// lay before them. Null until they have. Everyone at the table needs it:
+    /// without it only the one who clicked knows which card turned over.
+    /// </summary>
+    public int? CutPosition { get; private set; }
+
     public IReadOnlyList<Card> RevealedAtCut => cut?.Revealed ?? [];
 
     /// <summary>
@@ -72,6 +79,7 @@ public sealed class Hand
         }
 
         cut = Cutting.At(deck, position);
+        CutPosition = ((position % DeckSize) + DeckSize) % DeckSize;
         deck = cut.Remaining;
         Phase = HandPhase.Dealing;
 

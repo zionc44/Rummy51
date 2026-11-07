@@ -104,10 +104,11 @@
     "emptySeat": "Empty seat",
     "gone": "That table is gone",
     "backToLobby": "Back to the lobby",
-    "yourCut": "Pick a card — it becomes the finishing card",
+    "yourCut": "Cut the deck — the card you stop on becomes the finishing card",
     "waitingForCut": "{{0}} is cutting the deck",
     "finishingCard": "Finishing card",
-    "jokersToCutter": "The jokers from the cut belong to {{0}}"
+    "jokersToCutter": "The jokers from the cut belong to {{0}}",
+    "dealer": "Dealer"
   },
   "profile": {
     "open": "Account menu",

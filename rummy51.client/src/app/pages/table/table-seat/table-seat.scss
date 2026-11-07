@@ -3,6 +3,7 @@
 :host {
   --seat-size: 3rem;
 
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -32,6 +33,22 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+// The dealer's button, where a real table would put a disc. It has to be
+// visible at a glance: the deal moves on by one every hand, and that is how
+// anyone follows it.
+.seat__dealer {
+  position: absolute;
+  inset-block-start: -0.3125rem;
+  inset-inline-end: 0.0625rem;
+  border-radius: var(--radius-pill);
+  background: var(--felt-500);
+  padding: 0.0625rem 0.3125rem;
+  color: var(--felt-950);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .seat__name {

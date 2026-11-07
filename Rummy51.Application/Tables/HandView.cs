@@ -11,6 +11,10 @@ namespace Rummy51.Application.Tables;
 /// How many cards are face down for the cutter to choose from. The cards
 /// themselves are nobody's business: they are face down.
 /// </param>
+/// <param name="CutAt">
+/// Where the cutter chose, as a position in the deck they were shown. Null
+/// until they have chosen.
+/// </param>
 /// <param name="Backs">
 /// The back each of those cards wears, by position. It says nothing about
 /// the card underneath; a deck of one colour just looks like a printer's
@@ -21,6 +25,7 @@ public sealed record HandView(
     int DealerSeat,
     int CutterSeat,
     int DeckSize,
+    int? CutAt,
     IReadOnlyList<string> Backs,
     IReadOnlyList<string> RevealedAtCut,
     string? FinishingCard);

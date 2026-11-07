@@ -88,6 +88,7 @@ internal sealed class OpenTable
                 hand.DealerSeat,
                 hand.CutterSeat,
                 hand.DeckSize,
+                hand.CutPosition,
                 [.. hand.Backs.Select(back => $"{back}B")],
                 [.. hand.RevealedAtCut.Select(card => card.Code)],
                 hand.FinishingCard?.Code);

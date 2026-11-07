@@ -20,4 +20,7 @@ export class TableSeat {
 
   /** Marks the signed-in player's own place, which is always the near one. */
   readonly mine = input(false);
+
+  /** Whose turn it is to deal. It moves on by one with every hand. */
+  readonly dealer = input(false);
 }
