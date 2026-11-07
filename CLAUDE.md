@@ -73,6 +73,16 @@ The dev server proxies `/api` to `https://localhost:7115` (`src/proxy.conf.js`,
 override with `API_TARGET`), so no CORS in development. `SpaRoot` and the
 `.esproj` reference stay in the csproj: publish bundles Angular into `wwwroot`.
 
+To look at it on a phone on the same network, `npm run lan` serves on every
+interface rather than on loopback alone. Allow TCP 57541 through the firewall
+on the private profile once, then open `https://<this machine's address>:57541`
+there. Only that one port is exposed: the dev server reaches the API over
+loopback as it always does. The ASP.NET development certificate names
+`localhost` and not an address, so the phone warns and the warning has to be
+accepted; everything behind it works, the hub included. Signing in through
+Google does not, because that address is not a registered redirect - use an
+email and a password.
+
 A build failing with MSB3027 means the server is running and holding its output.
 Stop it, or build with `-p:BaseOutputPath=<temp>/` to check compilation only.
 
