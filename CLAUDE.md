@@ -76,6 +76,13 @@ override with `API_TARGET`), so no CORS in development. `SpaRoot` and the
 A build failing with MSB3027 means the server is running and holding its output.
 Stop it, or build with `-p:BaseOutputPath=<temp>/` to check compilation only.
 
+`Testing` in `appsettings.Development.json` holds aids for testing a game by
+hand. The section is bound only when the host is running in development, so
+writing it into a deployed configuration switches nothing on. `MarkJokers`
+tells every client where the jokers are lying in the deck, which is the only
+practical way to work on a cut that finds one twice in a hundred hands — and
+plainly a cheat once that deck becomes the stock.
+
 ## Database
 
 PostgreSQL. Connection string in `appsettings.Development.json` (local machine,
@@ -190,6 +197,14 @@ A session is restored before the first render (`provideAppInitializer`), and
 guards run both ways — signed out away from `/lobby`, signed in away from the
 forms.
 
+## The game
+
+The rules live in [`docs/rules.md`](docs/rules.md) — the deck, the deal, a
+turn, runs and sets, going down, scoring, and what is still unsettled. Read
+it before touching anything under `Rummy51.Domain/Game`, and settle a rule
+there in the same change that enforces it, or the two drift apart and the
+written one is the one everybody trusts.
+
 ## State of play
 
 Done: project layout, player table, error contract, Swagger at `/swagger`,
@@ -198,15 +213,35 @@ and linking it to an account that already holds the address, the lobby roster
 over SignalR, and `/api/account` behind a profile menu in the header — display
 name, and a password that can be added as well as changed.
 
-Next: creating a table, then the game itself.
-
 A picture can be uploaded, cropped in the browser and re-encoded on the
-server, which keeps nothing of the original file - its EXIF, and the GPS a
-phone writes into it, included. It lives in 'player_avatars' rather than on
+server, which keeps nothing of the original file — its EXIF, and the GPS a
+phone writes into it, included. It lives in `player_avatars` rather than on
 the player row, which Identity reads on every authenticated request, and is
 served from a URL carrying a tag of its contents so the answer can be cached
-for good. A provider's picture and the player's own are both kept; the
-player says which to show.
+for good. A provider's picture and the player's own are both kept; the player
+says which to show.
+
+A table is opened for a number of seats, a mode and a number of jokers, and
+starts the moment the last seat is taken. One rule runs through all of it: a
+player occupies at most one seat, so opening a table and joining one are the
+same move and neither is possible while already seated. Tables live in memory
+(`InMemoryTables`) and nothing about them is in the database. A hand reaches
+the players at that table over a SignalR group rather than the lobby, which
+was arranged before any cards existed because of what it carries next.
+
+The deck is two packs and the jokers the table was opened with. A card is one
+of the fifty-two or a joker and nothing else; the ace is fourteen, because it
+is worth eleven wherever it is used, A-2-3 included. Shuffling is Fisher-Yates
+from a seed that is kept, so an odd hand can be dealt again exactly as it was.
+The cutter clicks a card in the fan laid out on the felt: that card is the
+finishing card, and a joker there is theirs instead — it travels to their seat
+and lies face up for the table to read — and costs them one of the cards they
+would have been dealt, so everyone still ends the deal holding the same
+number. `Dealing.Deal` is written and tested by construction, but nothing
+reaches it yet.
+
+Next: the deal, which is where secrecy starts — fourteen or fifteen cards have
+to reach one player and nobody else.
 
 Still open: the Google link on the account page; rate limiting
 and CAPTCHA on registration — it cannot require a credential, so those are its
