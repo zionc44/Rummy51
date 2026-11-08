@@ -4,8 +4,9 @@
 // A hand is held overlapped, so all that shows of a card is the corner that
 // names it - and the corner the source deck draws is a ninth of the card's
 // height, which comes to eight pixels on a phone. This deck trades the
-// middle of the card for that corner: both indices grow, the pips and the
-// picture between them shrink to stay out of their way.
+// middle of the card for that corner: both indices grow and are drawn with
+// a heavier pen, and the pips and the picture between them shrink to stay
+// out of their way.
 //
 // Generated rather than drawn, so that a change to the source deck can be
 // carried over by running this again:
@@ -27,12 +28,26 @@ const Rank = { size: 32, x: -114.4, y: -156 };
 const Suit = { size: 26.769, x: -111.784, y: -119 };
 
 /**
- * Two and a half times the corner leaves a rank of twenty-one pixels inside
- * the thirty-four a card shows of itself, and half the middle keeps the pips
- * clear of it. Together they are the whole of the difference.
+ * Twice the corner leaves a rank of seventeen pixels inside the thirty-four
+ * a card shows of itself. Smaller than it was, and easier to read for it:
+ * weight carries at this size better than height, and a shorter index needs
+ * less of the card. The middle takes back exactly the room it gave up.
  */
-const Corner = 2.5;
-const Middle = 0.5;
+const Corner = 2;
+const Middle = 0.625;
+
+/**
+ * A rank is a stroked path and not a letter, so its weight is one number.
+ * Eighty is a hairline once the glyph is read from a sliver of a card held
+ * among fourteen others; this is the same shape drawn with a heavier pen.
+ *
+ * Every glyph reaches exactly four hundred and sixty into a box that ends
+ * at five hundred, so eighty is also the widest pen that fits inside it.
+ * Anything heavier is cut off at the top of the digit unless the box is
+ * told to stop clipping, which is what the style below does - a stylesheet
+ * rule, because the browser's own says to clip and an attribute loses to it.
+ */
+const Weight = 140;
 
 /** The backs name nothing, so there is nothing in them to enlarge. */
 const Backs = ['1B.svg', '2B.svg'];
@@ -50,6 +65,18 @@ function grow(element, from) {
     .replace(/width="[-\d.]+"/, `width="${size}"`)
     .replace(/x="[-\d.]+"/, `x="${x}"`)
     .replace(/y="[-\d.]+"/, `y="${y}"`);
+}
+
+/**
+ * The rank's own symbol and nothing else: a suit is filled rather than
+ * stroked, and the picture on a court card is a picture.
+ */
+function thicken(defs) {
+  return defs.replace(/<symbol id="V[^"]*"[\s\S]*?<\/symbol>/, (rank) =>
+    rank
+      .replace(/stroke-width="[\d.]+"/g, `stroke-width="${Weight}"`)
+      .replace(/^<symbol /, '<symbol style="overflow:visible" '),
+  );
 }
 
 const isRank = (element) => element.includes(`x="${Rank.x}"`) && element.includes(`y="${Rank.y}"`);
@@ -127,7 +154,7 @@ function rebuild(card) {
   }
 
   return [
-    head,
+    thicken(head),
     shrink(upright.body, false),
     shrink(turned.body, true),
     indexOn(upright),
