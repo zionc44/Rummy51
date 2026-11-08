@@ -14,6 +14,16 @@
            is a number you want without stopping to count it. -->
       <span class="seat__count">{{ holding() }}</span>
     }
+    @if (sortable()) {
+      <button
+        type="button"
+        class="seat__sort"
+        [attr.aria-label]="'table.sortHand' | translate"
+        (click)="sorted.emit()"
+      >
+        <app-icon-sort />
+      </button>
+    }
   </span>
   @if (held().length) {
     <div class="seat__held">
@@ -21,12 +31,16 @@
            already the width it will be and nothing shifts as they land. -->
       @for (row of rows(); track $index) {
         <div class="seat__row" [style.--cards]="slots()">
-          @for (code of row; track $index) {
-            @if (code) {
+          <!-- Tracked by the card and not by the place, so that sorting
+               moves the pictures rather than repainting them where they
+               already are - which is what lets them be seen to move. -->
+          @for (place of row; track place.key) {
+            @if (place.code; as code) {
               <img
                 #landing
                 class="seat__card"
                 [style.--at]="$index"
+                [attr.data-place]="place.key"
                 [src]="deck() + code + '.svg'"
                 alt=""
               />

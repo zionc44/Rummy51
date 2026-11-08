@@ -4,6 +4,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { ApiError } from '../../core/errors/api-error';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
+import { HandOrder, inOrder } from '../../core/cards/card-order';
 import { DealPass, HandPhase } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
@@ -89,6 +90,27 @@ export class Table implements OnDestroy {
   private readonly animating = computed(() => this.collapsing() || this.dealing());
 
   protected readonly myCards = this.lobby.myCards;
+
+  /** Null until the player asks, which is the order they were dealt in. */
+  private readonly order = signal<HandOrder | null>(null);
+
+  /**
+   * Your own cards as you have chosen to hold them. Where they sit is yours
+   * and nobody else's: the server sends a hand and is never told an order.
+   */
+  private readonly myHand = computed(() => {
+    const order = this.order();
+
+    return order === null ? this.myCards() : inOrder(this.myCards(), order);
+  });
+
+  /**
+   * Two presses and two orders, because a run and a set are not the same
+   * shape: by rank the sets line up, by suit the runs do.
+   */
+  protected sortHand(): void {
+    this.order.update((current) => (current === 'byRank' ? 'bySuit' : 'byRank'));
+  }
 
   /**
    * How many of the cards the cut turned up have been turned over so far.
@@ -235,7 +257,7 @@ export class Table implements OnDestroy {
    */
   private faceUpCards(seat: number): readonly string[] {
     if (this.isMine(seat)) {
-      return this.myCards();
+      return this.myHand();
     }
 
     return seat === this.cutterSeat() ? this.hand()?.revealedAtCut ?? Nothing : Nothing;

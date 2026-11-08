@@ -124,6 +124,8 @@
           [places]="placesAt(nearSeat())"
           [holding]="holdingAt(nearSeat())"
           [near]="true"
+          [sortable]="seated() && myCards().length > 0"
+          (sorted)="sortHand()"
         />
       }
     } @else if (gone()) {

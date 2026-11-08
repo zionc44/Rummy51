@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, Signal, computed, inject, input, signal, viewChild, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, Signal, afterRenderEffect, computed, inject, input, output, signal, viewChild, viewChildren } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TableSeat as Seat } from '../../../core/lobby/lobby.models';
+import { IconSort } from '../../../shared/icons/icon-sort/icon-sort';
 import { PlayerAvatar } from '../../../shared/player-avatar/player-avatar';
 
 /**
@@ -8,6 +9,36 @@ import { PlayerAvatar } from '../../../shared/player-avatar/player-avatar';
  * is what leaves each of them enough of itself showing to be read on a phone.
  */
 const PerRow = 8;
+
+/** How long a card takes to travel to where sorting has sent it. */
+const Slide = 300;
+
+/**
+ * One place in the hand: a card, or a gap kept for one still on its way.
+ * The key tells it from every other place, which is what lets a sort move
+ * the pictures rather than repaint them. The deck is two packs, so a card's
+ * own name is not enough - the second seven of hearts needs to be told from
+ * the first or the two of them are one place as far as the list can see.
+ */
+interface Place {
+  readonly code: string | null;
+  readonly key: string;
+}
+
+function keyed(cards: readonly (string | null)[]): readonly Place[] {
+  const counted = new Map<string, number>();
+
+  return cards.map((code, at) => {
+    if (code === null) {
+      return { code, key: `place ${at}` };
+    }
+
+    const nth = counted.get(code) ?? 0;
+    counted.set(code, nth + 1);
+
+    return { code, key: `${code} ${nth}` };
+  });
+}
 
 /**
  * Whether there is width for the hand in a single line. The number mirrors
@@ -31,7 +62,7 @@ function oneRowFits(): Signal<boolean> {
  */
 @Component({
   selector: 'app-table-seat',
-  imports: [TranslatePipe, PlayerAvatar],
+  imports: [TranslatePipe, IconSort, PlayerAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.seat--near]': 'near()' },
   templateUrl: './table-seat.html',
@@ -87,12 +118,14 @@ export class TableSeat {
    * The hand as it is laid. Both lines are there from the first card, so the
    * ninth one arriving does not shift the eight that went before it.
    */
-  protected readonly rows = computed<readonly (readonly (string | null)[])[]>(() => {
+  protected readonly rows = computed<readonly (readonly Place[])[]>(() => {
     if (!this.splitting()) {
-      return [this.held()];
+      return [keyed(this.held())];
     }
 
-    const laid = this.withEveryPlace();
+    // Keyed before it is divided, so a card keeps the same name when the
+    // line it belongs to changes.
+    const laid = keyed(this.withEveryPlace());
 
     return [laid.slice(0, PerRow), laid.slice(PerRow)];
   });
@@ -123,6 +156,11 @@ export class TableSeat {
    */
   readonly holding = input<number | null>(null);
 
+  /** Only your own hand can be sorted, and only while you are holding one. */
+  readonly sortable = input(false);
+
+  readonly sorted = output();
+
   private readonly landings = viewChildren<ElementRef<HTMLElement>>('landing');
 
   private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
@@ -135,5 +173,69 @@ export class TableSeat {
   /** Where a card nobody may see comes to rest instead. */
   pileSpot(): HTMLElement | undefined {
     return this.pile()?.nativeElement;
+  }
+
+  private seen: ReadonlyMap<string, DOMRect> = new Map();
+
+  constructor() {
+    // Where every card is, read after each render. One the sort has moved
+    // is then put back where it was and let travel from there, so a hand
+    // rearranges itself in front of the player rather than at them.
+    afterRenderEffect({
+      earlyRead: () => {
+        this.held();
+
+        const before = this.seen;
+        this.seen = this.whereTheCardsAre();
+
+        return before;
+      },
+      write: (before) => this.slideFrom(before()),
+    });
+  }
+
+  private whereTheCardsAre(): ReadonlyMap<string, DOMRect> {
+    const found = new Map<string, DOMRect>();
+
+    for (const card of this.landings()) {
+      const place = card.nativeElement.dataset['place'];
+
+      if (place !== undefined) {
+        found.set(place, card.nativeElement.getBoundingClientRect());
+      }
+    }
+
+    return found;
+  }
+
+  /** A card that has not moved is left alone, which is most of them. */
+  private slideFrom(before: ReadonlyMap<string, DOMRect>): void {
+    for (const card of this.landings()) {
+      const element = card.nativeElement;
+      const place = element.dataset['place'] ?? '';
+      const from = before.get(place);
+      const to = this.seen.get(place);
+
+      if (from === undefined || to === undefined) {
+        continue;
+      }
+
+      const across = from.left - to.left;
+      const down = from.top - to.top;
+
+      if (across === 0 && down === 0) {
+        continue;
+      }
+
+      element.style.transition = 'none';
+      element.style.transform = `translate(${across}px, ${down}px)`;
+
+      // A frame to be drawn where it was, or it is given both ends of the
+      // journey at once and arrives without travelling.
+      requestAnimationFrame(() => {
+        element.style.transition = `transform ${Slide}ms ease-out`;
+        element.style.transform = '';
+      });
+    }
   }
 }

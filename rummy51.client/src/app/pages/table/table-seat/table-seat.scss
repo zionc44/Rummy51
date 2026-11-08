@@ -34,6 +34,26 @@
     display: none;
   }
 
+  // Under the count: small enough to sit beside a picture this narrow, and
+  // still large enough to be hit with a thumb.
+  .seat__sort {
+    display: grid;
+    place-items: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    padding: 0;
+    color: var(--text-muted);
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--felt-500);
+      color: var(--felt-500);
+    }
+  }
+
   // What is left under the picture once the name has gone.
   .seat__count {
     border-radius: var(--radius-pill);
@@ -173,20 +193,26 @@
 // one - twenty pixels of each is not a card you can read - so below the
 // breakpoint the hand is laid in two and every card keeps twice as much of
 // its corner showing.
+//
+// Left to right whatever the language is, which is the one place in this
+// client that does not mirror. A hand of cards is not writing: the low
+// cards are held on the left and the ace on the right by anybody, and the
+// index a card is known by is printed in its top left corner.
 .seat__row {
   display: flex;
+  direction: ltr;
   justify-content: center;
 }
 
 // As tall as the player beside it, and no taller: the width follows from
 // the shape of a card, so the strip cannot grow when one arrives.
-// Laid as a hand is held: the first card on top and each one after it
-// tucked behind, so what shows of every card is its left edge - which is
-// the corner that says what it is.
+// Laid as a hand is held: every card over the one to its left, so what
+// shows of each is its left edge - the corner that says what it is - and
+// the highest card lies whole on top of the pile.
 .seat__card {
   display: block;
   flex: none;
-  z-index: calc(var(--cards) - var(--at));
+  z-index: var(--at);
   block-size: var(--who);
   inline-size: auto;
   aspect-ratio: 240 / 336;

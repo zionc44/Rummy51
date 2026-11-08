@@ -107,7 +107,8 @@
     "yourCut": "Cut the deck — the card you stop on becomes the finishing card",
     "waitingForCut": "{{0}} is cutting the deck",
     "finishingCard": "Finishing card",
-    "dealer": "Dealer"
+    "dealer": "Dealer",
+    "sortHand": "Sort the hand"
   },
   "profile": {
     "open": "Account menu",
