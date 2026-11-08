@@ -278,6 +278,15 @@ export class Table implements OnDestroy {
   }
 
   /**
+   * How many cards a seat holds once the deal is done. The hand needs it
+   * before the cards are there: a line already as wide as it will be does
+   * not move the cards in it while the rest are still landing.
+   */
+  protected placesAt(seat: number): number {
+    return this.hand()?.cardsPerSeat[seat] ?? 0;
+  }
+
+  /**
    * Everyone else, counting round the table from the player's own seat, so
    * the row across from them reads in the order play will take.
    */

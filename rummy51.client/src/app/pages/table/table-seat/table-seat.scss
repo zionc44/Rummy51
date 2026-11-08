@@ -60,11 +60,17 @@
     block-size: var(--card-tall);
   }
 
-  // A hand of fifteen overlaps to fit the line there is, and lies open
+  // A hand of fifteen overlaps to fit the lines there are, and lies open
   // again when it is only the two or three cards of a deal in progress.
   .seat__held {
     flex: 1;
     min-inline-size: 0;
+  }
+
+  // Held at a card's height whether it has cards in it yet or not, so the
+  // ninth card arriving does not lift the eight above it.
+  .seat__row {
+    block-size: var(--card-tall);
   }
 
   .seat__card + .seat__card {
@@ -159,6 +165,17 @@
 
 .seat__held {
   display: flex;
+  flex-direction: column;
+  gap: var(--hand-gap);
+}
+
+// One line of the hand. A phone has no width for fifteen cards in a single
+// one - twenty pixels of each is not a card you can read - so below the
+// breakpoint the hand is laid in two and every card keeps twice as much of
+// its corner showing.
+.seat__row {
+  display: flex;
+  justify-content: center;
 }
 
 // As tall as the player beside it, and no taller: the width follows from
