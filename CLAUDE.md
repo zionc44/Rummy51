@@ -195,6 +195,14 @@ image file cannot be recoloured — `currentColor` does not reach inside it — 
 these icons take their colour from whatever contains them. A picture whose
 colours are fixed, such as a logo, is a file and an `<img>`.
 
+A card is one of those: an `<img>` of an SVG in `public/cards`. There are two
+decks. The second, `cards/corners`, is the first with both indices grown two
+and a half times and the pips and pictures between them halved, which is what
+makes a card legible when all that shows of it is its corner. Only the
+player's own hand reads from it; everywhere a card is seen whole reads from
+the first. It is generated and never drawn by hand — `npm run cards` builds it
+from the source deck, so a change there can be carried over.
+
 ngx-translate loads `public/i18n/<code>.json` at runtime. Hebrew is the default
 and carries `dir="rtl"`. Adding a language: an entry in `LANGUAGES`, a widening
 of `LanguageCode`, and the JSON file.
@@ -247,11 +255,22 @@ The cutter clicks a card in the fan laid out on the felt: that card is the
 finishing card, and a joker there is theirs instead — it travels to their seat
 and lies face up for the table to read — and costs them one of the cards they
 would have been dealt, so everyone still ends the deal holding the same
-number. `Dealing.Deal` is written and tested by construction, but nothing
-reaches it yet.
+number. The deal runs from there, and it is where secrecy starts: a hand
+reaches the player holding it and nobody else, while every other seat is told
+a count and shows a pile of backs.
 
-Next: the deal, which is where secrecy starts — fourteen or fifteen cards have
-to reach one player and nobody else.
+A hand is held overlapped, so all that shows of a card is the corner that
+names it. Fifteen cards in one line across a phone leave seventeen pixels of
+each, which is not a card anybody can read, so below the `sm` breakpoint the
+hand is laid in two lines of at most eight and the corner doubles to
+thirty-four. A line keeps a place for every card it will hold from the moment
+the first one lands — that is what lets the second line sit centred under the
+first without sliding out from under the cards already there — and the felt
+gives up the room for both lines before the cut rather than in the middle of
+the deal.
+
+Next: a turn. Drawing from the stock or the pile, going down at fifty-one,
+and discarding.
 
 Still open: the Google link on the account page; rate limiting
 and CAPTCHA on registration — it cannot require a credential, so those are its
