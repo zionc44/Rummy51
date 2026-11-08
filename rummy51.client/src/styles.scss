@@ -167,11 +167,16 @@ button {
 }
 
 // Someone who turned animation off in their system meant it here too.
+// Shortening a duration does not do that on its own: an animation set to
+// repeat for ever repeats at the shortened length, which is how a spinner
+// ends up flickering at whoever asked for less movement. Capping the count
+// is what stops it, on its last frame.
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

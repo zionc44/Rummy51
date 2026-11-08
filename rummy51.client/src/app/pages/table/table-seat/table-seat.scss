@@ -93,20 +93,32 @@
 }
 
 // One arc of the ring left bright, so turning it reads as waiting rather than
-// as decoration. The reduced-motion rule in styles.scss stops it, and what is
-// left is still plainly an empty seat.
+// as decoration.
 .seat__waiting {
+  // Named, because the reduced-motion rule below has to ask for it back.
+  --turn: 1.1s;
   inline-size: var(--seat-size);
   block-size: var(--seat-size);
   border: 2px solid var(--border);
   border-block-start-color: var(--felt-500);
   border-radius: var(--radius-pill);
-  animation: seat-turn 1.1s linear infinite;
+  animation: seat-turn var(--turn) linear infinite;
 }
 
 @keyframes seat-turn {
   to {
     transform: rotate(360deg);
+  }
+}
+
+// The one turn that outlives the reduced-motion rule in styles.scss. That
+// rule is aimed at movement that only decorates - cards flying, a deck
+// gathering - and this is not that. A ring that has stopped does not say a
+// seat is waiting, it says something broke. So it goes on turning.
+@media (prefers-reduced-motion: reduce) {
+  .seat__waiting {
+    animation-duration: var(--turn) !important;
+    animation-iteration-count: infinite !important;
   }
 }
 
