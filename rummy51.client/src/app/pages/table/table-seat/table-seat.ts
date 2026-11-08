@@ -69,6 +69,13 @@ export class TableSeat {
   private readonly oneRow = oneRowFits();
 
   /**
+   * Which deck this place is read from. The near one holds its hand
+   * overlapped and knows a card by the corner alone, so it takes the deck
+   * drawn for that; anywhere else a card is seen whole.
+   */
+  protected readonly deck = computed(() => (this.near() ? 'cards/corners/' : 'cards/'));
+
+  /**
    * Fifteen cards across a phone leave twenty pixels of each one showing,
    * which is not enough to tell one from another. Two lines double that.
    */

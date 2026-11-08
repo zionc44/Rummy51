@@ -27,7 +27,7 @@
                 #landing
                 class="seat__card"
                 [style.--at]="$index"
-                [src]="'cards/' + code + '.svg'"
+                [src]="deck() + code + '.svg'"
                 alt=""
               />
             } @else {
