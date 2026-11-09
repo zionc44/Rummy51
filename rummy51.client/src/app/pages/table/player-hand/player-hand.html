@@ -1,10 +1,9 @@
 <!-- A place for every card, filled or still on its way, so the line is
      already the width it will be and nothing shifts as they land.
 
-     What each place carries is read back by the drag riding on this element:
-     `data-id` says which card lies here and `data-meld` which run or set it
-     lies in, so picking one up needs no binding of its own. `data-place` is
-     the slide's, which knows a card by name rather than by number. -->
+     What each place carries is read back by the drag and the slide that ride
+     on this element: `data-id` says which card lies here and `data-meld`
+     which run or set it is lying in. A place carrying neither is a gap. -->
 @for (row of rows(); track $index; let line = $index) {
   <!-- A line divides its width by the places it has, which is why a card
        lands where the one before it left room for it. -->
@@ -19,10 +18,8 @@
              and the band carries the whole meld, which is the difference
              between tidying and moving. -->
         <span
-          #landing
           class="hand__card"
           [style.--at]="$index"
-          [attr.data-place]="keyOf(card, $index)"
           [attr.data-id]="card.id"
           [attr.data-meld]="meldAt(line, $index)"
         >
@@ -32,7 +29,7 @@
           }
         </span>
       } @else {
-        <span #landing class="hand__card" [style.--at]="$index"></span>
+        <span class="hand__card" [style.--at]="$index"></span>
       }
     }
   </div>

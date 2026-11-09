@@ -10,11 +10,12 @@ import {
   input,
   signal,
   untracked,
-  viewChildren,
 } from '@angular/core';
 import { HeldCard } from '../../../core/cards/card';
 import { meldsIn } from '../../../core/cards/melds';
+import { placesIn } from './drawn-hand';
 import { HandDrag } from './hand-drag';
+import { slideFrom, whereTheyAre } from './hand-slide';
 
 /**
  * The deck a hand is read from. It is held overlapped, so all that shows of
@@ -30,9 +31,6 @@ const Deck = 'cards/corners/';
  * belongs on one line, however many cards it is.
  */
 const PerRow = 8;
-
-/** How long a card takes to travel to where sorting has sent it. */
-const Slide = 300;
 
 /** How many colours the bands run through before starting again. */
 const Bands = 3;
@@ -176,91 +174,58 @@ export class PlayerHand {
     return card === null ? `place ${at}` : `card ${card.id}`;
   }
 
-  private readonly landings = viewChildren<ElementRef<HTMLElement>>('landing');
+  private readonly element: ElementRef<HTMLElement> = inject(ElementRef);
 
-  private seen: ReadonlyMap<string, DOMRect> = new Map();
+  private seen: ReadonlyMap<number, DOMRect> = new Map();
 
   constructor() {
-    // Where every card is, read after each render. One the sort has moved
-    // is then put back where it was and let travel from there, so a hand
-    // rearranges itself in front of the player rather than at them.
+    // Read after each render and written to after the next, which is what
+    // lets a card the sort has moved travel to its new place instead of
+    // appearing in it. The rows are what is watched rather than the cards,
+    // because they are what the laying out actually depends on - the cards,
+    // where the player has broken the line, and the width there is.
     afterRenderEffect({
       earlyRead: () => {
-        this.cards();
+        this.rows();
 
         const before = this.seen;
-        this.seen = this.whereTheCardsAre();
+        this.seen = whereTheyAre(this.hand());
 
         return before;
       },
       // Untracked, and that is the whole of it. A measurement is only good
-      // against the render it was taken from: what is read here - the cards,
-      // whether one is being dragged - would otherwise make this run again on
-      // its own, holding a reading from the render before and sliding the
-      // hand by a distance nothing has moved.
+      // against the render it was taken from: what is read here - the rows,
+      // whether a card is being dragged - would otherwise make this run
+      // again on its own, holding a reading from the render before and
+      // sliding the hand by a distance nothing has moved.
       write: (before) => {
         const was = before();
 
-        untracked(() => this.slideFrom(was));
+        untracked(() => this.slide(was));
       },
     });
   }
 
-  /** Where a card flying to this hand comes to rest, place by place. */
-  landingSpot(step: number): HTMLElement | undefined {
-    return this.landings()[step]?.nativeElement;
+  private hand(): HTMLElement {
+    return this.element.nativeElement;
   }
 
-  private whereTheCardsAre(): ReadonlyMap<string, DOMRect> {
-    const found = new Map<string, DOMRect>();
-
-    for (const card of this.landings()) {
-      const place = card.nativeElement.dataset['place'];
-
-      if (place !== undefined) {
-        found.set(place, card.nativeElement.getBoundingClientRect());
-      }
-    }
-
-    return found;
-  }
-
-  /** A card that has not moved is left alone, which is most of them. */
-  private slideFrom(before: ReadonlyMap<string, DOMRect>): void {
-    // Not while a card is being dragged. A card part way through a slide
-    // measures where it appears rather than where it belongs, and the place
-    // the finger is over is worked out from those measurements - so sliding
-    // during a drag feeds itself and the hand never settles.
+  /**
+   * Not while a card is being dragged. A card part way through a slide
+   * measures where it appears rather than where it belongs, and the place
+   * the finger is over is worked out from those measurements - so sliding
+   * during a drag feeds itself and the hand never settles.
+   */
+  private slide(before: ReadonlyMap<number, DOMRect>): void {
     if (this.drag.lifted().length > 0) {
       return;
     }
 
-    for (const card of this.landings()) {
-      const element = card.nativeElement;
-      const place = element.dataset['place'] ?? '';
-      const from = before.get(place);
-      const to = this.seen.get(place);
+    slideFrom(this.hand(), before, this.seen);
+  }
 
-      if (from === undefined || to === undefined) {
-        continue;
-      }
-
-      const across = from.left - to.left;
-      const down = from.top - to.top;
-
-      if (across === 0 && down === 0) {
-        continue;
-      }
-
-      element.style.transition = 'none';
-      element.style.transform = `translate(${across}px, ${down}px)`;
-
-      // A frame to be drawn where it was, or it is given both ends of the
-      // journey at once and arrives without travelling.
-      requestAnimationFrame(() => {
-        element.style.transition = `transform ${Slide}ms ease-out`;
-        element.style.transform = '';
-      });
-    }
+  /** Where a card flying to this hand comes to rest, place by place. */
+  landingSpot(step: number): HTMLElement | undefined {
+    return placesIn(this.hand())[step];
   }
 }
