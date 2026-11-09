@@ -1,0 +1,38 @@
+<p class="cut__hint">
+  {{ (yours() ? 'table.yourCut' : 'table.waitingForCut') | translate: { '0': cutter() } }}
+</p>
+
+<!-- Face down, so these are a hundred backs and a position. -->
+<div class="fan" [style.--per-row]="perRow()">
+  @for (row of fan(); track $index) {
+    <div class="fan__row">
+      @for (position of row; track position) {
+        <button
+          #fanCard
+          type="button"
+          class="fan__card"
+          [class.fan__card--turned]="faceAt(position)"
+          [class.fan__card--turning]="isTurning(position)"
+          [class.fan__card--joker]="jokers().has(position)"
+          [disabled]="!takeable()"
+          (click)="cut.emit(position)"
+        >
+          @if (faceAt(position); as face) {
+            <!-- Turned up by the cut. Both sides are drawn and whichever
+                 faces away is not painted. -->
+            <span class="fan__turn" [class.fan__turn--over]="isTurned(position)">
+              <img
+                class="fan__side fan__side--back"
+                [src]="'cards/' + hand().backs[position] + '.svg'"
+                alt=""
+              />
+              <img class="fan__side" [src]="'cards/' + face + '.svg'" alt="" />
+            </span>
+          } @else {
+            <img [src]="'cards/' + hand().backs[position] + '.svg'" alt="" />
+          }
+        </button>
+      }
+    </div>
+  }
+</div>

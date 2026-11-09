@@ -6,7 +6,6 @@ import { ApiError } from '../../core/errors/api-error';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
 import { HeldCard } from '../../core/cards/card';
 import { HandOrder, inOrder, moved } from '../../core/cards/card-order';
-import { finishingPosition, revealedAt, revealedOrder } from '../../core/cards/the-cut';
 import { HandPhase } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
@@ -15,14 +14,8 @@ import { ProfileMenu } from '../../shared/profile-menu/profile-menu';
 import { Dealing, Spots } from './dealing';
 import { CardMove } from './player-hand/hand-drag';
 import { PlayerHand } from './player-hand/player-hand';
+import { TableCut } from './table-cut/table-cut';
 import { TableSeat } from './table-seat/table-seat';
-
-/**
- * How many rows the deck is laid out in for the cut. Eighteen cards to a row
- * at most, which is what leaves each of them enough width to be told apart
- * and aimed at.
- */
-const FanRows = 6;
 
 /** Shared, so a seat holding nothing is not handed a new array every pass. */
 const Nothing: readonly HeldCard[] = [];
@@ -35,7 +28,15 @@ const Nothing: readonly HeldCard[] = [];
  */
 @Component({
   selector: 'app-table',
-  imports: [TranslatePipe, ErrorMessages, PageShell, PlayerHand, ProfileMenu, TableSeat],
+  imports: [
+    TranslatePipe,
+    ErrorMessages,
+    PageShell,
+    PlayerHand,
+    ProfileMenu,
+    TableCut,
+    TableSeat,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table.html',
   styleUrl: './table.scss',
@@ -101,7 +102,7 @@ export class Table implements OnDestroy {
     }
   }
 
-  private readonly fanCards = viewChildren<ElementRef<HTMLElement>>('fanCard');
+  private readonly theCut = viewChild<TableCut>('theCut');
   private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
   private readonly nearHand = viewChild<PlayerHand>('nearHand');
   private readonly otherSpots = viewChildren<TableSeat>('seatSpot');
@@ -111,7 +112,7 @@ export class Table implements OnDestroy {
   /** Everything the cut and the deal have to aim at, found in this view. */
   private spots(): Spots {
     return {
-      fanCards: () => this.fanCards().map((card) => card.nativeElement),
+      fanCards: () => this.theCut()?.cards() ?? [],
       pile: () => this.pile()?.nativeElement,
       finishingSlot: () => this.finishingSlot()?.nativeElement,
       faceUp: (seat, step) => this.faceUpSpot(seat, step),
@@ -199,37 +200,8 @@ export class Table implements OnDestroy {
 
   protected readonly near = computed(() => this.seats()[this.nearSeat()] ?? null);
 
-  /** Where in the fan the cut turned something up, and what it turned up. */
-  private readonly turnedUp = computed(() => revealedOrder(this.hand()));
-  private readonly facesUp = computed(() => revealedAt(this.hand()));
-
-  /**
-   * The jokers, shown where they lie so a cut onto one can be aimed at. One
-   * falls at the cut about twice in a hundred hands, which is no way to work
-   * on that path. Empty unless the server was asked to send them.
-   */
-  protected readonly jokers = computed(() => new Set(this.hand()?.jokerPositions ?? []));
-
-  /** The face a position turned up, or null while it is still face down. */
-  protected faceAt(position: number): string | null {
-    return this.facesUp().get(position) ?? null;
-  }
-
-  /** Whether the card lying there has had its turn yet. */
-  protected isTurned(position: number): boolean {
-    const step = this.turnedUp().indexOf(position);
-
-    return step !== -1 && step < this.show.turned();
-  }
-
-  /**
-   * The one card the sequence is on. It belongs above every other, its
-   * neighbours in the fan and the cards the cut turned up before it alike,
-   * or it turns over half hidden beneath the one lying on top of it.
-   */
-  protected isTurning(position: number): boolean {
-    return this.turnedUp()[this.show.turned() - 1] === position;
-  }
+  /** How far the cut has got in turning its cards over. */
+  protected readonly turned = this.show.turned;
 
   /** -1 until a hand has begun, which no seat ever matches. */
   protected readonly dealerSeat = computed(() => this.hand()?.dealerSeat ?? -1);
@@ -333,25 +305,6 @@ export class Table implements OnDestroy {
     const hand = this.hand();
 
     return hand ? this.seats()[hand.cutterSeat]?.displayName ?? '' : '';
-  });
-
-  protected readonly perRow = computed(() => Math.ceil((this.hand()?.deckSize ?? 0) / FanRows));
-
-  /**
-   * The deck laid out for the cut. One row is unclickable on a phone - a
-   * hundred cards across three hundred pixels is three pixels each - so it
-   * is folded into the height there is.
-   */
-  protected readonly fan = computed(() => {
-    const size = this.hand()?.deckSize ?? 0;
-    const perRow = this.perRow();
-
-    return Array.from({ length: FanRows }, (_, row) =>
-      Array.from(
-        { length: Math.max(0, Math.min(perRow, size - row * perRow)) },
-        (_, column) => row * perRow + column,
-      ),
-    ).filter((row) => row.length > 0);
   });
 
   constructor() {

@@ -37,46 +37,15 @@
           <!-- Both are on screen while the deck sweeps away: the cards need
                somewhere to fly to, and the pile is it. -->
           @if (hand.phase === 'cutting' || collapsing()) {
-            <div class="cut" [class.cut--sweeping]="collapsing()">
-              <p class="cut__hint">
-                {{ (canCut() ? 'table.yourCut' : 'table.waitingForCut') | translate: { '0': cutter() } }}
-              </p>
-
-              <!-- Face down, so these are a hundred backs and a position. -->
-              <div class="fan" [style.--per-row]="perRow()">
-                @for (row of fan(); track $index) {
-                  <div class="fan__row">
-                    @for (position of row; track position) {
-                      <button
-                        #fanCard
-                        type="button"
-                        class="fan__card"
-                        [class.fan__card--turned]="faceAt(position)"
-                        [class.fan__card--turning]="isTurning(position)"
-                        [class.fan__card--joker]="jokers().has(position)"
-                        [disabled]="!canCut() || collapsing()"
-                        (click)="cut(position)"
-                      >
-                        @if (faceAt(position); as face) {
-                          <!-- Turned up by the cut. Both sides are drawn and
-                               whichever faces away is not painted. -->
-                          <span class="fan__turn" [class.fan__turn--over]="isTurned(position)">
-                            <img
-                              class="fan__side fan__side--back"
-                              [src]="'cards/' + hand.backs[position] + '.svg'"
-                              alt=""
-                            />
-                            <img class="fan__side" [src]="'cards/' + face + '.svg'" alt="" />
-                          </span>
-                        } @else {
-                          <img [src]="'cards/' + hand.backs[position] + '.svg'" alt="" />
-                        }
-                      </button>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
+            <app-table-cut
+              #theCut
+              [hand]="hand"
+              [turned]="turned()"
+              [sweeping]="collapsing()"
+              [yours]="canCut()"
+              [cutter]="cutter()"
+              (cut)="cut($event)"
+            />
           }
 
           @if (hand.phase !== 'cutting') {
