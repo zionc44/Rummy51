@@ -4,13 +4,14 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { ApiError } from '../../core/errors/api-error';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
-import { HandOrder, inOrder } from '../../core/cards/card-order';
+import { HeldCard } from '../../core/cards/card';
+import { HandOrder, inOrder, moved } from '../../core/cards/card-order';
 import { DealPass, HandPhase } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { ProfileMenu } from '../../shared/profile-menu/profile-menu';
-import { TableSeat } from './table-seat/table-seat';
+import { CardMove, TableSeat } from './table-seat/table-seat';
 
 /**
  * How many rows the deck is laid out in for the cut. Eighteen cards to a row
@@ -36,7 +37,7 @@ const Stagger = 3;
 const Place = 380;
 
 /** Shared, so a seat holding nothing is not handed a new array every pass. */
-const Nothing: readonly string[] = [];
+const Nothing: readonly HeldCard[] = [];
 
 /** The deal: a card's journey, the gap inside a pass, and between two. */
 const Pass = 260;
@@ -91,25 +92,51 @@ export class Table implements OnDestroy {
 
   protected readonly myCards = this.lobby.myCards;
 
-  /** Null until the player asks, which is the order they were dealt in. */
-  private readonly order = signal<HandOrder | null>(null);
+  /**
+   * The hand as it was dealt, each card with the one thing that tells it
+   * from its twin in the other pack: where it arrived.
+   */
+  private readonly dealt = computed<readonly HeldCard[]>(() =>
+    this.myCards().map((code, id) => ({ id, code })),
+  );
+
+  /** Null until the hand has been sorted or a card moved by hand. */
+  private readonly laid = signal<readonly HeldCard[] | null>(null);
+
+  /**
+   * How many cards the player keeps on the first line of their hand. Null
+   * is the natural wrap, and it stays null until a card is carried across.
+   */
+  protected readonly firstLine = signal<number | null>(null);
 
   /**
    * Your own cards as you have chosen to hold them. Where they sit is yours
    * and nobody else's: the server sends a hand and is never told an order.
    */
-  private readonly myHand = computed(() => {
-    const order = this.order();
+  private readonly myHand = computed(() => this.laid() ?? this.dealt());
 
-    return order === null ? this.myCards() : inOrder(this.myCards(), order);
-  });
+  /** Which way the last press sorted them, so the next one does the other. */
+  private sortedBy: HandOrder = 'bySuit';
 
   /**
    * Two presses and two orders, because a run and a set are not the same
-   * shape: by rank the sets line up, by suit the runs do.
+   * shape: by rank the sets line up, by suit the runs do. Either of them
+   * takes over from an arrangement made by hand, which is what asking to
+   * have the hand sorted means.
    */
   protected sortHand(): void {
-    this.order.update((current) => (current === 'byRank' ? 'bySuit' : 'byRank'));
+    this.sortedBy = this.sortedBy === 'byRank' ? 'bySuit' : 'byRank';
+    this.laid.set(inOrder(this.dealt(), this.sortedBy));
+    this.firstLine.set(null);
+  }
+
+  /** One card, or a whole run, put down somewhere else in the hand. */
+  protected moveCard(move: CardMove): void {
+    this.laid.set(moved(this.myHand(), move.ids, move.to));
+
+    if (move.firstLine !== null) {
+      this.firstLine.set(move.firstLine);
+    }
   }
 
   /**
@@ -255,16 +282,21 @@ export class Table implements OnDestroy {
    * What a seat shows face up: your own hand at your own place, and at
    * anybody else's only the jokers the cut gave them.
    */
-  private faceUpCards(seat: number): readonly string[] {
+  private faceUpCards(seat: number): readonly HeldCard[] {
     if (this.isMine(seat)) {
       return this.myHand();
     }
 
-    return seat === this.cutterSeat() ? this.hand()?.revealedAtCut ?? Nothing : Nothing;
+    return seat === this.cutterSeat() ? this.cutJokers() : Nothing;
   }
 
+  /** The jokers the cut gave the cutter, which nobody rearranges. */
+  private readonly cutJokers = computed<readonly HeldCard[]>(() =>
+    (this.hand()?.revealedAtCut ?? []).map((code, id) => ({ id, code })),
+  );
+
   /** Those cards, with a gap kept for each one still on its way. */
-  protected heldAt(seat: number): readonly (string | null)[] {
+  protected heldAt(seat: number): readonly (HeldCard | null)[] {
     const cards = this.faceUpCards(seat);
 
     if (!this.animating()) {
@@ -374,6 +406,8 @@ export class Table implements OnDestroy {
       if (phase === 'cutting') {
         this.arrived.set([]);
         this.inFlight.set([]);
+        this.laid.set(null);
+        this.firstLine.set(null);
       }
 
       if (before === 'cutting' && phase === 'dealing') {

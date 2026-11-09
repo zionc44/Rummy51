@@ -126,6 +126,8 @@
           [near]="true"
           [sortable]="seated() && myCards().length > 0"
           (sorted)="sortHand()"
+          (moved)="moveCard($event)"
+          [firstLine]="firstLine()"
         />
       }
     } @else if (gone()) {

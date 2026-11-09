@@ -30,6 +30,13 @@
   --status-in-game-idle: #8b2f2f;
   --suit-red: #f87171;
 
+  // The bands under a run or a set. Three, so that two melds lying next to
+  // each other never wear the same colour; none of them red, which on a
+  // card is already the name of a suit.
+  --meld-1: #10b981;
+  --meld-2: #8b5cf6;
+  --meld-3: #f59e0b;
+
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-pill: 9999px;

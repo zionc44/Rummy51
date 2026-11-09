@@ -196,12 +196,16 @@ these icons take their colour from whatever contains them. A picture whose
 colours are fixed, such as a logo, is a file and an `<img>`.
 
 A card is one of those: an `<img>` of an SVG in `public/cards`. There are two
-decks. The second, `cards/corners`, is the first with both indices grown two
-and a half times and the pips and pictures between them halved, which is what
-makes a card legible when all that shows of it is its corner. Only the
-player's own hand reads from it; everywhere a card is seen whole reads from
-the first. It is generated and never drawn by hand — `npm run cards` builds it
-from the source deck, so a change there can be carried over.
+decks. The second, `cards/corners`, is the first with both indices drawn
+twice the size and with a heavier pen, and the pips and pictures between them
+shrunk to stay out of their way — which is what makes a card legible when all
+that shows of it is its corner. Weight carries at that size where height does
+not: a rank is a stroked path, so it is one number, and eighty is the widest
+pen that fits the box the glyph is drawn in, which is why the box is also told
+to stop clipping. Only the player's own hand reads from this deck; everywhere
+a card is seen whole reads from the first. It is generated and never drawn by
+hand — `npm run cards` builds it from the source deck, so a change there can
+be carried over.
 
 ngx-translate loads `public/i18n/<code>.json` at runtime. Hebrew is the default
 and carries `dir="rtl"`. Adding a language: an entry in `LANGUAGES`, a widening
@@ -259,15 +263,33 @@ number. The deal runs from there, and it is where secrecy starts: a hand
 reaches the player holding it and nobody else, while every other seat is told
 a count and shows a pile of backs.
 
-A hand is held overlapped, so all that shows of a card is the corner that
-names it. Fifteen cards in one line across a phone leave seventeen pixels of
-each, which is not a card anybody can read, so below the `sm` breakpoint the
-hand is laid in two lines of at most eight and the corner doubles to
-thirty-four. A line keeps a place for every card it will hold from the moment
-the first one lands — that is what lets the second line sit centred under the
-first without sliding out from under the cards already there — and the felt
-gives up the room for both lines before the cut rather than in the middle of
-the deal.
+A hand is held overlapped and reads left to right, lowest on the left: its
+line is the one place in the client that does not mirror with the language,
+because a hand of cards is not writing. All that shows of a card is the
+corner that names it, and fifteen cards in one line across a phone leave
+seventeen pixels of each — not a card anybody can read — so below the `sm`
+breakpoint the hand is laid in two lines and the corner doubles. A line keeps
+a place for every card it will hold from the moment the first one lands, so
+nothing shifts as the deal goes on, and the felt gives up the room for both
+lines before the cut rather than in the middle of it.
+
+The hand is the player's to arrange. One press of the sort button lays it by
+rank and the next by suit, because going down needs a run and a set at once
+and no single order shows both; jokers go past the highest card and the ace
+sorts beside the king, which is the one thing no single line can help. A card
+is dragged where it is wanted and the rest part to let it in, and where the
+hand wraps is the player's too — only carrying a card between the lines moves
+the break, so a run gathered on one line stays there. None of this crosses
+the wire: the server sends a hand and is never told an order.
+
+Runs and sets are banded as they are laid. The scan reads the hand as it is
+arranged rather than searching it for the best it could be — a meld is a meld
+because the player has put the cards beside each other, which is also why one
+broken across two lines is not one. Being a meld and being allowed to go down
+are different questions: the second needs a clean run and fifty-one points,
+and nothing asks it yet. The band is deep enough to take hold of, and that is
+what it is for: a finger on the band carries the whole run, a finger on the
+card above it carries one card out of it.
 
 Next: a turn. Drawing from the stock or the pile, going down at fifty-one,
 and discarding.

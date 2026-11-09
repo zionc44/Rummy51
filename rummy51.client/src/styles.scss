@@ -13,6 +13,10 @@
 html,
 body {
   height: 100%;
+  // Declined so that dragging a card near an edge is not read as a swipe
+  // back through history, and pulling one downwards is not read as a
+  // request to reload the page.
+  overscroll-behavior: none;
 }
 
 body {

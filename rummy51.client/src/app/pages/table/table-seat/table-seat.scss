@@ -93,6 +93,15 @@
     block-size: var(--card-tall);
   }
 
+  // The hand is dragged with a finger, and the gesture belongs to the whole
+  // of it rather than to the card it began on: a card is pulled to the line
+  // below and past the ends, and the browser must not take any of that for
+  // a scroll of its own.
+  .seat__held {
+    touch-action: none;
+    user-select: none;
+  }
+
   .seat__card + .seat__card {
     margin-inline-start: min(
       0.25rem,
@@ -210,17 +219,37 @@
 // shows of each is its left edge - the corner that says what it is - and
 // the highest card lies whole on top of the pile.
 .seat__card {
+  position: relative;
   display: block;
   flex: none;
   z-index: var(--at);
   block-size: var(--who);
   inline-size: auto;
   aspect-ratio: 240 / 336;
+  overflow: hidden;
   border-radius: 0.1875rem;
 
   & + & {
     margin-inline-start: 0.25rem;
   }
+
+}
+
+.seat__face {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+// Under the foot of the card, where a hand held overlapped still shows it,
+// and deep enough to be taken hold of: a finger on the band carries the
+// whole run, a finger on the face above it carries one card out of it.
+.seat__band {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 1.25rem;
+  cursor: grab;
 }
 
 // Cards nobody may see: a couple of backs and the count, because the number
