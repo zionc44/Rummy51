@@ -8,13 +8,13 @@ import {
   computed,
   inject,
   input,
-  output,
   signal,
   untracked,
   viewChildren,
 } from '@angular/core';
 import { HeldCard } from '../../../core/cards/card';
 import { meldsIn } from '../../../core/cards/melds';
+import { HandDrag } from './hand-drag';
 
 /**
  * The deck a hand is read from. It is held overlapped, so all that shows of
@@ -34,35 +34,8 @@ const PerRow = 8;
 /** How long a card takes to travel to where sorting has sent it. */
 const Slide = 300;
 
-/** How far a finger travels before it is a drag and not a tap. */
-const Grip = 6;
-
 /** How many colours the bands run through before starting again. */
 const Bands = 3;
-
-/** How far above the finger the card rides, so it is not hidden by it. */
-const Lift = 32;
-
-/** Cards picked up and put down somewhere else in the same hand. */
-export interface CardMove {
-  readonly ids: readonly number[];
-  readonly to: number;
-
-  /**
-   * How many cards the first line holds once it has landed, or null where
-   * the hand is on one line and there is no second for it to cross into.
-   */
-  readonly firstLine: number | null;
-}
-
-/** What is being carried, and where it was taken hold of. */
-interface Grasp {
-  readonly ids: readonly number[];
-  readonly from: { readonly x: number; readonly y: number };
-  readonly grabbedAt: { readonly x: number; readonly y: number };
-  readonly width: number;
-  readonly height: number;
-}
 
 /**
  * Whether there is width for the hand in a single line. The number mirrors
@@ -80,18 +53,17 @@ function oneRowFits(): Signal<boolean> {
 }
 
 /**
- * The player's own cards, laid as they have chosen to hold them. It shows a
- * hand, says where a card dragged out of it should go, and knows nothing
- * about whose hand it is or what the game makes of it.
+ * The player's own cards, laid as they have chosen to hold them: in one line
+ * or two, with the runs and sets they are lying in banded where they lie.
+ *
+ * Picking a card up and putting it down elsewhere is `HandDrag`, which rides
+ * on this element and reads the cards off it. Whoever uses this binds
+ * `arrangeable` and listens to `moved` as if they were its own.
  */
 @Component({
   selector: 'app-player-hand',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    '(pointermove)': 'drag($event)',
-    '(pointerup)': 'drop()',
-    '(pointercancel)': 'drop()',
-  },
+  hostDirectives: [{ directive: HandDrag, inputs: ['arrangeable'], outputs: ['moved'] }],
   templateUrl: './player-hand.html',
   styleUrl: './player-hand.scss',
 })
@@ -115,14 +87,7 @@ export class PlayerHand {
    */
   readonly firstLine = input<number | null>(null);
 
-  /**
-   * Whether these cards may be picked up and put down somewhere else. Only
-   * the player holding them may: anybody else looking at this place is
-   * watching, and what they would rearrange is not theirs.
-   */
-  readonly arrangeable = input(false);
-
-  readonly moved = output<CardMove>();
+  private readonly drag = inject(HandDrag);
 
   protected readonly deck = Deck;
 
@@ -162,7 +127,7 @@ export class PlayerHand {
 
   /** What is being dragged is drawn at the finger, so its places are gaps. */
   private asItIsHeld(cards: readonly (HeldCard | null)[]): readonly (HeldCard | null)[] {
-    const lifted = this.dragging();
+    const lifted = this.drag.lifted();
 
     if (lifted.length === 0) {
       return cards;
@@ -190,11 +155,20 @@ export class PlayerHand {
    */
   private readonly melds = computed(() => this.rows().map((row) => meldsIn(row)));
 
+  /**
+   * Which run or set a card is lying in, or null where it is in none. The
+   * numbers only have to differ between neighbours, which is what lets one
+   * meld be told from the next - and what lets a whole one be picked up.
+   */
+  protected meldAt(line: number, at: number): number | null {
+    return this.melds()[line]?.[at] ?? null;
+  }
+
   /** The colour of the band under a card, or null where it is in no meld. */
   protected bandOf(line: number, at: number): string | null {
-    const meld = this.melds()[line]?.[at];
+    const meld = this.meldAt(line, at);
 
-    return meld === undefined || meld === null ? null : `var(--meld-${(meld % Bands) + 1})`;
+    return meld === null ? null : `var(--meld-${(meld % Bands) + 1})`;
   }
 
   /** A card is known by which card it is; an empty place, by where it is. */
@@ -202,16 +176,8 @@ export class PlayerHand {
     return card === null ? `place ${at}` : `card ${card.id}`;
   }
 
-  /** The cards in the player's hand rather than lying in it, if any are. */
-  protected readonly dragging = signal<readonly number[]>([]);
-
   private readonly landings = viewChildren<ElementRef<HTMLElement>>('landing');
 
-  private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
-  private grasp: Grasp | null = null;
-  private carried: HTMLElement | null = null;
-  private landing = 0;
-  private lastPlace = '';
   private seen: ReadonlyMap<string, DOMRect> = new Map();
 
   constructor() {
@@ -238,288 +204,11 @@ export class PlayerHand {
         untracked(() => this.slideFrom(was));
       },
     });
-
-    // A card left in the air when the page goes is a card left in the body.
-    inject(DestroyRef).onDestroy(() => this.settle());
   }
 
   /** Where a card flying to this hand comes to rest, place by place. */
   landingSpot(step: number): HTMLElement | undefined {
     return this.landings()[step]?.nativeElement;
-  }
-
-  /** One card, taken by its face. */
-  protected take(event: PointerEvent, card: HeldCard): void {
-    this.begin(event, [card.id]);
-  }
-
-  /**
-   * A whole run or set, taken by the band that marks it. The band is the
-   * one part of a card that says "these go together", so it is the part
-   * that carries them together.
-   */
-  protected takeMeld(event: PointerEvent, line: number, at: number): void {
-    const meld = this.melds()[line]?.[at];
-
-    if (meld === undefined || meld === null) {
-      return;
-    }
-
-    const ids = (this.rows()[line] ?? [])
-      .map((card, place) => (this.melds()[line]?.[place] === meld ? card?.id : undefined))
-      .filter((id): id is number => id !== undefined);
-
-    this.begin(event, ids);
-  }
-
-  /**
-   * Taken, but not yet dragged. A finger that comes down and goes up again
-   * without travelling is a tap, and taps belong to the game rather than to
-   * the arranging of a hand.
-   */
-  private begin(event: PointerEvent, ids: readonly number[]): void {
-    if (this.grasp !== null || ids.length === 0 || !this.arrangeable()) {
-      return;
-    }
-
-    // Anything still on its way down from the move before is put down at
-    // once, so there are never two of them in the air.
-    this.settle();
-
-    // Otherwise the browser takes a picture to be its own to drag, which
-    // is why this worked with a finger and not with a mouse.
-    event.preventDefault();
-
-    const boxes = this.elementsFor(ids).map((element) => element.getBoundingClientRect());
-
-    if (boxes.length === 0) {
-      return;
-    }
-
-    const left = Math.min(...boxes.map((box) => box.left));
-    const top = Math.min(...boxes.map((box) => box.top));
-
-    this.host.nativeElement.setPointerCapture(event.pointerId);
-    this.grasp = {
-      ids,
-      from: { x: left, y: top },
-      grabbedAt: { x: event.clientX - left, y: event.clientY - top },
-      width: Math.max(...boxes.map((box) => box.right)) - left,
-      height: Math.max(...boxes.map((box) => box.bottom)) - top,
-    };
-  }
-
-  /** The cards themselves, found by the names their places carry. */
-  private elementsFor(ids: readonly number[]): HTMLElement[] {
-    const wanted = new Set(ids.map((id) => `card ${id}`));
-
-    return this.landings()
-      .map((ref) => ref.nativeElement)
-      .filter((element) => wanted.has(element.dataset['place'] ?? ''));
-  }
-
-  protected drag(event: PointerEvent): void {
-    const grasp = this.grasp;
-
-    if (grasp === null) {
-      return;
-    }
-
-    if (this.dragging().length === 0) {
-      const travelled = Math.hypot(
-        event.clientX - grasp.from.x - grasp.grabbedAt.x,
-        event.clientY - grasp.from.y - grasp.grabbedAt.y,
-      );
-
-      if (travelled < Grip) {
-        return;
-      }
-
-      this.lift(grasp);
-    }
-
-    this.follow(event, grasp);
-
-    const place = this.placeFor(event.clientX, event.clientY);
-    const to = place.line === 0 ? place.within : place.inFirst + place.within;
-
-    // Crossing between the lines is what moves the break, and nothing else
-    // does: eight cards above stay eight, and nine stay nine.
-    const firstLine = !this.splitting()
-      ? null
-      : place.line === 0
-        ? place.inFirst + grasp.ids.length
-        : place.inFirst;
-
-    const move = `${to} of ${firstLine}`;
-
-    if (move !== this.lastPlace) {
-      this.lastPlace = move;
-      this.moved.emit({ ids: grasp.ids, to, firstLine });
-    }
-  }
-
-  /**
-   * Put down. The card travels from the finger to the gap that has been
-   * kept for it rather than appearing there, and only then is the gap
-   * filled, so there is never both a card and a copy of it.
-   */
-  protected drop(): void {
-    const carried = this.carried;
-    this.grasp = null;
-    this.lastPlace = '';
-
-    if (carried === null) {
-      return;
-    }
-
-    const gap = this.gap()?.getBoundingClientRect();
-
-    if (gap === undefined) {
-      this.settle();
-      return;
-    }
-
-    carried.style.transition = `transform ${Slide}ms ease-out`;
-    carried.style.transform = `translate(${gap.left}px, ${gap.top}px)`;
-    this.landing = window.setTimeout(() => this.settle(), Slide);
-  }
-
-  /** The gap is filled and the copy is gone, in that order and once only. */
-  private settle(): void {
-    window.clearTimeout(this.landing);
-    this.landing = 0;
-
-    this.carried?.remove();
-    this.carried = null;
-
-    // Only when there is something to let go of. Setting it empty again is a
-    // new array either way, and that is a change to everything reading it -
-    // which is a whole hand re-rendered every time a card is merely pressed.
-    if (this.dragging().length > 0) {
-      this.dragging.set([]);
-    }
-  }
-
-  /**
-   * A copy fixed to the window, because the hand is inside a box that
-   * clips. A run is copied whole, each card where it was lying, so what
-   * travels looks like what was picked up.
-   */
-  private lift(grasp: Grasp): void {
-    const carried = document.createElement('div');
-
-    carried.setAttribute('inert', '');
-    carried.style.position = 'fixed';
-    // Window pixels, which have neither a start nor an end to speak of.
-    carried.style.left = '0';
-    carried.style.top = '0';
-    carried.style.zIndex = '40';
-    carried.style.pointerEvents = 'none';
-    carried.style.width = `${grasp.width}px`;
-    carried.style.height = `${grasp.height}px`;
-    carried.style.transform = `translate(${grasp.from.x}px, ${grasp.from.y}px)`;
-
-    this.elementsFor(grasp.ids).forEach((element, at) => {
-      const box = element.getBoundingClientRect();
-      const copy = element.cloneNode(true) as HTMLElement;
-
-      copy.style.position = 'absolute';
-      copy.style.left = `${box.left - grasp.from.x}px`;
-      copy.style.top = `${box.top - grasp.from.y}px`;
-      copy.style.width = `${box.width}px`;
-      copy.style.height = `${box.height}px`;
-      copy.style.margin = '0';
-      copy.style.zIndex = `${at}`;
-      carried.append(copy);
-    });
-
-    document.body.append(carried);
-    this.carried = carried;
-    this.dragging.set(grasp.ids);
-  }
-
-  private follow(event: PointerEvent, grasp: Grasp): void {
-    const carried = this.carried;
-
-    if (carried === null) {
-      return;
-    }
-
-    const x = event.clientX - grasp.grabbedAt.x;
-    const y = event.clientY - grasp.grabbedAt.y - Lift;
-
-    carried.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
-  }
-
-  /** The first place in the hand with nothing in it: where they will go. */
-  private gap(): HTMLElement | undefined {
-    return this.landings()
-      .map((ref) => ref.nativeElement)
-      .find((element) => element.dataset['place'] === undefined);
-  }
-
-  /**
-   * Where the pointer says the card belongs: which line, how many of the
-   * cards on that line it comes after, and how many are on the first -
-   * which is what turns a place on a line into a place in the hand.
-   */
-  private placeFor(x: number, y: number): { line: number; within: number; inFirst: number } {
-    const rows = this.rows();
-    const boxes = this.landings().map((ref) => ref.nativeElement.getBoundingClientRect());
-    const line = this.lineUnder(y, rows, boxes);
-
-    let within = 0;
-    let inFirst = 0;
-    let at = 0;
-
-    for (const [index, cards] of rows.entries()) {
-      for (const card of cards) {
-        const box = boxes[at++];
-
-        if (card === null || box === undefined) {
-          continue;
-        }
-
-        if (index === 0) {
-          inFirst++;
-        }
-
-        if (index === line && box.left + box.width / 2 < x) {
-          within++;
-        }
-      }
-    }
-
-    return { line, within, inFirst };
-  }
-
-  private lineUnder(
-    y: number,
-    rows: readonly (readonly (HeldCard | null)[])[],
-    boxes: readonly DOMRect[],
-  ): number {
-    let at = 0;
-    let nearest = Number.POSITIVE_INFINITY;
-    let line = 0;
-
-    for (const [index, cards] of rows.entries()) {
-      const box = boxes[at];
-      at += cards.length;
-
-      if (box === undefined) {
-        continue;
-      }
-
-      const away = Math.abs(y - (box.top + box.height / 2));
-
-      if (away < nearest) {
-        nearest = away;
-        line = index;
-      }
-    }
-
-    return line;
   }
 
   private whereTheCardsAre(): ReadonlyMap<string, DOMRect> {
@@ -542,7 +231,7 @@ export class PlayerHand {
     // measures where it appears rather than where it belongs, and the place
     // the finger is over is worked out from those measurements - so sliding
     // during a drag feeds itself and the hand never settles.
-    if (this.dragging().length > 0) {
+    if (this.drag.lifted().length > 0) {
       return;
     }
 

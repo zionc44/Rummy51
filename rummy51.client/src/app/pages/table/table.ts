@@ -11,7 +11,8 @@ import { TableService } from '../../core/lobby/table-service';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { ProfileMenu } from '../../shared/profile-menu/profile-menu';
-import { CardMove, PlayerHand } from './player-hand/player-hand';
+import { CardMove } from './player-hand/hand-drag';
+import { PlayerHand } from './player-hand/player-hand';
 import { TableSeat } from './table-seat/table-seat';
 
 /**
