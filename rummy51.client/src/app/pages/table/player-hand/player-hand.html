@@ -1,0 +1,42 @@
+<!-- A place for every card, filled or still on its way, so the line is
+     already the width it will be and nothing shifts as they land. -->
+@for (row of rows(); track $index; let line = $index) {
+  <!-- A line divides its width by the places it has, which is why a card
+       lands where the one before it left room for it. -->
+  <div class="hand__row" [style.--cards]="row.length">
+    <!-- Tracked by the card and not by the place, so that sorting moves the
+         pictures rather than repainting them where they already are - which
+         is what lets them be seen to move. -->
+    @for (card of row; track keyOf(card, $index)) {
+      @if (card) {
+        <!-- The card, and under its foot the band that says it is lying in
+             a run or a set with its neighbours. The face carries one card
+             and the band carries the whole meld, which is the difference
+             between tidying and moving. -->
+        <span
+          #landing
+          class="hand__card"
+          [style.--at]="$index"
+          [attr.data-place]="keyOf(card, $index)"
+        >
+          <img
+            class="hand__face"
+            [src]="deck + card.code + '.svg'"
+            (pointerdown)="take($event, card)"
+            draggable="false"
+            alt=""
+          />
+          @if (bandOf(line, $index); as band) {
+            <span
+              class="hand__band"
+              [style.background]="band"
+              (pointerdown)="takeMeld($event, line, $index)"
+            ></span>
+          }
+        </span>
+      } @else {
+        <span #landing class="hand__card" [style.--at]="$index"></span>
+      }
+    }
+  </div>
+}

@@ -14,20 +14,16 @@
   gap: 0.375rem;
 }
 
-// The near place has the width of the table, and on a phone that line is
-// worth more to the cards than to a name its owner already knows. So the
-// picture alone marks the place, as narrow as it is.
-:host(.seat--near) {
+// The near place gives the width of the table to the hand laid beside it, so
+// the picture alone marks the seat, as narrow as it is.
+:host(.seat--compact) {
   --seat-size: 2.25rem;
 
-  inline-size: 100%;
   gap: 0.25rem;
 
   .seat__who {
-    order: 1;
     inline-size: var(--seat-size);
     block-size: auto;
-    margin-inline-start: auto;
   }
 
   .seat__name {
@@ -66,47 +62,12 @@
   }
 
   // Narrowed with everything else, and kept inside the picture's width so
-  // it cannot lean over the first card.
+  // it cannot lean over whatever is next to it.
   .seat__dealer {
     inset-inline: 0;
     padding-inline: 0.125rem;
     font-size: 0.5rem;
     text-align: center;
-  }
-
-  // Near enough to read, and the room for them is kept whether they are
-  // there or not, so the felt does not shrink as a hand is dealt.
-  .seat__card {
-    block-size: var(--card-tall);
-  }
-
-  // A hand of fifteen overlaps to fit the lines there are, and lies open
-  // again when it is only the two or three cards of a deal in progress.
-  .seat__held {
-    flex: 1;
-    min-inline-size: 0;
-  }
-
-  // Held at a card's height whether it has cards in it yet or not, so the
-  // ninth card arriving does not lift the eight above it.
-  .seat__row {
-    block-size: var(--card-tall);
-  }
-
-  // The hand is dragged with a finger, and the gesture belongs to the whole
-  // of it rather than to the card it began on: a card is pulled to the line
-  // below and past the ends, and the browser must not take any of that for
-  // a scroll of its own.
-  .seat__held {
-    touch-action: none;
-    user-select: none;
-  }
-
-  .seat__card + .seat__card {
-    margin-inline-start: min(
-      0.25rem,
-      calc((100% - var(--card)) / (var(--cards) - 1) - var(--card))
-    );
   }
 }
 
@@ -192,64 +153,26 @@
   color: var(--text-faint);
 }
 
+// The jokers the cut gave this player, lying open: there are never more than
+// a few, so they are laid side by side rather than overlapped.
 .seat__held {
   display: flex;
-  flex-direction: column;
-  gap: var(--hand-gap);
 }
 
-// One line of the hand. A phone has no width for fifteen cards in a single
-// one - twenty pixels of each is not a card you can read - so below the
-// breakpoint the hand is laid in two and every card keeps twice as much of
-// its corner showing.
-//
-// Left to right whatever the language is, which is the one place in this
-// client that does not mirror. A hand of cards is not writing: the low
-// cards are held on the left and the ace on the right by anybody, and the
-// index a card is known by is printed in its top left corner.
-.seat__row {
-  display: flex;
-  direction: ltr;
-  justify-content: center;
-}
-
-// As tall as the player beside it, and no taller: the width follows from
-// the shape of a card, so the strip cannot grow when one arrives.
-// Laid as a hand is held: every card over the one to its left, so what
-// shows of each is its left edge - the corner that says what it is - and
-// the highest card lies whole on top of the pile.
+// As tall as the player beside it, and no taller: the width follows from the
+// shape of a card, so the strip cannot grow when one arrives.
 .seat__card {
-  position: relative;
   display: block;
   flex: none;
   z-index: var(--at);
   block-size: var(--who);
   inline-size: auto;
   aspect-ratio: 240 / 336;
-  overflow: hidden;
   border-radius: 0.1875rem;
 
   & + & {
     margin-inline-start: 0.25rem;
   }
-
-}
-
-.seat__face {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-}
-
-// Under the foot of the card, where a hand held overlapped still shows it,
-// and deep enough to be taken hold of: a finger on the band carries the
-// whole run, a finger on the face above it carries one card out of it.
-.seat__band {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  block-size: 1.25rem;
-  cursor: grab;
 }
 
 // Cards nobody may see: a couple of backs and the count, because the number

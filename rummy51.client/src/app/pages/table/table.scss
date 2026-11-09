@@ -82,9 +82,11 @@
 // is laid in two of them, and the felt gives up the room before the cut
 // rather than in the middle of the deal.
 .table__near {
-  --seat-size: 2.875rem;
-
+  display: flex;
   flex: none;
+  align-items: center;
+  gap: 0.25rem;
+  inline-size: 100%;
   min-block-size: calc(var(--card-tall) * 2 + var(--hand-gap));
   margin-block-start: 0.625rem;
 

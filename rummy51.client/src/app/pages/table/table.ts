@@ -11,7 +11,8 @@ import { TableService } from '../../core/lobby/table-service';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { ProfileMenu } from '../../shared/profile-menu/profile-menu';
-import { CardMove, TableSeat } from './table-seat/table-seat';
+import { CardMove, PlayerHand } from './player-hand/player-hand';
+import { TableSeat } from './table-seat/table-seat';
 
 /**
  * How many rows the deck is laid out in for the cut. Eighteen cards to a row
@@ -52,7 +53,7 @@ const BetweenPasses = 150;
  */
 @Component({
   selector: 'app-table',
-  imports: [TranslatePipe, ErrorMessages, PageShell, ProfileMenu, TableSeat],
+  imports: [TranslatePipe, ErrorMessages, PageShell, PlayerHand, ProfileMenu, TableSeat],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table.html',
   styleUrl: './table.scss',
@@ -148,7 +149,7 @@ export class Table implements OnDestroy {
 
   private readonly fanCards = viewChildren<ElementRef<HTMLElement>>('fanCard');
   private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
-  private readonly nearSpot = viewChild<TableSeat>('nearSpot');
+  private readonly nearHand = viewChild<PlayerHand>('nearHand');
   private readonly otherSpots = viewChildren<TableSeat>('seatSpot');
   private readonly finishingSlot = viewChild<ElementRef<HTMLElement>>('finishingSlot');
   private readonly timers: number[] = [];
@@ -544,13 +545,25 @@ export class Table implements OnDestroy {
 
   /** Where the joker is going: the place waiting for it at the cutter's seat. */
   private cutterSpot(step: number): HTMLElement | undefined {
-    return this.seatAt(this.cutterSeat())?.landingSpot(step);
+    return this.faceUpSpot(this.cutterSeat(), step);
   }
 
-  private seatAt(seat: number): TableSeat | undefined {
+  /**
+   * Where a card going face up at a seat comes to rest. The near place keeps
+   * its cards in a hand of its own; every other seat keeps the few it shows
+   * beside the picture.
+   */
+  private faceUpSpot(seat: number, step: number): HTMLElement | undefined {
+    return seat === this.nearSeat()
+      ? this.nearHand()?.landingSpot(step)
+      : this.otherSeatAt(seat)?.landingSpot(step);
+  }
+
+  /** The place across the table at that seat, if it is one of them. */
+  private otherSeatAt(seat: number): TableSeat | undefined {
     const among = this.others().findIndex((place) => place.at === seat);
 
-    return seat === this.nearSeat() ? this.nearSpot() : this.otherSpots()[among];
+    return among === -1 ? undefined : this.otherSpots()[among];
   }
 
   /** Everything still face down, from the far end of the deck back. */
@@ -673,11 +686,11 @@ export class Table implements OnDestroy {
     );
   }
 
-  /** Face up in your own row, or onto the pile nobody else may look at. */
+  /** Face up in your own hand, or onto the pile nobody else may look at. */
   private landingFor(seat: number, step: number): HTMLElement | undefined {
-    const place = this.seatAt(seat);
-
-    return this.isMine(seat) ? place?.landingSpot(step) : place?.pileSpot();
+    return this.isMine(seat)
+      ? this.nearHand()?.landingSpot(step)
+      : this.otherSeatAt(seat)?.pileSpot();
   }
 
   /**

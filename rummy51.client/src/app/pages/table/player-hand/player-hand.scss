@@ -1,0 +1,71 @@
+// The player's own hand, which takes whatever width the seat beside it
+// leaves. The gesture belongs to the whole of the hand rather than to the
+// card it began on: a card is pulled to the line below and past the ends,
+// and the browser must not take any of that for a scroll of its own.
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--hand-gap);
+  min-inline-size: 0;
+  touch-action: none;
+  user-select: none;
+}
+
+// One line of the hand. A phone has no width for fifteen cards in a single
+// one - twenty pixels of each is not a card you can read - so below the
+// breakpoint the hand is laid in two and every card keeps twice as much of
+// its corner showing. Held at a card's height whether there is anything in
+// it yet or not, so the ninth card arriving does not lift the eight above it.
+//
+// Left to right whatever the language is, which is the one place in this
+// client that does not mirror. A hand of cards is not writing: the low cards
+// are held on the left and the ace on the right by anybody, and the index a
+// card is known by is printed in its top left corner.
+.hand__row {
+  display: flex;
+  direction: ltr;
+  justify-content: center;
+  block-size: var(--card-tall);
+}
+
+// Laid as a hand is held: every card over the one to its left, so what shows
+// of each is its left edge - the corner that says what it is - and the
+// highest card lies whole on top of the pile. A hand of fifteen overlaps to
+// fit the line there is, and lies open again when it is only the two or three
+// cards of a deal in progress.
+.hand__card {
+  position: relative;
+  display: block;
+  flex: none;
+  z-index: var(--at);
+  block-size: var(--card-tall);
+  inline-size: auto;
+  aspect-ratio: 240 / 336;
+  overflow: hidden;
+  border-radius: 0.1875rem;
+
+  & + & {
+    margin-inline-start: min(
+      0.25rem,
+      calc((100% - var(--card)) / (var(--cards) - 1) - var(--card))
+    );
+  }
+}
+
+.hand__face {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+// Under the foot of the card, where a hand held overlapped still shows it,
+// and deep enough to be taken hold of: a finger on the band carries the whole
+// run, a finger on the face above it carries one card out of it.
+.hand__band {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 1.25rem;
+  cursor: grab;
+}

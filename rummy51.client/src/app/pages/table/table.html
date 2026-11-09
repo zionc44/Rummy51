@@ -114,21 +114,28 @@
       </div>
 
       @if (near(); as mySeat) {
-        <app-table-seat
-          #nearSpot
-          class="table__near"
-          [seat]="mySeat"
-          [mine]="seated()"
-          [dealer]="nearSeat() === dealerSeat()"
-          [held]="heldAt(nearSeat())"
-          [places]="placesAt(nearSeat())"
-          [holding]="holdingAt(nearSeat())"
-          [near]="true"
-          [sortable]="seated() && myCards().length > 0"
-          (sorted)="sortHand()"
-          (moved)="moveCard($event)"
-          [firstLine]="firstLine()"
-        />
+        <!-- The player's own place. The hand comes first so it takes the
+             whole of the line, and the picture that says whose it is sits
+             at the far end of it. -->
+        <div class="table__near">
+          <app-player-hand
+            #nearHand
+            [cards]="heldAt(nearSeat())"
+            [places]="placesAt(nearSeat())"
+            [firstLine]="firstLine()"
+            [arrangeable]="seated() && myCards().length > 0"
+            (moved)="moveCard($event)"
+          />
+          <app-table-seat
+            [seat]="mySeat"
+            [mine]="seated()"
+            [dealer]="nearSeat() === dealerSeat()"
+            [holding]="holdingAt(nearSeat())"
+            [compact]="true"
+            [sortable]="seated() && myCards().length > 0"
+            (sorted)="sortHand()"
+          />
+        </div>
       }
     } @else if (gone()) {
       <div class="table__gone">
