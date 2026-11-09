@@ -10,6 +10,7 @@ import {
   input,
   output,
   signal,
+  untracked,
   viewChildren,
 } from '@angular/core';
 import { HeldCard } from '../../../core/cards/card';
@@ -226,7 +227,16 @@ export class PlayerHand {
 
         return before;
       },
-      write: (before) => this.slideFrom(before()),
+      // Untracked, and that is the whole of it. A measurement is only good
+      // against the render it was taken from: what is read here - the cards,
+      // whether one is being dragged - would otherwise make this run again on
+      // its own, holding a reading from the render before and sliding the
+      // hand by a distance nothing has moved.
+      write: (before) => {
+        const was = before();
+
+        untracked(() => this.slideFrom(was));
+      },
     });
 
     // A card left in the air when the page goes is a card left in the body.
@@ -382,7 +392,13 @@ export class PlayerHand {
 
     this.carried?.remove();
     this.carried = null;
-    this.dragging.set([]);
+
+    // Only when there is something to let go of. Setting it empty again is a
+    // new array either way, and that is a change to everything reading it -
+    // which is a whole hand re-rendered every time a card is merely pressed.
+    if (this.dragging().length > 0) {
+      this.dragging.set([]);
+    }
   }
 
   /**
