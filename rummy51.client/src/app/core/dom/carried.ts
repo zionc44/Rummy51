@@ -58,6 +58,11 @@ export class Carried {
     this.element.style.transform = `translate(${point.x}px, ${point.y}px) scale(${scale})`;
   }
 
+  /** Seen through, for when what lies under it matters as much. */
+  fade(to: number): void {
+    this.element.style.opacity = `${to}`;
+  }
+
   /** Travelling there, which is what being let go is. */
   glideTo(point: Point, over: number): void {
     this.element.style.transition = `transform ${over}ms ease-out`;

@@ -1,6 +1,7 @@
 import { Directive, ElementRef, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { placeFor } from '../../../core/cards/hand-place';
 import { Carried } from '../../../core/dom/carried';
+import { Marker } from '../../../core/dom/marker';
 import { cardsAmong, gapIn, laidIn, takenBy } from './drawn-hand';
 
 /** How far a finger travels before it is a drag and not a tap. */
@@ -59,6 +60,8 @@ export class HandDrag {
   readonly lifted = this.inAir.asReadonly();
 
   private readonly element: ElementRef<HTMLElement> = inject(ElementRef);
+
+  private marker: Marker | null = null;
 
   /** The element the hand is drawn inside, which is this one. */
   private hand(): HTMLElement {
@@ -137,6 +140,7 @@ export class HandDrag {
     }
 
     this.follow(event, grasp);
+    this.markLandingSpot();
 
     const landing = placeFor(
       { x: event.clientX, y: event.clientY },
@@ -184,6 +188,9 @@ export class HandDrag {
     this.carried?.remove();
     this.carried = null;
 
+    this.marker?.remove();
+    this.marker = null;
+
     // Only when there is something to let go of. Setting it empty again is a
     // new array either way, and that is a change to everything reading it -
     // which is a whole hand re-rendered every time a card is merely pressed.
@@ -199,6 +206,11 @@ export class HandDrag {
       grasp.width,
       grasp.height,
     );
+
+    // Seen through, so the cards it lies over are still readable. It is in
+    // your hand, not on the table, and it reads that way too.
+    this.carried.fade(0.55);
+
     this.inAir.set(grasp.ids);
   }
 
@@ -211,6 +223,23 @@ export class HandDrag {
       },
       1.1,
     );
+  }
+
+  /**
+   * The gap the others have left, marked over everything. The cards part
+   * where this is going whichever way it travels, but what is in your hand
+   * lies over that parting whenever you are moving towards it - which is
+   * exactly when you want to see it. So the mark goes above.
+   */
+  private markLandingSpot(): void {
+    const gap = gapIn(this.hand())?.getBoundingClientRect();
+
+    if (gap === undefined) {
+      return;
+    }
+
+    this.marker ??= Marker.raise();
+    this.marker.over(gap);
   }
 
 }
