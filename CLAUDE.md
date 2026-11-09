@@ -19,10 +19,23 @@ is worth a word in the commit message.
 Nothing enforces any of this, which is how a seat component came to hold a drag
 engine and a page component a whole animation director: no commit added them,
 each one grew a reasonable piece at a time and nobody saw the total. So one
-alarm counts what the reading cannot — `.claude/hooks/file-size.js` says when a
-file under `rummy51.client/src/app` has passed the size at which everything
-healthy here sits, and asks whether it is still one job. It blocks nothing and
-the number is not a budget to write up to; it only makes somebody look.
+alarm counts what the reading cannot. `.claude/hooks/file-size.js` says when a
+hand-written file has passed the size at which everything healthy here sits —
+250 lines of TypeScript or C#, 180 of a template — and asks whether it is still
+one job. It blocks nothing and the number is not a budget to write up to; it
+only makes somebody look. Its silence is not a clean bill of health, and the
+answer to it is sometimes no: `dealing.ts` sits above the line on purpose.
+
+```bash
+node .claude/hooks/file-size.js --all      # every file, not just the one just written
+```
+
+That second half matters more than it sounds. As a hook it only ever sees what
+is being touched, so a file that grew and was then left alone is never asked
+about again — and if the hook misses a run, which has happened, nothing says
+so. The sweep is what makes a deliberate look cheap: run it when a feature
+lands, read the two or three files it names, and decide. It says where; only a
+reader says whether.
 
 **Functions**
 
@@ -78,6 +91,13 @@ to `launchSettings.json`.
 
 - Server: F5 in Visual Studio (`https` profile), opens `/swagger`
 - Client: `cd rummy51.client && npm start` → `https://localhost:57541`
+
+`npm run lint` is the client's other guard: six rules of our own in
+`eslint.config.js`, each answering to a line written above, plus what Angular
+and TypeScript recommend. The list is short on purpose — a hundred rules
+switched on and half switched off again is a file nobody understands. The
+server has no equivalent; `Nullable` is on, which is the large one, and no
+analyzer settings beyond that.
 
 The dev server proxies `/api` to `https://localhost:7115` (`src/proxy.conf.js`,
 override with `API_TARGET`), so no CORS in development. `SpaRoot` and the
