@@ -33,6 +33,16 @@ namespace Rummy51.Application.Tables;
 /// The deal pass by pass, so the eye can follow it round the table. It says
 /// how many cards went where and never which.
 /// </param>
+/// <summary>
+/// Who the table is waiting for, and how much longer it will wait. It is a
+/// state and not an instruction: a player who opens the page halfway
+/// through a wait is told what is left of it, so their ring is the same as
+/// everybody else's rather than a fresh one of their own.
+/// </summary>
+/// <param name="SecondsLeft">As of this message, which is what the client counts down from.</param>
+/// <param name="Seconds">The whole of the wait, so an arc can be drawn as a fraction of it.</param>
+public sealed record Waiting(int Seat, double SecondsLeft, double Seconds);
+
 public sealed record HandView(
     HandPhase Phase,
     int DealerSeat,
@@ -45,4 +55,5 @@ public sealed record HandView(
     string? FinishingCard,
     IReadOnlyList<int> CardsPerSeat,
     IReadOnlyList<DealPass> Passes,
-    int StockSize);
+    int StockSize,
+    Waiting? Waiting);

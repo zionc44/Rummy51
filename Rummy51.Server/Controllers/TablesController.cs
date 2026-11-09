@@ -19,7 +19,8 @@ namespace Rummy51.Server.Controllers;
 public class TablesController(
     ITables tables,
     IPlayerAccountService accounts,
-    IHubContext<LobbyHub> lobby) : ControllerBase
+    IHubContext<LobbyHub> lobby,
+    TableNews news) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<LobbyTable>>(StatusCodes.Status200OK)]
@@ -136,21 +137,5 @@ public class TablesController(
     private Task AnnounceAsync() =>
         lobby.Clients.All.SendAsync(LobbyEvents.TablesChanged, tables.All());
 
-    private async Task TellTheTableAsync(Guid tableId)
-    {
-        await lobby.Clients.Group(tableId.ToString())
-            .SendAsync(LobbyEvents.HandChanged, tables.Hand(tableId));
-
-        // Each player's own cards go to that player alone. They travel apart
-        // from the view the table shares, so there is no field in it anybody
-        // could fill in by mistake.
-        foreach (var playerId in Seated(tableId))
-        {
-            await lobby.Clients.User(playerId.ToString())
-                .SendAsync(LobbyEvents.CardsDealt, tables.CardsOf(tableId, playerId));
-        }
-    }
-
-    private IEnumerable<Guid> Seated(Guid tableId) =>
-        (tables.Find(tableId)?.Seats ?? []).Select(seat => seat.PlayerId).OfType<Guid>();
+    private Task TellTheTableAsync(Guid tableId) => news.AboutTheHandAsync(tableId);
 }

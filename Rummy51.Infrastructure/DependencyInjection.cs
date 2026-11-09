@@ -31,6 +31,9 @@ public static class DependencyInjection
         services.Configure<AuthenticationSettings>(
             configuration.GetSection(AuthenticationSettings.SectionName));
 
+        services.Configure<TurnSettings>(
+            configuration.GetSection(TurnSettings.SectionName));
+
         // Bound only in development, so the section cannot be written into a
         // deployed configuration and switch a testing aid on in a real game.
         var testing = services.AddOptions<TestingSettings>();

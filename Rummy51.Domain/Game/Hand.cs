@@ -69,6 +69,23 @@ public sealed class Hand
 
     public HandPhase Phase { get; private set; } = HandPhase.Cutting;
 
+    /// <summary>Whose turn it is, or -1 before play has begun.</summary>
+    public int TurnSeat { get; private set; } = -1;
+
+    /// <summary>
+    /// Whose move the hand is waiting for, or -1 when it is waiting for
+    /// nobody - which includes the deal, where the cards are going out and
+    /// there is nobody to hurry. How long it waits is the table's business
+    /// and not the hand's; who it waits for is a rule of the game and is
+    /// here.
+    /// </summary>
+    public int WaitingSeat => Phase switch
+    {
+        HandPhase.Cutting => CutterSeat,
+        HandPhase.Playing => TurnSeat,
+        _ => -1,
+    };
+
     public Card? FinishingCard => cut?.FinishingCard;
 
     /// <summary>
@@ -108,6 +125,24 @@ public sealed class Hand
         CutPosition = ((position % DeckSize) + DeckSize) % DeckSize;
         deck = cut.Remaining;
         Phase = HandPhase.Dealing;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Play begins. The turn goes to the player after the dealer, who is
+    /// the one holding fifteen cards and the one who opens by discarding.
+    /// False when the cards have not been dealt, or play has begun already.
+    /// </summary>
+    public bool Begin()
+    {
+        if (Phase != HandPhase.Dealing || Passes.Count == 0)
+        {
+            return false;
+        }
+
+        Phase = HandPhase.Playing;
+        TurnSeat = (DealerSeat + 1) % Seats;
 
         return true;
     }

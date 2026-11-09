@@ -40,5 +40,12 @@ public interface ITables
     /// </summary>
     IReadOnlyList<string> CardsOf(Guid tableId, Guid playerId);
 
+    /// <summary>
+    /// Acts for every player whose time has run out, and names the tables
+    /// that changed because of it. Called by the clock and by nobody else:
+    /// it is the one move here that nobody asked for.
+    /// </summary>
+    IReadOnlyList<Guid> ActForTheOverdue();
+
     LobbyTable? Find(Guid tableId);
 }

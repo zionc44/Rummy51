@@ -208,6 +208,18 @@ export class Table implements OnDestroy {
 
   protected readonly cutterSeat = computed(() => this.hand()?.cutterSeat ?? -1);
 
+  /**
+   * How long this seat has left to act, and out of how long. Null for
+   * every seat but the one being waited for, which is most of them.
+   */
+  protected clockFor(seat: number): { readonly left: number; readonly of: number } | null {
+    const waiting = this.hand()?.waiting ?? null;
+
+    return waiting === null || waiting.seat !== seat
+      ? null
+      : { left: waiting.secondsLeft, of: waiting.seconds };
+  }
+
   /** The place along the bottom, which is the viewer's own only if they sit. */
   private isMine(seat: number): boolean {
     return this.seated() && seat === this.nearSeat();
@@ -222,7 +234,13 @@ export class Table implements OnDestroy {
       return this.myHand();
     }
 
-    return seat === this.cutterSeat() ? this.cutJokers() : Nothing;
+    // A joker the cut gave the cutter is face up for the deal and no
+    // longer. By the time play begins the whole table has had a hand's
+    // worth of time to see it, and a card shown for ever is one more thing
+    // to carry through every sort, every drag and every move after it.
+    const dealing = this.hand()?.phase === 'dealing';
+
+    return dealing && seat === this.cutterSeat() ? this.cutJokers() : Nothing;
   }
 
   /** The jokers the cut gave the cutter, which nobody rearranges. */

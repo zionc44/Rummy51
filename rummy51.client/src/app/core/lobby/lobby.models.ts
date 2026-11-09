@@ -69,6 +69,20 @@ export interface DealPass {
 }
 
 /**
+ * Who the table is waiting for, and how much longer it will wait. A state
+ * and not an instruction: whoever opens the page halfway through a wait is
+ * told what is left of it, so their ring matches everybody else's instead
+ * of starting again.
+ */
+export interface Waiting {
+  readonly seat: number;
+  /** As of this message, which is what the ring is drawn from. */
+  readonly secondsLeft: number;
+  /** The whole of the wait, so the arc can be drawn as a fraction of it. */
+  readonly seconds: number;
+}
+
+/**
  * The hand as everyone at the table may see it. Cards arrive as their code,
  * which is also the name of the picture, so there is one name and not two.
  */
@@ -95,6 +109,7 @@ export interface HandView {
   /** The deal pass by pass. It says how many went where and never which. */
   readonly passes: readonly DealPass[];
   readonly stockSize: number;
+  readonly waiting: Waiting | null;
 }
 
 export interface CreateTableRequest {

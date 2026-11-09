@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  computed,
   input,
   output,
   viewChild,
@@ -64,6 +65,36 @@ export class TableSeat {
    * before the deal, when there is nothing to say.
    */
   readonly holding = input<number | null>(null);
+
+  /**
+   * How long this player has left to act, and out of how long. Null when
+   * the table is not waiting for them. It says nothing about what they are
+   * being waited for, and does not need to: cutting, drawing and discarding
+   * are all somebody taking too long over something.
+   */
+  readonly clock = input<{ readonly left: number; readonly of: number } | null>(null);
+
+  /**
+   * The wait as the ring draws it: how long it runs for, and how far into
+   * it to start. The second is negative, which is what lets a page opened
+   * halfway through a wait show the arc that is actually left rather than
+   * a full one.
+   */
+  protected readonly ring = computed(() => {
+    const clock = this.clock();
+
+    if (clock === null) {
+      return null;
+    }
+
+    return {
+      wait: `${clock.of.toFixed(2)}s`,
+      elapsed: `${(clock.left - clock.of).toFixed(2)}s`,
+      // When the last quarter begins, counted from now. Negative once it
+      // already has, which is what makes a page opened late flash at once.
+      flash: `${(clock.left - clock.of * 0.25).toFixed(2)}s`,
+    };
+  });
 
   /** Only your own hand can be sorted, and only while you are holding one. */
   readonly sortable = input(false);

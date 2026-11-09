@@ -82,6 +82,85 @@
   block-size: var(--who);
 }
 
+// The picture and the ring around it are one thing, so that the ring has
+// something its own size to be measured against: the block above holds a
+// name as well and would make an oval of it.
+.seat__portrait {
+  position: relative;
+  display: block;
+  flex: none;
+  inline-size: var(--seat-size);
+  block-size: var(--seat-size);
+}
+
+// Drained by an animation rather than by a timer of its own. It is given
+// the whole wait as its duration and a negative delay for the part already
+// gone, so the browser works out where the arc should be and a page opened
+// late is right without being told anything else.
+.seat__clock {
+  position: absolute;
+  // Outside the picture, so it rings it rather than covering it.
+  inset: -0.1875rem;
+  // An SVG circle starts at three o'clock; this starts it at twelve.
+  transform: rotate(-90deg);
+  pointer-events: none;
+
+  circle {
+    fill: none;
+    stroke-width: 7;
+    stroke-linecap: round;
+    // Once round a circle of radius forty-six.
+    stroke-dasharray: 289.03;
+    // Two: the ring draining and changing colour on the wait's own clock,
+    // and the flashing that only begins once a quarter of it is left. The
+    // second is delayed to that point and runs on, since the ring is taken
+    // away by the move it was waiting for.
+    animation-name: seat-countdown, seat-urgent;
+    animation-duration: var(--wait), 0.7s;
+    animation-delay: var(--elapsed), var(--flash);
+    animation-timing-function: linear, ease-in-out;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: forwards, none;
+  }
+}
+
+// The offset runs negative, which empties the ring from where it starts
+// and so the way a clock goes. Positive would eat it from the far end,
+// which is the same arc disappearing backwards.
+//
+// The colours step rather than blend: half the time left and a quarter of
+// it are two things worth noticing, and a gradient is noticed by nobody.
+@keyframes seat-countdown {
+  0%,
+  50% {
+    stroke: var(--clock-calm);
+  }
+
+  50.01%,
+  75% {
+    stroke: var(--clock-pressing);
+  }
+
+  75.01%,
+  100% {
+    stroke: var(--clock-urgent);
+  }
+
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    stroke-dashoffset: -289.03;
+  }
+}
+
+@keyframes seat-urgent {
+  50% {
+    opacity: 0.2;
+  }
+}
+
 .seat__avatar {
   inline-size: var(--seat-size);
   block-size: var(--seat-size);
@@ -115,6 +194,15 @@
   .seat__waiting {
     animation-duration: var(--turn) !important;
     animation-iteration-count: infinite !important;
+  }
+
+  // Nor is the countdown decoration. Shortened to nothing it would show an
+  // arc already drained, which says the time is up when it is not. The
+  // flashing is dropped though: a flash is the one thing this preference
+  // most plainly asks for less of, and naming one animation drops the other.
+  .seat__clock circle {
+    animation-name: seat-countdown !important;
+    animation-duration: var(--wait) !important;
   }
 }
 

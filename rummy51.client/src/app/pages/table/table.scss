@@ -97,21 +97,31 @@
 
 // Where a deck sits on a real table: to one side, halfway down, with the card
 // it was cut to turned and slid out from under it.
+// Stretched on purpose. Everything on the board is placed against its
+// edges, and the felt centres what it holds - so without this the board is
+// a line of no height across the middle, and a corner of it is the middle
+// too.
 .board {
   position: relative;
   flex: 1;
+  align-self: stretch;
   inline-size: 100%;
   min-block-size: 0;
 }
 
+// Out of the way, in the corner the hand is furthest from. The middle of
+// the felt is where the melds will be laid, and the deck has no business
+// sitting in it.
 .stack {
   position: absolute;
   // Gives the card somewhere to turn through rather than flattening it.
   perspective: 800px;
-  inset-block-start: 50%;
-  inset-inline-start: 1.25rem;
+  // Hard into the corner. What is left between it and the rim is the
+  // felt's own padding, and the middle is worth more to the melds than a
+  // margin is to the deck.
+  inset-block-start: 0;
+  inset-inline-start: 0;
   inline-size: var(--card);
-  transform: translateY(-50%);
 }
 
 // A pile rather than one card. All three are placed, so the last in the

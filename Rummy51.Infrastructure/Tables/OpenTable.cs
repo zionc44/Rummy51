@@ -15,11 +15,21 @@ internal sealed class OpenTable
 {
     private readonly PlayerSummary?[] seats;
     private readonly bool markJokers;
+    private readonly TurnSettings turns;
+    private readonly TimeProvider clock;
     private Hand? hand;
+    private DateTimeOffset? dueAt;
+    private TimeSpan waited;
 
-    public OpenTable(CreateTableRequest request, bool markJokers)
+    public OpenTable(
+        CreateTableRequest request,
+        bool markJokers,
+        TurnSettings turns,
+        TimeProvider clock)
     {
         this.markJokers = markJokers;
+        this.turns = turns;
+        this.clock = clock;
 
         // Version 7 is time-ordered, so listing tables by id lists them in the
         // order they were opened.
@@ -60,6 +70,7 @@ internal sealed class OpenTable
             // Filling the table is what starts the hand. There is no button
             // and nobody waits for anybody.
             hand = new Hand(seats.Length, Jokers, Random.Shared.Next(seats.Length), Random.Shared.Next());
+            WaitFor(TimeSpan.FromSeconds(turns.CutSeconds));
         }
     }
 
@@ -94,7 +105,91 @@ internal sealed class OpenTable
 
         hand.Deal();
 
+        // Not a wait for anybody: the cards are going out, and the screen
+        // takes a few seconds over what the server did at once.
+        WaitFor(TimeSpan.FromSeconds(turns.DealSeconds));
+
         return true;
+    }
+
+    /// <summary>
+    /// True once the table has waited as long as it said it would. The
+    /// clock asks this of every table and acts on the ones that say yes.
+    /// </summary>
+    public bool IsOverdue => dueAt is { } due && clock.GetUtcNow() >= due;
+
+    /// <summary>
+    /// What the table does when nobody does it for themselves. A cut has to
+    /// happen for the hand to go on and there is no wrong place to cut, so
+    /// it is cut where chance says.
+    /// </summary>
+    public bool ActForWhoeverRanOut()
+    {
+        if (hand is null || !IsOverdue)
+        {
+            return false;
+        }
+
+        if (hand.Phase == HandPhase.Cutting)
+        {
+            // There is no wrong place to cut, so it is cut where chance says.
+            return CutAt(Random.Shared.Next(hand.DeckSize));
+        }
+
+        if (hand.Phase == HandPhase.Dealing)
+        {
+            return BeginPlay();
+        }
+
+        // A turn that ran out. Drawing and discarding for whoever it was
+        // lands here next; until then the wait simply ends.
+        StopWaiting();
+
+        return true;
+    }
+
+    private bool BeginPlay()
+    {
+        if (hand?.Begin() != true)
+        {
+            return false;
+        }
+
+        WaitFor(TimeSpan.FromSeconds(turns.FirstTurnSeconds));
+
+        return true;
+    }
+
+    private void WaitFor(TimeSpan howLong)
+    {
+        waited = howLong;
+        dueAt = clock.GetUtcNow() + howLong;
+    }
+
+    private void StopWaiting()
+    {
+        dueAt = null;
+        waited = TimeSpan.Zero;
+    }
+
+    /// <summary>
+    /// Null when nobody is being waited for. The seconds left are worked
+    /// out now rather than when the wait began, so whoever is told has the
+    /// same deadline as everybody else however late they arrived.
+    /// </summary>
+    private Waiting? DescribeWait()
+    {
+        if (hand is null || dueAt is not { } due || hand.WaitingSeat == -1)
+        {
+            return null;
+        }
+
+        var left = due - clock.GetUtcNow();
+
+        return new Waiting(
+            hand.WaitingSeat,
+            Math.Max(left.TotalSeconds, 0),
+            waited.TotalSeconds);
     }
 
     /// <summary>
@@ -123,7 +218,8 @@ internal sealed class OpenTable
                 hand.FinishingCard?.Code,
                 [.. hand.Hands.Select(cards => cards.Count)],
                 hand.Passes,
-                hand.Stock.Count);
+                hand.Stock.Count,
+                DescribeWait());
 
     public LobbyTable Describe() =>
         new(Id, Mode, Limit, Jokers, [.. seats.Select(Occupant)], Started);

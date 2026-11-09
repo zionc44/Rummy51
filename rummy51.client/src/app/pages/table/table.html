@@ -27,6 +27,7 @@
             [dealer]="place.at === dealerSeat()"
             [held]="heldAt(place.at)"
             [holding]="holdingAt(place.at)"
+            [clock]="clockFor(place.at)"
           />
         }
       </div>
@@ -100,6 +101,7 @@
             [mine]="seated()"
             [dealer]="nearSeat() === dealerSeat()"
             [holding]="holdingAt(nearSeat())"
+            [clock]="clockFor(nearSeat())"
             [compact]="true"
             [sortable]="seated() && myCards().length > 0"
             (sorted)="sortHand()"

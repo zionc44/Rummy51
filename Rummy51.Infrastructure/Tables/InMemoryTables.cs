@@ -11,7 +11,10 @@ namespace Rummy51.Infrastructure.Tables;
 /// dealt a card holds nothing worth restoring. A series carrying scores across
 /// several hands will be a different question, and this is where it gets asked.
 /// </summary>
-public sealed class InMemoryTables(IOptions<TestingSettings> testing) : ITables
+public sealed class InMemoryTables(
+    IOptions<TestingSettings> testing,
+    IOptions<TurnSettings> turns,
+    TimeProvider clock) : ITables
 {
     private readonly bool markJokers = testing.Value.MarkJokers;
 
@@ -47,7 +50,7 @@ public sealed class InMemoryTables(IOptions<TestingSettings> testing) : ITables
                 return Refused("AlreadyAtATable", FailureKind.Conflict);
             }
 
-            var table = new OpenTable(request, markJokers);
+            var table = new OpenTable(request, markJokers, turns.Value, clock);
             table.Seat(player);
 
             tables[table.Id] = table;
@@ -161,6 +164,27 @@ public sealed class InMemoryTables(IOptions<TestingSettings> testing) : ITables
         lock (gate)
         {
             return tables.TryGetValue(tableId, out var table) ? table.CardsOf(playerId) : [];
+        }
+    }
+
+    public IReadOnlyList<Guid> ActForTheOverdue()
+    {
+        lock (gate)
+        {
+            // Under the same lock as every other move, because the clock is
+            // one more thing that changes a table and must not meet a move
+            // halfway through.
+            var acted = new List<Guid>();
+
+            foreach (var table in tables.Values)
+            {
+                if (table.ActForWhoeverRanOut())
+                {
+                    acted.Add(table.Id);
+                }
+            }
+
+            return acted;
         }
     }
 

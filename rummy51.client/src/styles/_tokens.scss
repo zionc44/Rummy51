@@ -33,6 +33,13 @@
   // The bands under a run or a set. Three, so that two melds lying next to
   // each other never wear the same colour; none of them red, which on a
   // card is already the name of a suit.
+  // A wait as it runs out. The same three colours presence uses, and
+  // named apart from it because they answer a different question and may
+  // one day want to differ.
+  --clock-calm: #10b981;
+  --clock-pressing: #f59e0b;
+  --clock-urgent: #ef4444;
+
   --meld-1: #10b981;
   --meld-2: #8b5cf6;
   --meld-3: #f59e0b;

@@ -1,10 +1,27 @@
 @if (seat().playerId) {
   <span class="seat__who">
-    <app-player-avatar
-      class="seat__avatar"
-      [displayName]="seat().displayName ?? ''"
-      [avatarUrl]="seat().avatarUrl"
-    />
+    <span class="seat__portrait">
+      <app-player-avatar
+        class="seat__avatar"
+        [displayName]="seat().displayName ?? ''"
+        [avatarUrl]="seat().avatarUrl"
+      />
+      @if (ring(); as ring) {
+        <!-- The table is waiting for this player, and this is how much
+             longer it will. It drains rather than counting, because a
+             number has to be read and an arc is simply seen. -->
+        <svg
+          class="seat__clock"
+          viewBox="0 0 100 100"
+          aria-hidden="true"
+          [style.--wait]="ring.wait"
+          [style.--elapsed]="ring.elapsed"
+          [style.--flash]="ring.flash"
+        >
+          <circle cx="50" cy="50" r="46" />
+        </svg>
+      }
+    </span>
     @if (dealer()) {
       <span class="seat__dealer">{{ 'table.dealer' | translate }}</span>
     }

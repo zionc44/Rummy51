@@ -24,6 +24,11 @@ builder.Services.AddSignalR().AddJsonProtocol(options =>
     options.PayloadSerializerOptions.Converters.Add(
         new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 
+// Told by both a player's move and the clock running out, so it is one
+// thing they share rather than two that have to agree.
+builder.Services.AddSingleton<TableNews>();
+builder.Services.AddHostedService<TurnClock>();
+
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
