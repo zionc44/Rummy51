@@ -48,7 +48,11 @@ export class TableCut {
   /** Whose cut it is, for the line above the fan. */
   readonly cutter = input('');
 
-  readonly cut = output<number>();
+  /**
+   * Where the cutter stopped. Not `cut`, which is a clipboard event's name:
+   * an output wearing it would be read twice over by anybody binding it.
+   */
+  readonly chose = output<number>();
 
   private readonly fanCards = viewChildren<ElementRef<HTMLElement>>('fanCard');
 

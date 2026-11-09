@@ -17,8 +17,14 @@ export class LanguageService {
 
   private readonly code = signal<LanguageCode>(DEFAULT_LANGUAGE);
 
+  /**
+   * Every code in the list has an entry, so the search always finds one -
+   * but that is a fact about the data and the type cannot carry it. Falling
+   * back to the first is what a reader would do anyway, and it means this
+   * never has to claim to know something it does not.
+   */
   readonly current = computed<Language>(
-    () => LANGUAGES.find((language) => language.code === this.code())!,
+    () => LANGUAGES.find((language) => language.code === this.code()) ?? LANGUAGES[0],
   );
 
   readonly available = LANGUAGES;

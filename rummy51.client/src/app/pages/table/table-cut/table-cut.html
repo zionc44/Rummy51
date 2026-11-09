@@ -15,7 +15,7 @@
           [class.fan__card--turning]="isTurning(position)"
           [class.fan__card--joker]="jokers().has(position)"
           [disabled]="!takeable()"
-          (click)="cut.emit(position)"
+          (click)="chose.emit(position)"
         >
           @if (faceAt(position); as face) {
             <!-- Turned up by the cut. Both sides are drawn and whichever

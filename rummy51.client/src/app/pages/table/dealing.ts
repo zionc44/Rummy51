@@ -259,27 +259,32 @@ export class Dealing {
 
     // Two frames, so the places the cards are going have been laid out
     // before anything measures them.
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        const from = this.spots.pile()?.getBoundingClientRect();
-        const landed = this.arrivals.reached(pass.seat);
-        const sent: HTMLElement[] = [];
+    requestAnimationFrame(() => requestAnimationFrame(() => this.sendPass(pass, dealt)));
+  }
 
-        Array.from({ length: pass.count }, (_, step) => {
-          const to = this.spots.dealt(pass.seat, landed + step)?.getBoundingClientRect();
+  /** The cards of one pass put in the air, each a little behind the last. */
+  private sendPass(pass: DealPass, dealt: number): void {
+    const from = this.spots.pile()?.getBoundingClientRect();
+    const landed = this.arrivals.reached(pass.seat);
+    const sent: HTMLElement[] = [];
 
-          if (from && to) {
-            sent.push(this.flyCard(this.backOfDealt(dealt + step), from, to, step * BetweenCards));
-          }
-        });
+    for (let step = 0; step < pass.count; step++) {
+      const to = this.spots.dealt(pass.seat, landed + step)?.getBoundingClientRect();
 
-        this.after(Pass + pass.count * BetweenCards, () => {
-          this.arrivals.land(pass.seat, pass.count);
-          // A frame later, so the card it is standing in for is drawn first.
-          requestAnimationFrame(() => sent.forEach((card) => card.remove()));
-        });
-      }),
-    );
+      if (from !== undefined && to !== undefined) {
+        sent.push(this.flyCard(this.backOfDealt(dealt + step), from, to, step * BetweenCards));
+      }
+    }
+
+    this.after(Pass + pass.count * BetweenCards, () => this.landPass(pass, sent));
+  }
+
+  /** They are there, so the copies that stood in for them can go. */
+  private landPass(pass: DealPass, sent: readonly HTMLElement[]): void {
+    this.arrivals.land(pass.seat, pass.count);
+
+    // A frame later, so the card it is standing in for is drawn first.
+    requestAnimationFrame(() => sent.forEach((card) => card.remove()));
   }
 
   /**
