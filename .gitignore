@@ -42,6 +42,11 @@ appsettings.*.local.json
 Secret/
 client_secret*.json
 
+## Claude Code. The settings and the hook are the project's and are committed,
+## so that whichever machine this is opened on is held to the same rules. Only
+## what is personal to one machine stays out.
+.claude/settings.local.json
+
 ## OS files
 .DS_Store
 Thumbs.db

@@ -16,6 +16,14 @@ multiplayer only.
 Guides, not gates — a rule may be broken when following it would hurt, and that
 is worth a word in the commit message.
 
+Nothing enforces any of this, which is how a seat component came to hold a drag
+engine and a page component a whole animation director: no commit added them,
+each one grew a reasonable piece at a time and nobody saw the total. So one
+alarm counts what the reading cannot — `.claude/hooks/file-size.js` says when a
+file under `rummy51.client/src/app` has passed the size at which everything
+healthy here sits, and asks whether it is still one job. It blocks nothing and
+the number is not a budget to write up to; it only makes somebody look.
+
 **Functions**
 
 - One thing, and the name says what, not how. If the name needs "and", it is
@@ -46,6 +54,8 @@ is worth a word in the commit message.
 
 - Names instead of comments. Comment *why*, never *what*.
 - Delete rather than comment out. Git remembers.
+- Read the whole file before giving something a second job. A targeted edit
+  shows a diff, never a size, and a file is only ever read by whoever opens it.
 
 ## Layout
 
