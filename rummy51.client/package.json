@@ -6,6 +6,7 @@
     "start": "run-script-os",
     "build": "ng build",
     "cards": "node corner-deck",
+    "seats": "powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/seats.ps1",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "prestart": "node aspnetcore-https",
