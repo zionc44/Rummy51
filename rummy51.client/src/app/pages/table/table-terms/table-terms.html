@@ -1,0 +1,7 @@
+<p class="terms">
+  {{ 'lobby.modes.' + table().mode | translate }}
+  @if (limit(); as limit) {
+    <span class="terms__more">{{ limit.key | translate: limit.amount }}</span>
+  }
+  <span class="terms__more">{{ deck().key | translate: deck().amount }}</span>
+</p>

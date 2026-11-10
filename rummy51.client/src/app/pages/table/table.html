@@ -1,6 +1,6 @@
 <app-page-shell>
   @if (table()) {
-    <button shell-actions type="button" class="table__leave" (click)="leave()">
+    <button shell-actions type="button" class="table__leave" (click)="moves.leave()">
       {{ 'table.leave' | translate }}
     </button>
   }
@@ -8,26 +8,18 @@
 
   <main class="table">
     @if (table(); as current) {
-      <p class="table__mode">
-        {{ 'lobby.modes.' + current.mode | translate }}
-        @if (detail(); as detail) {
-          <span class="table__limit">{{ detail.key | translate: detail.amount }}</span>
-        }
-        @if (deck(); as deck) {
-          <span class="table__limit">{{ deck.key | translate: deck.amount }}</span>
-        }
-      </p>
+      <app-table-terms [table]="current" />
 
       <div class="table__others">
-        @for (place of others(); track place.at) {
+        @for (place of seating.others(); track place.at) {
           <app-table-seat
             #seatSpot
             class="table__other"
             [seat]="place.seat"
-            [dealer]="place.at === dealerSeat()"
-            [held]="heldAt(place.at)"
-            [holding]="holdingAt(place.at)"
-            [clock]="clockFor(place.at)"
+            [dealer]="place.at === seating.dealerSeat()"
+            [held]="seating.heldAt(place.at)"
+            [holding]="seating.holdingAt(place.at)"
+            [clock]="seating.clockFor(place.at)"
           />
         }
       </div>
@@ -44,8 +36,8 @@
               [turned]="turned()"
               [sweeping]="collapsing()"
               [yours]="canCut()"
-              [cutter]="cutter()"
-              (chose)="cut($event)"
+              [cutter]="seating.cutter()"
+              (chose)="moves.cut($event)"
             />
           }
 
@@ -72,7 +64,7 @@
                   [class.pile--offered]="turn.toDraw()"
                   [disabled]="!turn.toDraw()"
                   [attr.aria-label]="'table.drawStock' | translate"
-                  (click)="draw('stock')"
+                  (click)="moves.draw('stock')"
                 >
                   <img src="cards/1B.svg" alt="" />
                   <img src="cards/2B.svg" alt="" />
@@ -110,36 +102,36 @@
           <p class="table__waiting">
             {{ 'table.waiting' | translate }}
             <span class="table__count">
-              {{ 'table.seatedOf' | translate: { '0': taken(), '1': current.seats.length } }}
+              {{ 'table.seatedOf' | translate: { '0': seating.taken(), '1': current.seats.length } }}
             </span>
           </p>
         }
       </div>
 
-      @if (near(); as mySeat) {
+      @if (seating.near(); as mySeat) {
         <!-- The player's own place. The hand comes first so it takes the
              whole of the line, and the picture that says whose it is sits
              at the far end of it. -->
         <div class="table__near">
           <app-player-hand
             #nearHand
-            [cards]="heldAt(nearSeat())"
-            [places]="placesAt(nearSeat())"
+            [cards]="seating.heldAt(seating.nearSeat())"
+            [places]="seating.placesAt(seating.nearSeat())"
             [firstLine]="arranged.firstLine()"
             [picked]="arranged.picked()"
-            [arrangeable]="seated() && myCards().length > 0"
+            [arrangeable]="seating.seated() && myCards().length > 0"
             (moved)="moveCard($event)"
             (tapped)="arranged.pick($event)"
             (released)="cardReleased($event)"
           />
           <app-table-seat
             [seat]="mySeat"
-            [mine]="seated()"
-            [dealer]="nearSeat() === dealerSeat()"
-            [holding]="holdingAt(nearSeat())"
-            [clock]="clockFor(nearSeat())"
+            [mine]="seating.seated()"
+            [dealer]="seating.nearSeat() === seating.dealerSeat()"
+            [holding]="seating.holdingAt(seating.nearSeat())"
+            [clock]="seating.clockFor(seating.nearSeat())"
             [compact]="true"
-            [sortable]="seated() && myCards().length > 0"
+            [sortable]="seating.seated() && myCards().length > 0"
             (sorted)="sortHand()"
           />
         </div>
@@ -147,12 +139,12 @@
     } @else if (gone()) {
       <div class="table__gone">
         <p class="table__waiting">{{ 'table.gone' | translate }}</p>
-        <button type="button" class="btn-primary" (click)="backToLobby()">
+        <button type="button" class="btn-primary" (click)="moves.backToLobby()">
           {{ 'table.backToLobby' | translate }}
         </button>
       </div>
     }
 
-    <app-error-messages [errors]="errors()" />
+    <app-error-messages [errors]="moves.errors()" />
   </main>
 </app-page-shell>
