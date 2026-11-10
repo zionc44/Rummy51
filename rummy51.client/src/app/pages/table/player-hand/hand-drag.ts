@@ -20,6 +20,16 @@ export interface CardMove {
   readonly firstLine: number | null;
 }
 
+/**
+ * Cards let go of past the hand's own edge, and where. Inside the hand that
+ * means a place; outside it, it might mean something to the table, and what
+ * is lying out there is the table's to know and not the hand's.
+ */
+export interface CardRelease {
+  readonly ids: readonly number[];
+  readonly at: { readonly x: number; readonly y: number };
+}
+
 /** What is being carried, and where it was taken hold of. */
 interface Grasp {
   readonly ids: readonly number[];
@@ -40,7 +50,7 @@ interface Grasp {
   host: {
     '(pointerdown)': 'take($event)',
     '(pointermove)': 'drag($event)',
-    '(pointerup)': 'drop()',
+    '(pointerup)': 'drop($event)',
     '(pointercancel)': 'drop()',
   },
 })
@@ -53,6 +63,15 @@ export class HandDrag {
   readonly arrangeable = input(false);
 
   readonly moved = output<CardMove>();
+
+  /**
+   * One card touched and let go of without travelling. A band carries a
+   * whole run and there is nothing a run can be singled out by, so a tap on
+   * one is a tap on nothing.
+   */
+  readonly tapped = output<number>();
+
+  readonly released = output<CardRelease>();
 
   private readonly inAir = signal<readonly number[]>([]);
 
@@ -160,13 +179,24 @@ export class HandDrag {
    * kept for them rather than appearing there, and only then is the gap
    * filled, so there is never both a card and a copy of it.
    */
-  protected drop(): void {
+  protected drop(event?: PointerEvent): void {
     const carried = this.carried;
+    const grasp = this.grasp;
     this.grasp = null;
     this.lastPlace = '';
 
     if (carried === null) {
+      // A finger lifted, and not a gesture the browser took away: a pointer
+      // cancelled mid-press is not somebody choosing a card.
+      if (event !== undefined && grasp?.ids.length === 1) {
+        this.tapped.emit(grasp.ids[0]);
+      }
+
       return;
+    }
+
+    if (event !== undefined && grasp !== null) {
+      this.tellWhereBeyondTheHand(event, grasp.ids);
     }
 
     const gap = gapIn(this.hand())?.getBoundingClientRect();
@@ -242,4 +272,19 @@ export class HandDrag {
     this.marker.over(gap);
   }
 
+  /**
+   * Let go of past the hand's own edge. Inside it, the cards are being
+   * arranged and that is all this knows how to mean; outside it, somebody
+   * else may have a use for the news.
+   */
+  private tellWhereBeyondTheHand(event: PointerEvent, ids: readonly number[]): void {
+    const hand = this.hand().getBoundingClientRect();
+    const at = { x: event.clientX, y: event.clientY };
+    const inside =
+      at.x >= hand.left && at.x <= hand.right && at.y >= hand.top && at.y <= hand.bottom;
+
+    if (!inside) {
+      this.released.emit({ ids, at });
+    }
+  }
 }

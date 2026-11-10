@@ -65,12 +65,45 @@
                     <img class="stack__face" [src]="'cards/' + code + '.svg'" alt="" />
                   </div>
                 }
-                <span #pile class="stack__pile">
+                <button
+                  #pile
+                  type="button"
+                  class="stack__pile"
+                  [class.pile--offered]="turn.toDraw()"
+                  [disabled]="!turn.toDraw()"
+                  [attr.aria-label]="'table.drawStock' | translate"
+                  (click)="draw('stock')"
+                >
                   <img src="cards/1B.svg" alt="" />
                   <img src="cards/2B.svg" alt="" />
                   <img src="cards/1B.svg" alt="" />
-                </span>
+                </button>
               </div>
+
+              <!-- What the player before threw, which is the only card of
+                   the pile under it that anybody may take - and the place a
+                   card is thrown to, which is the same place. -->
+              <button
+                #discardPile
+                type="button"
+                class="discard"
+                [class.pile--offered]="turn.canTakeDiscard() || turn.canThrow()"
+                [disabled]="!turn.canTakeDiscard() && !turn.canThrow()"
+                [attr.aria-label]="
+                  (turn.toThrow() ? 'table.throwHere' : 'table.drawDiscard') | translate
+                "
+                (click)="pileClicked()"
+              >
+                @if (hand.discardTop; as code) {
+                  <img class="stack__face" [src]="'cards/' + code + '.svg'" alt="" />
+                } @else {
+                  <span class="discard__empty">{{ 'table.emptyPile' | translate }}</span>
+                }
+              </button>
+
+              @if (turn.prompt(); as line) {
+                <p class="board__prompt">{{ line | translate }}</p>
+              }
             </div>
           }
         } @else if (!current.started) {
@@ -92,9 +125,12 @@
             #nearHand
             [cards]="heldAt(nearSeat())"
             [places]="placesAt(nearSeat())"
-            [firstLine]="firstLine()"
+            [firstLine]="arranged.firstLine()"
+            [picked]="arranged.picked()"
             [arrangeable]="seated() && myCards().length > 0"
             (moved)="moveCard($event)"
+            (tapped)="arranged.pick($event)"
+            (released)="cardReleased($event)"
           />
           <app-table-seat
             [seat]="mySeat"

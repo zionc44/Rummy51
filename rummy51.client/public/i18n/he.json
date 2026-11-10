@@ -108,7 +108,13 @@
     "waitingForCut": "{{0}} חותך את החבילה",
     "finishingCard": "קלף גמירה",
     "dealer": "מחלק",
-    "sortHand": "מיון הקלפים"
+    "sortHand": "מיון הקלפים",
+    "drawStock": "משיכה מהחבילה",
+    "drawDiscard": "לקיחת הקלף הזרוק",
+    "emptyPile": "אין קלף זרוק",
+    "turnDraw": "תורך — משוך קלף",
+    "turnThrow": "תורך — זרוק קלף",
+    "throwHere": "זריקת הקלף המסומן"
   },
   "profile": {
     "open": "תפריט החשבון",
@@ -151,6 +157,9 @@
     "TableJokersInvalid": "מספר הג׳וקרים לא תקין",
     "HandNotStarted": "המשחק בשולחן הזה עוד לא התחיל",
     "NotYoursToCut": "החיתוך הוא לא שלך",
-    "AlreadyCut": "החבילה כבר נחתכה"
+    "AlreadyCut": "החבילה כבר נחתכה",
+    "CannotDraw": "אי אפשר למשוך עכשיו",
+    "CannotDiscard": "אי אפשר לזרוק עכשיו",
+    "NotAtThisTable": "אתה לא יושב בשולחן הזה"
   }
 }

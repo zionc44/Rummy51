@@ -30,9 +30,6 @@
   --status-in-game-idle: #8b2f2f;
   --suit-red: #f87171;
 
-  // The bands under a run or a set. Three, so that two melds lying next to
-  // each other never wear the same colour; none of them red, which on a
-  // card is already the name of a suit.
   // A wait as it runs out. The same three colours presence uses, and
   // named apart from it because they answer a different question and may
   // one day want to differ.
@@ -40,9 +37,14 @@
   --clock-pressing: #f59e0b;
   --clock-urgent: #ef4444;
 
+  // The bands under a run or a set. Five, which is as many melds as fifteen
+  // cards can hold at three cards each, so no hand ever wears one colour
+  // twice; none of them red, which on a card is already the name of a suit.
   --meld-1: #10b981;
   --meld-2: #8b5cf6;
   --meld-3: #f59e0b;
+  --meld-4: #ec4899;
+  --meld-5: #0ea5e9;
 
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;

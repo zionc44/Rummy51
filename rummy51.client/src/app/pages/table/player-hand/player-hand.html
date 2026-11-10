@@ -19,6 +19,7 @@
              between tidying and moving. -->
         <span
           class="hand__card"
+          [class.hand__card--picked]="card.id === picked()"
           [style.--at]="$index"
           [attr.data-id]="card.id"
           [attr.data-meld]="meldAt(line, $index)"

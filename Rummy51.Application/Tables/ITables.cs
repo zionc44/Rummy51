@@ -1,5 +1,6 @@
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Common;
+using Rummy51.Domain.Game;
 
 namespace Rummy51.Application.Tables;
 
@@ -33,12 +34,24 @@ public interface ITables
     Result<HandView> CutDeck(Guid tableId, Guid playerId, int position);
 
     /// <summary>
+    /// The first half of a turn: a card from the stock, or the one the player
+    /// before threw away.
+    /// </summary>
+    Result<HandView> Draw(Guid tableId, Guid playerId, DrawnFrom from);
+
+    /// <summary>
+    /// The second half, which ends the turn and passes it on. The card is
+    /// named by its code, since the hand's order is the player's own.
+    /// </summary>
+    Result<HandView> Discard(Guid tableId, Guid playerId, int cardId);
+
+    /// <summary>
     /// One player's own cards. They go to that player's own connection and
     /// never to a group, which is why they are asked for separately rather
     /// than carried by <see cref="HandView"/>. Empty before the deal, and
     /// for anybody not seated at that table.
     /// </summary>
-    IReadOnlyList<string> CardsOf(Guid tableId, Guid playerId);
+    IReadOnlyList<HeldCardView> CardsOf(Guid tableId, Guid playerId);
 
     /// <summary>
     /// Acts for every player whose time has run out, and names the tables

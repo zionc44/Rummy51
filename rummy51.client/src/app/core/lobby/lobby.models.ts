@@ -109,8 +109,24 @@ export interface HandView {
   /** The deal pass by pass. It says how many went where and never which. */
   readonly passes: readonly DealPass[];
   readonly stockSize: number;
+  /** Whose turn it is, or -1 before play has begun. */
+  readonly turnSeat: number;
+  /**
+   * Whether they have taken their card yet. Public, because at a real table
+   * everybody watches the hand go to the stock and come back.
+   */
+  readonly hasDrawn: boolean;
+  /**
+   * The one card of the discard pile lying face up, which is also the only
+   * one anybody may take. Null until the hand's first discard.
+   */
+  readonly discardTop: string | null;
+  readonly discardCount: number;
   readonly waiting: Waiting | null;
 }
+
+/** Which of the two piles a player reached for. */
+export type DrawnFrom = 'stock' | 'discards';
 
 export interface CreateTableRequest {
   readonly seats: number;

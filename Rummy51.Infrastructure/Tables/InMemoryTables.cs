@@ -3,6 +3,7 @@ using Rummy51.Application.Authentication;
 using Rummy51.Application.Common;
 using Rummy51.Application.Tables;
 using Rummy51.Domain.Entities;
+using Rummy51.Domain.Game;
 
 namespace Rummy51.Infrastructure.Tables;
 
@@ -159,7 +160,51 @@ public sealed class InMemoryTables(
         }
     }
 
-    public IReadOnlyList<string> CardsOf(Guid tableId, Guid playerId)
+    public Result<HandView> Draw(Guid tableId, Guid playerId, DrawnFrom from) =>
+        Move(tableId, playerId, (table, seat) => table.Draw(seat, from), "CannotDraw");
+
+    public Result<HandView> Discard(Guid tableId, Guid playerId, int cardId) =>
+        Move(tableId, playerId, (table, seat) => table.Discard(seat, cardId), "CannotDiscard");
+
+    /// <summary>
+    /// A player's move, which always asks the same three questions before the
+    /// move itself: is there a table, are they sitting at it, and did the hand
+    /// allow what they asked for. The hand owns the rules; this owns who is
+    /// asking. The refusal is one code per move rather than a reason, because
+    /// a client only ever offers a move it believes is legal - one that comes
+    /// back refused is a race or a bug, and neither has anything to tell the
+    /// player.
+    /// </summary>
+    private Result<HandView> Move(
+        Guid tableId,
+        Guid playerId,
+        Func<OpenTable, int, bool> move,
+        string refusal)
+    {
+        lock (gate)
+        {
+            if (!tables.TryGetValue(tableId, out var table))
+            {
+                return Result<HandView>.Fail(FailureKind.Validation, new Error("TableNotFound"));
+            }
+
+            var seat = table.SeatOf(playerId);
+
+            if (seat == -1)
+            {
+                return Result<HandView>.Fail(FailureKind.Validation, new Error("NotAtThisTable"));
+            }
+
+            if (!move(table, seat))
+            {
+                return Result<HandView>.Fail(FailureKind.Conflict, new Error(refusal));
+            }
+
+            return Result<HandView>.Success(table.DescribeHand()!);
+        }
+    }
+
+    public IReadOnlyList<HeldCardView> CardsOf(Guid tableId, Guid playerId)
     {
         lock (gate)
         {

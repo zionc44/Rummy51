@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { failWithApiErrors } from '../errors/api-error';
-import { CreateTableRequest, HandView, LobbyTable } from './lobby.models';
+import { CreateTableRequest, DrawnFrom, HandView, LobbyTable } from './lobby.models';
 
 const API = '/api/tables';
 
@@ -30,6 +30,25 @@ export class TableService {
   cut(tableId: string, position: number): Observable<HandView> {
     return this.http
       .post<HandView>(`${API}/${tableId}/cut`, { position })
+      .pipe(failWithApiErrors());
+  }
+
+  /**
+   * The first half of a turn: a card off the stock, or the one the player
+   * before threw away.
+   */
+  draw(tableId: string, from: DrawnFrom): Observable<HandView> {
+    return this.http.post<HandView>(`${API}/${tableId}/draw`, { from }).pipe(failWithApiErrors());
+  }
+
+  /**
+   * The second half, which ends the turn and hands it on. The card is named
+   * by the number it was given when it reached the hand: two sevens of hearts
+   * are the same card, and a player throwing one of them means that one.
+   */
+  discard(tableId: string, cardId: number): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/discard`, { cardId })
       .pipe(failWithApiErrors());
   }
 

@@ -1,18 +1,21 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, effect, inject, input, signal, viewChild, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Injector, OnDestroy, afterNextRender, computed, effect, inject, input, signal, untracked, viewChild, viewChildren } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
 import { AuthService } from '../../core/auth/auth-service';
 import { ApiError } from '../../core/errors/api-error';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
+import { ArrangedHand } from '../../core/cards/arranged-hand';
 import { HeldCard } from '../../core/cards/card';
-import { HandOrder, inOrder, moved } from '../../core/cards/card-order';
-import { HandPhase } from '../../core/lobby/lobby.models';
+import { DrawnFrom, HandPhase, HandView } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
+import { Turn } from './turn';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { ProfileMenu } from '../../shared/profile-menu/profile-menu';
+import { CardJourney } from './card-journey';
 import { Dealing, Spots } from './dealing';
-import { CardMove } from './player-hand/hand-drag';
+import { CardMove, CardRelease } from './player-hand/hand-drag';
 import { PlayerHand } from './player-hand/player-hand';
 import { TableCut } from './table-cut/table-cut';
 import { TableSeat } from './table-seat/table-seat';
@@ -48,6 +51,7 @@ export class Table implements OnDestroy {
   private readonly lobby = inject(LobbyConnection);
   private readonly tables = inject(TableService);
   private readonly router = inject(Router);
+  private readonly injector = inject(Injector);
 
   protected readonly errors = signal<readonly ApiError[]>([]);
 
@@ -55,55 +59,20 @@ export class Table implements OnDestroy {
 
   protected readonly myCards = this.lobby.myCards;
 
-  /**
-   * The hand as it was dealt, each card with the one thing that tells it
-   * from its twin in the other pack: where it arrived.
-   */
-  private readonly dealt = computed<readonly HeldCard[]>(() =>
-    this.myCards().map((code, id) => ({ id, code })),
-  );
+  /** The hand as its owner has arranged it, which is theirs and not the server's. */
+  protected readonly arranged = new ArrangedHand(this.myCards);
 
-  /** Null until the hand has been sorted or a card moved by hand. */
-  private readonly laid = signal<readonly HeldCard[] | null>(null);
-
-  /**
-   * How many cards the player keeps on the first line of their hand. Null
-   * is the natural wrap, and it stays null until a card is carried across.
-   */
-  protected readonly firstLine = signal<number | null>(null);
-
-  /**
-   * Your own cards as you have chosen to hold them. Where they sit is yours
-   * and nobody else's: the server sends a hand and is never told an order.
-   */
-  private readonly myHand = computed(() => this.laid() ?? this.dealt());
-
-  /** Which way the last press sorted them, so the next one does the other. */
-  private sortedBy: HandOrder = 'bySuit';
-
-  /**
-   * Two presses and two orders, because a run and a set are not the same
-   * shape: by rank the sets line up, by suit the runs do. Either of them
-   * takes over from an arrangement made by hand, which is what asking to
-   * have the hand sorted means.
-   */
   protected sortHand(): void {
-    this.sortedBy = this.sortedBy === 'byRank' ? 'bySuit' : 'byRank';
-    this.laid.set(inOrder(this.dealt(), this.sortedBy));
-    this.firstLine.set(null);
+    this.arranged.sort();
   }
 
-  /** One card, or a whole run, put down somewhere else in the hand. */
   protected moveCard(move: CardMove): void {
-    this.laid.set(moved(this.myHand(), move.ids, move.to));
-
-    if (move.firstLine !== null) {
-      this.firstLine.set(move.firstLine);
-    }
+    this.arranged.move(move.ids, move.to, move.firstLine);
   }
 
   private readonly theCut = viewChild<TableCut>('theCut');
   private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
+  private readonly discardPile = viewChild<ElementRef<HTMLElement>>('discardPile');
   private readonly nearHand = viewChild<PlayerHand>('nearHand');
   private readonly otherSpots = viewChildren<TableSeat>('seatSpot');
   private readonly finishingSlot = viewChild<ElementRef<HTMLElement>>('finishingSlot');
@@ -147,6 +116,13 @@ export class Table implements OnDestroy {
    * rather than what it is doing.
    */
   private readonly show = new Dealing(this.spots());
+
+  /** One card's journey between a pile and the hand, drawn or thrown. */
+  private readonly journey = new CardJourney({
+    stock: () => this.pile()?.nativeElement,
+    discards: () => this.discardPile()?.nativeElement,
+    cardAt: (id) => this.nearHand()?.cardAt(id),
+  });
 
   /** True from the cut until the deck has settled, which keeps both on screen. */
   protected readonly collapsing = this.show.collapsing;
@@ -231,7 +207,7 @@ export class Table implements OnDestroy {
    */
   private faceUpCards(seat: number): readonly HeldCard[] {
     if (this.isMine(seat)) {
-      return this.myHand();
+      return this.arranged.cards();
     }
 
     // A joker the cut gave the cutter is face up for the deal and no
@@ -319,6 +295,14 @@ export class Table implements OnDestroy {
     return hand?.phase === 'cutting' && this.ownSeat() === hand.cutterSeat;
   });
 
+  /** What this player may do in the hand as it stands, for the screen to read. */
+  protected readonly turn = new Turn(
+    this.hand,
+    this.ownSeat,
+    this.show.animating,
+    this.arranged.picked,
+  );
+
   protected readonly cutter = computed(() => {
     const hand = this.hand();
 
@@ -344,8 +328,7 @@ export class Table implements OnDestroy {
       // after the cut should not be shown it happening again.
       if (phase === 'cutting') {
         this.show.forget();
-        this.laid.set(null);
-        this.firstLine.set(null);
+        this.arranged.forget();
       }
 
       const hand = this.hand();
@@ -354,18 +337,87 @@ export class Table implements OnDestroy {
         this.show.begin(hand);
       }
     });
+
+    // A card drawn is flown in once it is lying where it will lie, which is
+    // one render after the hand has heard of it. By then it is also the card
+    // standing out of the hand, which is how it is found: a card just drawn
+    // is picked the moment it lands. Nothing happens here unless a draw was
+    // asked for, so a sort or a throw passes straight through.
+    effect(() => {
+      this.arranged.cards();
+
+      const landed = untracked(() => this.arranged.picked());
+
+      afterNextRender(() => this.journey.arrived(landed), { injector: this.injector });
+    });
   }
 
   ngOnDestroy(): void {
     this.show.stop();
+    this.journey.land();
     void this.lobby.unwatch(this.tableId());
   }
 
   protected cut(position: number): void {
+    this.send(this.tables.cut(this.tableId(), position));
+  }
+
+  protected draw(from: DrawnFrom): void {
+    this.journey.leaving(from);
+    this.send(this.tables.draw(this.tableId(), from));
+  }
+
+  private throwCard(cardId: number): void {
+    this.journey.thrown(cardId);
+    this.send(this.tables.discard(this.tableId(), cardId));
+  }
+
+  /**
+   * One pile and two moves, never both at once: until a card has been taken
+   * the pile is something to take from, and afterwards something to throw
+   * onto.
+   */
+  protected pileClicked(): void {
+    if (this.turn.canTakeDiscard()) {
+      this.draw('discards');
+
+      return;
+    }
+
+    const picked = this.arranged.picked();
+
+    if (this.turn.canThrow() && picked !== null) {
+      this.throwCard(picked);
+    }
+  }
+
+  /**
+   * A card let go of outside the hand. One place out there means something,
+   * and one card at a time can be thrown onto it.
+   */
+  protected cardReleased(release: CardRelease): void {
+    const pile = this.discardPile()?.nativeElement.getBoundingClientRect();
+
+    if (!this.turn.toThrow() || release.ids.length !== 1 || pile === undefined) {
+      return;
+    }
+
+    const { x, y } = release.at;
+
+    if (x >= pile.left && x <= pile.right && y >= pile.top && y <= pile.bottom) {
+      this.throwCard(release.ids[0]);
+    }
+  }
+
+  /**
+   * A move, and nothing to do with the answer. The hub tells everyone at the
+   * table what came of it, this page included, so the only thing the reply
+   * is good for here is the complaint.
+   */
+  private send(move: Observable<HandView>): void {
     this.errors.set([]);
 
-    this.tables.cut(this.tableId(), position).subscribe({
-      // Nothing to do: the hub tells everyone at the table, this page included.
+    move.subscribe({
       next: () => undefined,
       error: (errors: ApiError[]) => this.errors.set(errors),
     });

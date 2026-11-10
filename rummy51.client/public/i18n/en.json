@@ -108,7 +108,13 @@
     "waitingForCut": "{{0}} is cutting the deck",
     "finishingCard": "Finishing card",
     "dealer": "Dealer",
-    "sortHand": "Sort the hand"
+    "sortHand": "Sort the hand",
+    "drawStock": "Take from the deck",
+    "drawDiscard": "Take the discarded card",
+    "emptyPile": "No card has been thrown",
+    "turnDraw": "Your turn — take a card",
+    "turnThrow": "Your turn — throw a card",
+    "throwHere": "Throw the card you picked"
   },
   "profile": {
     "open": "Account menu",
@@ -151,6 +157,9 @@
     "TableJokersInvalid": "That is not a valid number of jokers",
     "HandNotStarted": "The hand at that table has not begun",
     "NotYoursToCut": "The cut is not yours to make",
-    "AlreadyCut": "The deck has already been cut"
+    "AlreadyCut": "The deck has already been cut",
+    "CannotDraw": "You cannot take a card now",
+    "CannotDiscard": "You cannot discard now",
+    "NotAtThisTable": "You are not sitting at this table"
   }
 }

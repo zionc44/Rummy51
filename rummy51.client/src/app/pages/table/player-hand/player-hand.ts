@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { HeldCard } from '../../../core/cards/card';
 import { meldsIn } from '../../../core/cards/melds';
-import { placesIn } from './drawn-hand';
+import { cardsAmong, placesIn } from './drawn-hand';
 import { HandDrag } from './hand-drag';
 import { slideFrom, whereTheyAre } from './hand-slide';
 
@@ -25,15 +25,14 @@ import { slideFrom, whereTheyAre } from './hand-slide';
 const Deck = 'cards/corners/';
 
 /**
- * How many cards the first line holds until the player says otherwise. Eight
- * is what leaves each of them enough of itself showing to be read on a phone,
- * but where a hand wraps is the player's to decide: a run they have gathered
- * belongs on one line, however many cards it is.
+ * A line that has emptied still keeps one place, or there would be nowhere
+ * left to carry a card back to.
  */
-const PerRow = 8;
+const orAPlace = (line: readonly (HeldCard | null)[]): readonly (HeldCard | null)[] =>
+  line.length === 0 ? [null] : line;
 
 /** How many colours the bands run through before starting again. */
-const Bands = 3;
+const Bands = 5;
 
 /**
  * Whether there is width for the hand in a single line. The number mirrors
@@ -61,7 +60,9 @@ function oneRowFits(): Signal<boolean> {
 @Component({
   selector: 'app-player-hand',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  hostDirectives: [{ directive: HandDrag, inputs: ['arrangeable'], outputs: ['moved'] }],
+  hostDirectives: [
+    { directive: HandDrag, inputs: ['arrangeable'], outputs: ['moved', 'tapped', 'released'] },
+  ],
   templateUrl: './player-hand.html',
   styleUrl: './player-hand.scss',
 })
@@ -80,10 +81,18 @@ export class PlayerHand {
   readonly places = input(0);
 
   /**
-   * How many cards the player keeps on the first line. Null until they have
-   * moved one across, which is the only thing that changes it.
+   * The card the player has picked out, standing clear of the rest. Null
+   * when none is. Only one ever stands out of a hand, which is what makes
+   * it an answer to "this one" rather than a list.
    */
-  readonly firstLine = input<number | null>(null);
+  readonly picked = input<number | null>(null);
+
+  /**
+   * How many cards the player keeps on the first line. Theirs, and never
+   * worked out from how many cards there happen to be: a card crossing
+   * between the lines on its own is the one thing a hand must never do.
+   */
+  readonly firstLine = input(0);
 
   private readonly drag = inject(HandDrag);
 
@@ -97,15 +106,10 @@ export class PlayerHand {
    */
   private readonly splitting = computed(() => !this.oneRow() && this.cards().length > 0);
 
-  private readonly lineBreak = computed(() => {
-    const asked = this.firstLine() ?? PerRow;
-    const whole = Math.max(this.cards().length, this.places());
-
-    // Each line keeps at least one card. An empty line has no card to
-    // measure against, so the pointer could never be said to be over it
-    // and nothing could ever be put back.
-    return Math.min(Math.max(asked, 1), Math.max(whole - 1, 1));
-  });
+  /** Clamped only so the break cannot fall outside the hand it breaks. */
+  private readonly lineBreak = computed(() =>
+    Math.min(this.firstLine(), Math.max(this.cards().length, this.places())),
+  );
 
   /**
    * The hand as it is laid. Both lines are there from the first card, so the
@@ -120,7 +124,7 @@ export class PlayerHand {
 
     const breaks = this.lineBreak();
 
-    return [laid.slice(0, breaks), laid.slice(breaks)];
+    return [orAPlace(laid.slice(0, breaks)), orAPlace(laid.slice(breaks))];
   });
 
   /** What is being dragged is drawn at the finger, so its places are gaps. */
@@ -151,12 +155,27 @@ export class PlayerHand {
    * read off the hand as it is laid, so a meld the player has not put side
    * by side is not one, and nor is one broken across the two lines.
    */
-  private readonly melds = computed(() => this.rows().map((row) => meldsIn(row)));
+  private readonly melds = computed(() => {
+    const lines: (number | null)[][] = [];
+    let found = 0;
+
+    // Numbered across the whole hand and not within each line: two melds on
+    // two lines are two melds, and one colour between them says they are one.
+    for (const row of this.rows()) {
+      const marks = meldsIn(row);
+
+      lines.push(marks.map((mark) => (mark === null ? null : mark + found)));
+      found += new Set(marks.filter((mark) => mark !== null)).size;
+    }
+
+    return lines;
+  });
 
   /**
    * Which run or set a card is lying in, or null where it is in none. The
-   * numbers only have to differ between neighbours, which is what lets one
-   * meld be told from the next - and what lets a whole one be picked up.
+   * number differs between every meld in the hand and not only between
+   * neighbours, which is what lets one be told from the next, what lets a
+   * whole one be picked up, and what gives each of them its own colour.
    */
   protected meldAt(line: number, at: number): number | null {
     return this.melds()[line]?.[at] ?? null;
@@ -227,5 +246,10 @@ export class PlayerHand {
   /** Where a card flying to this hand comes to rest, place by place. */
   landingSpot(step: number): HTMLElement | undefined {
     return placesIn(this.hand())[step];
+  }
+
+  /** Where one card is lying in this hand, if it is lying in it at all. */
+  cardAt(id: number): HTMLElement | undefined {
+    return cardsAmong(this.hand(), [id])[0];
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { AuthService } from '../auth/auth-service';
+import { HeldCard } from '../cards/card';
 import { HandView, LobbyPlayer, LobbyTable } from './lobby.models';
 
 const HUB_URL = '/hubs/lobby';
@@ -28,7 +29,7 @@ export class LobbyConnection {
   private readonly replaced = signal(false);
   private readonly live = signal(false);
   private readonly playing = signal<HandView | null>(null);
-  private readonly mine = signal<readonly string[]>([]);
+  private readonly mine = signal<readonly HeldCard[]>([]);
 
   readonly onlinePlayers = this.players.asReadonly();
   readonly tables = this.open.asReadonly();
@@ -134,7 +135,7 @@ export class LobbyConnection {
 
     connection.on(LobbyEvent.HandChanged, (hand: HandView | null) => this.playing.set(hand));
 
-    connection.on(LobbyEvent.CardsDealt, (cards: string[]) => this.mine.set(cards));
+    connection.on(LobbyEvent.CardsDealt, (cards: HeldCard[]) => this.mine.set(cards));
 
     connection.on(LobbyEvent.SignedInElsewhere, () => {
       this.replaced.set(true);

@@ -16,10 +16,8 @@ internal sealed class OpenTable
     private readonly PlayerSummary?[] seats;
     private readonly bool markJokers;
     private readonly TurnSettings turns;
-    private readonly TimeProvider clock;
+    private readonly Countdown countdown;
     private Hand? hand;
-    private DateTimeOffset? dueAt;
-    private TimeSpan waited;
 
     public OpenTable(
         CreateTableRequest request,
@@ -29,7 +27,7 @@ internal sealed class OpenTable
     {
         this.markJokers = markJokers;
         this.turns = turns;
-        this.clock = clock;
+        countdown = new Countdown(clock);
 
         // Version 7 is time-ordered, so listing tables by id lists them in the
         // order they were opened.
@@ -70,7 +68,7 @@ internal sealed class OpenTable
             // Filling the table is what starts the hand. There is no button
             // and nobody waits for anybody.
             hand = new Hand(seats.Length, Jokers, Random.Shared.Next(seats.Length), Random.Shared.Next());
-            WaitFor(TimeSpan.FromSeconds(turns.CutSeconds));
+            countdown.Restart(TimeSpan.FromSeconds(turns.CutSeconds));
         }
     }
 
@@ -107,25 +105,40 @@ internal sealed class OpenTable
 
         // Not a wait for anybody: the cards are going out, and the screen
         // takes a few seconds over what the server did at once.
-        WaitFor(TimeSpan.FromSeconds(turns.DealSeconds));
+        countdown.Restart(TimeSpan.FromSeconds(turns.DealSeconds));
 
         return true;
     }
 
     /// <summary>
-    /// True once the table has waited as long as it said it would. The
-    /// clock asks this of every table and acts on the ones that say yes.
+    /// A player takes their card. The wait is not restarted: a turn is given
+    /// one clock, and reaching for a card is part of what it is for.
     /// </summary>
-    public bool IsOverdue => dueAt is { } due && clock.GetUtcNow() >= due;
+    public bool Draw(int seat, DrawnFrom from) => hand?.Draw(seat, from) == true;
 
     /// <summary>
-    /// What the table does when nobody does it for themselves. A cut has to
-    /// happen for the hand to go on and there is no wrong place to cut, so
-    /// it is cut where chance says.
+    /// A player throws one away, which hands the turn on - and with it the
+    /// clock, which begins again for whoever it reached.
+    /// </summary>
+    public bool Discard(int seat, int cardId)
+    {
+        if (hand?.Discard(seat, cardId) != true)
+        {
+            return false;
+        }
+
+        countdown.Restart(TimeSpan.FromSeconds(turns.TurnSeconds));
+
+        return true;
+    }
+
+    /// <summary>
+    /// What the table does when nobody does it for themselves, so that one
+    /// player who has walked away cannot hold three others still.
     /// </summary>
     public bool ActForWhoeverRanOut()
     {
-        if (hand is null || !IsOverdue)
+        if (hand is null || !countdown.HasRunOut)
         {
             return false;
         }
@@ -141,9 +154,14 @@ internal sealed class OpenTable
             return BeginPlay();
         }
 
-        // A turn that ran out. Drawing and discarding for whoever it was
-        // lands here next; until then the wait simply ends.
-        StopWaiting();
+        if (PlayTheTurnFor(hand.TurnSeat))
+        {
+            return true;
+        }
+
+        // Nothing could be played for them, which is not a thing that should
+        // happen. The wait ends rather than being asked again every tick.
+        countdown.Stop();
 
         return true;
     }
@@ -155,52 +173,45 @@ internal sealed class OpenTable
             return false;
         }
 
-        WaitFor(TimeSpan.FromSeconds(turns.FirstTurnSeconds));
+        countdown.Restart(TimeSpan.FromSeconds(turns.FirstTurnSeconds));
 
         return true;
     }
 
-    private void WaitFor(TimeSpan howLong)
-    {
-        waited = howLong;
-        dueAt = clock.GetUtcNow() + howLong;
-    }
-
-    private void StopWaiting()
-    {
-        dueAt = null;
-        waited = TimeSpan.Zero;
-    }
-
     /// <summary>
-    /// Null when nobody is being waited for. The seconds left are worked
-    /// out now rather than when the wait began, so whoever is told has the
-    /// same deadline as everybody else however late they arrived.
+    /// A turn nobody took, played in the way that changes that hand least: a
+    /// card off the stock and the same card straight back. Whoever opens the
+    /// hand has already drawn - their fifteenth card was the draw - so for
+    /// them it is the last card they were dealt that goes instead.
     /// </summary>
-    private Waiting? DescribeWait()
+    private bool PlayTheTurnFor(int seat)
     {
-        if (hand is null || dueAt is not { } due || hand.WaitingSeat == -1)
+        if (hand is null)
         {
-            return null;
+            return false;
         }
 
-        var left = due - clock.GetUtcNow();
+        if (!hand.HasDrawn)
+        {
+            hand.Draw(seat, DrawnFrom.Stock);
+        }
 
-        return new Waiting(
-            hand.WaitingSeat,
-            Math.Max(left.TotalSeconds, 0),
-            waited.TotalSeconds);
+        var held = hand.Hands[seat];
+
+        return held.Count > 0 && Discard(seat, held[^1].Id);
     }
 
     /// <summary>
     /// One player's own cards, which is the one thing here that never goes
     /// into <see cref="DescribeHand"/>.
     /// </summary>
-    public IReadOnlyList<string> CardsOf(Guid playerId)
+    public IReadOnlyList<HeldCardView> CardsOf(Guid playerId)
     {
         var seat = SeatOf(playerId);
 
-        return hand is null || seat == -1 ? [] : [.. hand.Hands[seat].Select(card => card.Code)];
+        return hand is null || seat == -1
+            ? []
+            : [.. hand.Hands[seat].Select(card => new HeldCardView(card.Id, card.Card.Code))];
     }
 
     public HandView? DescribeHand() =>
@@ -219,7 +230,11 @@ internal sealed class OpenTable
                 [.. hand.Hands.Select(cards => cards.Count)],
                 hand.Passes,
                 hand.Stock.Count,
-                DescribeWait());
+                hand.TurnSeat,
+                hand.HasDrawn,
+                hand.TopOfDiscards?.Code,
+                hand.Discards.Count,
+                countdown.Describe(hand.WaitingSeat));
 
     public LobbyTable Describe() =>
         new(Id, Mode, Limit, Jokers, [.. seats.Select(Occupant)], Started);

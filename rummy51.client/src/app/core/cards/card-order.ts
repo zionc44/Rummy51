@@ -63,3 +63,27 @@ export function moved(
 
   return [...rest.slice(0, to), ...carried, ...rest.slice(to)];
 }
+
+/**
+ * The hand the server says you are holding, laid out the way you arranged
+ * it. Cards keep the places you gave them, one that has just reached you
+ * joins the end, and one that has left takes its place with it.
+ *
+ * The arrangement is held against what the server sends rather than instead
+ * of it, because a hand changes under the player all game: they draw, they
+ * throw, and what they decided about the cards in between has to survive it.
+ */
+export function arrangedLike(
+  held: readonly HeldCard[],
+  arrangement: readonly HeldCard[] | null,
+): readonly HeldCard[] {
+  if (arrangement === null) {
+    return held;
+  }
+
+  const stillHeld = new Set(held.map((card) => card.id));
+  const placed = arrangement.filter((card) => stillHeld.has(card.id));
+  const known = new Set(placed.map((card) => card.id));
+
+  return [...placed, ...held.filter((card) => !known.has(card.id))];
+}

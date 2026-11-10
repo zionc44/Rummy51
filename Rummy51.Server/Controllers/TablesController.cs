@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Rummy51.Application.Authentication;
+using Rummy51.Application.Common;
 using Rummy51.Application.Tables;
 using Rummy51.Server.Errors;
 using Rummy51.Server.Hubs;
@@ -94,14 +95,41 @@ public class TablesController(
     [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Cut(Guid tableId, CutRequest request)
+    public Task<IActionResult> Cut(Guid tableId, CutRequest request) =>
+        MoveAsync(tableId, playerId => tables.CutDeck(tableId, playerId, request.Position));
+
+    /// <summary>
+    /// The first half of a turn: a card off the stock, or the one the player
+    /// before threw away.
+    /// </summary>
+    [HttpPost("{tableId:guid}/draw")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> Draw(Guid tableId, DrawRequest request) =>
+        MoveAsync(tableId, playerId => tables.Draw(tableId, playerId, request.From));
+
+    /// <summary>The second half, which ends the turn and hands it on.</summary>
+    [HttpPost("{tableId:guid}/discard")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> Discard(Guid tableId, DiscardRequest request) =>
+        MoveAsync(tableId, playerId => tables.Discard(tableId, playerId, request.CardId));
+
+    /// <summary>
+    /// Every move at a table is the same errand: find out who is asking, put
+    /// it to the table, and tell the table what came of it. Only the middle
+    /// of those three differs between them.
+    /// </summary>
+    private async Task<IActionResult> MoveAsync(Guid tableId, Func<Guid, Result<HandView>> move)
     {
         if (await accounts.GetCurrentPlayerAsync() is not { } player)
         {
             return Unauthorized();
         }
 
-        var result = tables.CutDeck(tableId, player.PlayerId, request.Position);
+        var result = move(player.PlayerId);
 
         if (!result.IsSuccess)
         {

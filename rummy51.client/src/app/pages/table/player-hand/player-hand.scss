@@ -44,6 +44,7 @@
   aspect-ratio: 240 / 336;
   overflow: hidden;
   border-radius: 0.1875rem;
+  transition: translate 140ms ease-out;
 
   & + & {
     margin-inline-start: min(
@@ -51,6 +52,20 @@
       calc((100% - var(--card)) / (var(--cards) - 1) - var(--card))
     );
   }
+}
+
+// Picked out of the hand: stood forward, and over its neighbours rather
+// than under the one to its right, which is the only way a card in an
+// overlapped hand can be seen to have moved at all.
+//
+// `translate` and not `transform`, because a card being carried or slid
+// into place is moved by `transform` and the two must not reach for the
+// same property.
+.hand__card--picked {
+  z-index: 99;
+  translate: 0 -0.75rem;
+  outline: 2px solid var(--felt-500);
+  outline-offset: -2px;
 }
 
 .hand__face {

@@ -33,6 +33,19 @@ namespace Rummy51.Application.Tables;
 /// The deal pass by pass, so the eye can follow it round the table. It says
 /// how many cards went where and never which.
 /// </param>
+/// <param name="TurnSeat">Whose turn it is, or -1 before play has begun.</param>
+/// <param name="HasDrawn">
+/// Whether they have taken their card yet. Public, because at a real table
+/// everybody watches the hand go to the stock and come back.
+/// </param>
+/// <param name="DiscardTop">
+/// The one card of the discard pile lying face up, which is also the only one
+/// anybody may take. Null until the hand's first discard.
+/// </param>
+/// <param name="DiscardCount">
+/// How deep the pile is. Nobody plays against it, but a pile drawn the same
+/// height all game says the game is not happening.
+/// </param>
 /// <summary>
 /// Who the table is waiting for, and how much longer it will wait. It is a
 /// state and not an instruction: a player who opens the page halfway
@@ -56,4 +69,8 @@ public sealed record HandView(
     IReadOnlyList<int> CardsPerSeat,
     IReadOnlyList<DealPass> Passes,
     int StockSize,
+    int TurnSeat,
+    bool HasDrawn,
+    string? DiscardTop,
+    int DiscardCount,
     Waiting? Waiting);

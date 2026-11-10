@@ -30,6 +30,14 @@ public enum Rank
 }
 
 /// <summary>
+/// A card while somebody is holding it, carrying the one thing that tells it
+/// from its twin in the other pack: a number given when it reached them and
+/// kept until it leaves. Two sevens of hearts are the same card and not the
+/// same thing, and a hand being rearranged has to know the difference.
+/// </summary>
+public readonly record struct HeldCard(int Id, Card Card);
+
+/// <summary>
 /// A card is one of the fifty-two or a joker, and nothing else. Making the
 /// joker a fifth suit, or a fifteenth rank, would be a lie that every run and
 /// every count would then have to work around.
