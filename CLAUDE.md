@@ -232,9 +232,13 @@ shrunk to stay out of their way — which is what makes a card legible when all
 that shows of it is its corner. Weight carries at that size where height does
 not: a rank is a stroked path, so it is one number, and eighty is the widest
 pen that fits the box the glyph is drawn in, which is why the box is also told
-to stop clipping. Only the player's own hand reads from this deck; everywhere
-a card is seen whole reads from the first. It is generated and never drawn by
-hand — `npm run cards` builds it from the source deck, so a change there can
+to stop clipping. Everything on screen reads from it, through
+`pictureOf` in `core/cards/deck.ts`, which is the one place the path is
+written. It was meant for the hand alone and the whole-card deck for
+everywhere a card is seen whole - but cards lie over one another nearly
+everywhere they are shown here, and where they do not, the larger index
+costs nothing. Nothing reads `public/cards` any more; it is the deck this
+one is generated from. It is generated and never drawn by hand — `npm run cards` builds it from the source deck, so a change there can
 be carried over.
 
 ngx-translate loads `public/i18n/<code>.json` at runtime. Hebrew is the default
@@ -293,9 +297,11 @@ number. The deal runs from there, and it is where secrecy starts: a hand
 reaches the player holding it and nobody else, while every other seat is told
 a count and shows a pile of backs.
 
-A hand is held overlapped and reads left to right, lowest on the left: its
-line is the one place in the client that does not mirror with the language,
-because a hand of cards is not writing. All that shows of a card is the
+A hand is held overlapped and reads left to right, lowest on the left. That
+line and the melds laid on the table are the only places in the client that
+do not mirror with the language, because a row of cards is not writing: the
+index a card is known by is printed in its top left corner, so a card has to
+be covered on its right and not on its left. All that shows of a card is the
 corner that names it, and fifteen cards in one line across a phone leave
 seventeen pixels of each — not a card anybody can read — so below the `sm`
 breakpoint the hand is laid in two lines and the corner doubles. A line keeps
@@ -321,8 +327,34 @@ and nothing asks it yet. The band is deep enough to take hold of, and that is
 what it is for: a finger on the band carries the whole run, a finger on the
 card above it carries one card out of it.
 
-Next: a turn. Drawing from the stock or the pile, going down at fifty-one,
-and discarding.
+A turn is a card in and a card out, and between them cards onto the table.
+Tapping the band that marks a run lays that run down - the band already says
+these cards go together, so dragging it carries them together and tapping it
+plays them together. Several may be laid in one turn and one card still has
+to be thrown afterwards. Nothing yet asks whether what was laid is a run at
+all, or worth fifty-one, or holds a clean one: those are the rules of going
+down and they are the next thing to be written.
+
+Anything a turn did can be taken back, last thing first: the melds in the
+order they were laid, and after them the card taken off the discard pile. A
+card off the stock never goes back. Putting it where it came from would let
+a player look at the top of the stock and then decide not to have looked,
+and there is no undoing knowing something.
+
+Cards are seen to cross between a hand and the felt, whichever way they are
+going. The thing that shows it is not told the direction: it is given cards
+to watch and where they are now, and after the table has been drawn again it
+finds them wherever they ended up. That is also why taking back a card off
+the pile needs no animation of its own - the cards it was watching did not
+move, so nothing travels.
+
+The table fits the screen and never scrolls, which is what `fits` on the
+page shell asks for: a card below the fold is a card nobody can reach. So
+the board does not grow to hold more - what gives way as it fills is the
+size of the cards laid on it.
+
+Next: the rules of going down. Fifty-one points, a clean run among them, and
+adding to what is already on the table.
 
 Still open: the Google link on the account page; rate limiting
 and CAPTCHA on registration — it cannot require a credential, so those are its

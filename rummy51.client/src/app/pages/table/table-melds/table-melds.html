@@ -1,0 +1,14 @@
+<div class="melds" [style.--laid]="size()">
+  @for (meld of melds(); track $index) {
+    <div class="melds__meld">
+      @for (card of meld.cards; track card.id) {
+        <img
+          class="melds__card"
+          [attr.data-id]="card.id"
+          [src]="picture(card.code)"
+          alt=""
+        />
+      }
+    </div>
+  }
+</div>

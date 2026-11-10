@@ -48,6 +48,13 @@ export class Turn {
    */
   readonly canThrow = computed(() => this.toThrow() && this.picked() !== null);
 
+  /**
+   * Whether there is anything of this turn left to take back. The server
+   * keeps the count of it: what can be undone is what was done, and only
+   * the hand knows that.
+   */
+  readonly canUndo = computed(() => this.mine() && (this.hand()?.canUndo ?? false));
+
   /** What the table is waiting for, in a line. Null when it waits elsewhere. */
   readonly prompt = computed(() => {
     if (!this.mine() || this.animating()) {

@@ -1,3 +1,5 @@
+import { HeldCard } from '../cards/card';
+
 /**
  * Mirrors PlayerStatus on the server, which sends the name rather than the
  * ordinal. Only `available` is reachable today — the rest wait for games and
@@ -83,6 +85,16 @@ export interface Waiting {
 }
 
 /**
+ * One run or set lying on the table, and whose it was. Every card of it is
+ * named: once it is down it belongs to the table, and there is nothing in
+ * it left to keep from anybody.
+ */
+export interface MeldView {
+  readonly seat: number;
+  readonly cards: readonly HeldCard[];
+}
+
+/**
  * The hand as everyone at the table may see it. Cards arrive as their code,
  * which is also the name of the picture, so there is one name and not two.
  */
@@ -122,6 +134,9 @@ export interface HandView {
    */
   readonly discardTop: string | null;
   readonly discardCount: number;
+  readonly melds: readonly MeldView[];
+  /** Whether the player whose turn it is has anything left to take back. */
+  readonly canUndo: boolean;
   readonly waiting: Waiting | null;
 }
 

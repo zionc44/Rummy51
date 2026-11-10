@@ -109,6 +109,7 @@
     "finishingCard": "Finishing card",
     "dealer": "Dealer",
     "sortHand": "Sort the hand",
+    "undo": "Undo",
     "drawStock": "Take from the deck",
     "drawDiscard": "Take the discarded card",
     "emptyPile": "No card has been thrown",

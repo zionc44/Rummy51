@@ -23,13 +23,13 @@
             <span class="fan__turn" [class.fan__turn--over]="isTurned(position)">
               <img
                 class="fan__side fan__side--back"
-                [src]="'cards/' + hand().backs[position] + '.svg'"
+                [src]="picture(hand().backs[position])"
                 alt=""
               />
-              <img class="fan__side" [src]="'cards/' + face + '.svg'" alt="" />
+              <img class="fan__side" [src]="picture(face)" alt="" />
             </span>
           } @else {
-            <img [src]="'cards/' + hand().backs[position] + '.svg'" alt="" />
+            <img [src]="picture(hand().backs[position])" alt="" />
           }
         </button>
       }

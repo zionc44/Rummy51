@@ -1,4 +1,4 @@
-<app-page-shell>
+<app-page-shell [fits]="true">
   @if (table()) {
     <button shell-actions type="button" class="table__leave" (click)="moves.leave()">
       {{ 'table.leave' | translate }}
@@ -43,55 +43,70 @@
 
           @if (hand.phase !== 'cutting') {
             <div class="board">
-              <!-- The finishing card first, so the pile drawn after it covers
-                   the half that is meant to be hidden. -->
-              <div class="stack">
-                @if (hand.finishingCard; as code) {
-                  <!-- Where the card is going. It waits, invisible, while the
-                       one in the deck travels here, so there is never two. -->
-                  <div
-                    #finishingSlot
-                    class="stack__finishing"
-                    [class.stack__finishing--waiting]="collapsing()"
+              <!-- Both piles across the top of the board, which is a line
+                   nothing else uses. -->
+              <div class="piles">
+                <!-- The finishing card first, so the deck drawn after it
+                     covers the half that is meant to be hidden. -->
+                <div class="stack">
+                  @if (hand.finishingCard; as code) {
+                    <!-- Where the card is going. It waits, invisible, while
+                         the one in the deck travels here, so there is never
+                         two of it. -->
+                    <div
+                      #finishingSlot
+                      class="stack__finishing"
+                      [class.stack__finishing--waiting]="collapsing()"
+                    >
+                      <img class="stack__face" [src]="picture(code)" alt="" />
+                    </div>
+                  }
+                  <button
+                    #pile
+                    type="button"
+                    class="stack__pile"
+                    [class.pile--offered]="turn.toDraw()"
+                    [disabled]="!turn.toDraw()"
+                    [attr.aria-label]="'table.drawStock' | translate"
+                    (click)="moves.draw('stock')"
                   >
-                    <img class="stack__face" [src]="'cards/' + code + '.svg'" alt="" />
-                  </div>
-                }
+                    <img [src]="picture('1B')" alt="" />
+                    <img [src]="picture('2B')" alt="" />
+                    <img [src]="picture('1B')" alt="" />
+                  </button>
+                </div>
+
+                <!-- What the player before threw, which is the only card of
+                     the pile under it that anybody may take - and the place
+                     a card is thrown to, which is the same place. -->
                 <button
-                  #pile
+                  #discardPile
                   type="button"
-                  class="stack__pile"
-                  [class.pile--offered]="turn.toDraw()"
-                  [disabled]="!turn.toDraw()"
-                  [attr.aria-label]="'table.drawStock' | translate"
-                  (click)="moves.draw('stock')"
+                  class="discard"
+                  [class.pile--offered]="turn.canTakeDiscard() || turn.canThrow()"
+                  [disabled]="!turn.canTakeDiscard() && !turn.canThrow()"
+                  [attr.aria-label]="
+                    (turn.toThrow() ? 'table.throwHere' : 'table.drawDiscard') | translate
+                  "
+                  (click)="pileClicked()"
                 >
-                  <img src="cards/1B.svg" alt="" />
-                  <img src="cards/2B.svg" alt="" />
-                  <img src="cards/1B.svg" alt="" />
+                  @if (hand.discardTop; as code) {
+                    <img class="stack__face" [src]="picture(code)" alt="" />
+                  } @else {
+                    <span class="discard__empty">{{ 'table.emptyPile' | translate }}</span>
+                  }
                 </button>
               </div>
 
-              <!-- What the player before threw, which is the only card of
-                   the pile under it that anybody may take - and the place a
-                   card is thrown to, which is the same place. -->
-              <button
-                #discardPile
-                type="button"
-                class="discard"
-                [class.pile--offered]="turn.canTakeDiscard() || turn.canThrow()"
-                [disabled]="!turn.canTakeDiscard() && !turn.canThrow()"
-                [attr.aria-label]="
-                  (turn.toThrow() ? 'table.throwHere' : 'table.drawDiscard') | translate
-                "
-                (click)="pileClicked()"
-              >
-                @if (hand.discardTop; as code) {
-                  <img class="stack__face" [src]="'cards/' + code + '.svg'" alt="" />
-                } @else {
-                  <span class="discard__empty">{{ 'table.emptyPile' | translate }}</span>
-                }
-              </button>
+              <app-table-melds [melds]="hand.melds" />
+
+              @if (turn.canUndo()) {
+                <!-- Only while there is something to take back, which is
+                     most of the time there is not. -->
+                <button type="button" class="board__undo" (click)="undo()">
+                  {{ 'table.undo' | translate }}
+                </button>
+              }
 
               @if (turn.prompt(); as line) {
                 <p class="board__prompt">{{ line | translate }}</p>
@@ -123,6 +138,7 @@
             (moved)="moveCard($event)"
             (tapped)="arranged.pick($event)"
             (released)="cardReleased($event)"
+            (played)="layDown($event)"
           />
           <app-table-seat
             [seat]="mySeat"

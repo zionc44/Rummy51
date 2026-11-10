@@ -46,6 +46,19 @@ public interface ITables
     Result<HandView> Discard(Guid tableId, Guid playerId, int cardId);
 
     /// <summary>
+    /// Cards laid on the table, which happens between the two halves and
+    /// ends neither of them: a player may lay several and still has to
+    /// throw one away afterwards.
+    /// </summary>
+    Result<HandView> LayDown(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds);
+
+    /// <summary>
+    /// Takes back the last thing this turn did. Everything but a card off
+    /// the stock, which cannot be unknown once it has been seen.
+    /// </summary>
+    Result<HandView> Undo(Guid tableId, Guid playerId);
+
+    /// <summary>
     /// One player's own cards. They go to that player's own connection and
     /// never to a group, which is why they are asked for separately rather
     /// than carried by <see cref="HandView"/>. Empty before the deal, and

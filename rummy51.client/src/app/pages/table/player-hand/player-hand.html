@@ -24,7 +24,7 @@
           [attr.data-id]="card.id"
           [attr.data-meld]="meldAt(line, $index)"
         >
-          <img class="hand__face" [src]="deck + card.code + '.svg'" draggable="false" alt="" />
+          <img class="hand__face" [src]="picture(card.code)" draggable="false" alt="" />
           @if (bandOf(line, $index); as band) {
             <span class="hand__band" [style.background]="band"></span>
           }

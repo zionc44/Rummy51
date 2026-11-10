@@ -166,6 +166,12 @@ public sealed class InMemoryTables(
     public Result<HandView> Discard(Guid tableId, Guid playerId, int cardId) =>
         Move(tableId, playerId, (table, seat) => table.Discard(seat, cardId), "CannotDiscard");
 
+    public Result<HandView> LayDown(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
+        Move(tableId, playerId, (table, seat) => table.LayDown(seat, cardIds), "CannotLayDown");
+
+    public Result<HandView> Undo(Guid tableId, Guid playerId) =>
+        Move(tableId, playerId, (table, seat) => table.Undo(seat), "NothingToUndo");
+
     /// <summary>
     /// A player's move, which always asks the same three questions before the
     /// move itself: is there a table, are they sitting at it, and did the hand

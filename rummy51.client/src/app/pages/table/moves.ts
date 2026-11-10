@@ -42,6 +42,14 @@ export class Moves {
     this.send(this.tables.discard(this.tableId(), cardId));
   }
 
+  lay(cardIds: readonly number[]): void {
+    this.send(this.tables.lay(this.tableId(), cardIds));
+  }
+
+  undo(): void {
+    this.send(this.tables.undo(this.tableId()));
+  }
+
   /**
    * Giving up the seat, which is the one move whose answer matters here:
    * nobody is left at the table to be told about it.

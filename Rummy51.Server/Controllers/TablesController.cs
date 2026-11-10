@@ -109,6 +109,22 @@ public class TablesController(
     public Task<IActionResult> Draw(Guid tableId, DrawRequest request) =>
         MoveAsync(tableId, playerId => tables.Draw(tableId, playerId, request.From));
 
+    /// <summary>Cards onto the table, which happens between the two halves.</summary>
+    [HttpPost("{tableId:guid}/meld")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> Meld(Guid tableId, MeldRequest request) =>
+        MoveAsync(tableId, playerId => tables.LayDown(tableId, playerId, request.CardIds));
+
+    /// <summary>The last thing this turn did, taken back.</summary>
+    [HttpPost("{tableId:guid}/undo")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> Undo(Guid tableId) =>
+        MoveAsync(tableId, playerId => tables.Undo(tableId, playerId));
+
     /// <summary>The second half, which ends the turn and hands it on.</summary>
     [HttpPost("{tableId:guid}/discard")]
     [ProducesResponseType<HandView>(StatusCodes.Status200OK)]

@@ -1,5 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { finishingPosition, jokersAtCut, revealedAt } from '../../core/cards/the-cut';
+import { pictureOf } from '../../core/cards/deck';
 import { Flight, betweenCentres } from '../../core/dom/flight';
 import { DealPass, HandView } from '../../core/lobby/lobby.models';
 import { Arrivals } from './arrivals';
@@ -306,7 +307,7 @@ export class Dealing {
   private flyCard(back: string, from: DOMRect, to: DOMRect, delay: number): HTMLElement {
     const card = document.createElement('img');
 
-    card.src = `cards/${back}.svg`;
+    card.src = pictureOf(back);
     card.alt = '';
 
     this.flight.send(card, from);

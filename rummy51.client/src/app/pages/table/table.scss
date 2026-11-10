@@ -7,6 +7,11 @@
   // One card size, shared by the deck, the fan and the finishing card.
   --card: 4rem;
   --card-tall: calc(var(--card) * 336 / 240);
+  // The two piles, drawn smaller than a card in a hand. Nothing is read
+  // off them - one shows its back and the other one card - so they can
+  // afford to give the melds the room.
+  --pile: calc(var(--card) * 0.85);
+  --pile-tall: calc(var(--pile) * 336 / 240);
   // Between the two lines a hand is laid in on a phone.
   --hand-gap: 0.125rem;
 
@@ -18,7 +23,7 @@
   inline-size: 100%;
   max-inline-size: 40rem;
   min-block-size: 0;
-  padding-block: 0.5rem;
+  padding-block: 0.25rem 0.5rem;
   padding-inline: var(--page-gutter);
 }
 
@@ -27,11 +32,14 @@
   flex: none;
   justify-content: space-around;
   inline-size: 100%;
-  margin-block-end: 0.375rem;
+  margin-block-end: 0.25rem;
 }
 
+// Smaller than the near place and smaller than they were. A seat across the
+// table is read at a glance and never reached for, so what it gives up in
+// height the felt gets - and the felt is where the game is.
 .table__other {
-  --seat-size: 2.5rem;
+  --seat-size: 2rem;
 }
 
 .table__felt {
@@ -73,7 +81,7 @@
   gap: 0.25rem;
   inline-size: 100%;
   min-block-size: calc(var(--card-tall) * 2 + var(--hand-gap));
-  margin-block-start: 0.625rem;
+  margin-block-start: 0.375rem;
 
   @include from(sm) {
     min-block-size: var(--card-tall);
@@ -94,19 +102,25 @@
   min-block-size: 0;
 }
 
-// Out of the way, in the corner the hand is furthest from. The middle of
-// the felt is where the melds will be laid, and the deck has no business
-// sitting in it.
-.stack {
+// Both piles across the top of the board, which is a line nothing else
+// uses: the melds begin below them. Centred rather than in the corner,
+// since half a row with two piles at one end of it is half a row wasted.
+.piles {
   position: absolute;
+  display: flex;
+  // Enough that the finishing card, which lies across the deck and sticks
+  // out past it, has room without reaching the pile beside it.
+  gap: calc(var(--pile) * 1.1);
+  justify-content: center;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+.stack {
+  position: relative;
   // Gives the card somewhere to turn through rather than flattening it.
   perspective: 800px;
-  // Hard into the corner. What is left between it and the rim is the
-  // felt's own padding, and the middle is worth more to the melds than a
-  // margin is to the deck.
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  inline-size: var(--card);
+  inline-size: var(--pile);
 }
 
 // A pile rather than one card. All three are placed, so the last in the
@@ -161,14 +175,10 @@
   border-radius: 0.1875rem;
 }
 
-// Beside the deck, and far enough from it that the finishing card lying
-// across the deck has room to stick out without reaching this.
 .discard {
-  position: absolute;
+  position: relative;
   display: block;
-  inset-block-start: 0;
-  inset-inline-start: calc(var(--card) * 2.1);
-  inline-size: var(--card);
+  inline-size: var(--pile);
   aspect-ratio: 240 / 336;
   border: 0;
   border-radius: 0.1875rem;
@@ -201,12 +211,38 @@
   cursor: pointer;
 }
 
+// In the corner under the board, out of the way of the line that says
+// whose move it is. It appears only when there is something to take back,
+// so the rest of the time it costs nothing at all.
+.board__undo {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  padding: 0.125rem 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--felt-500);
+    color: var(--felt-500);
+  }
+}
+
 // Under the board rather than over it: the cards are what matters and this
 // is only the sentence that says whose move it is.
 .board__prompt {
   position: absolute;
   inset-block-end: 0;
   inset-inline: 0;
+  // It spans the whole width so that its text can be centred on the board,
+  // and it is drawn after the button beside it - so without this it takes
+  // the presses meant for that button. It is a sentence; there is nothing
+  // in it to press.
+  pointer-events: none;
   margin: 0;
   color: var(--felt-500);
   font-size: 0.75rem;

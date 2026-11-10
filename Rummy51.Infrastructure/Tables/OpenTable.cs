@@ -117,6 +117,20 @@ internal sealed class OpenTable
     public bool Draw(int seat, DrawnFrom from) => hand?.Draw(seat, from) == true;
 
     /// <summary>
+    /// Cards onto the table. The turn is not over and the clock is not
+    /// restarted: laying one down is something done inside a turn, and the
+    /// time it takes is time the player chose to spend.
+    /// </summary>
+    public bool LayDown(int seat, IReadOnlyList<int> cardIds) =>
+        hand?.LayDown(seat, cardIds) == true;
+
+    /// <summary>
+    /// The last thing taken back. The clock is not touched: a turn spent
+    /// changing your mind is still your turn being spent.
+    /// </summary>
+    public bool Undo(int seat) => hand?.Undo(seat) == true;
+
+    /// <summary>
     /// A player throws one away, which hands the turn on - and with it the
     /// clock, which begins again for whoever it reached.
     /// </summary>
@@ -234,7 +248,13 @@ internal sealed class OpenTable
                 hand.HasDrawn,
                 hand.TopOfDiscards?.Code,
                 hand.Discards.Count,
+                [.. hand.Melds.Select(Laid)],
+                hand.CanUndo,
                 countdown.Describe(hand.WaitingSeat));
+
+    /// <summary>Everything on the table is everybody's to read.</summary>
+    private static MeldView Laid(Meld meld) =>
+        new(meld.Seat, [.. meld.Cards.Select(card => new HeldCardView(card.Id, card.Card.Code))]);
 
     public LobbyTable Describe() =>
         new(Id, Mode, Limit, Jokers, [.. seats.Select(Occupant)], Started);

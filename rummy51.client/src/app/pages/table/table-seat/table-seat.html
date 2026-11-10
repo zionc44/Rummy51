@@ -53,7 +53,7 @@
             #landing
             class="seat__card"
             [style.--at]="$index"
-            [src]="deck + card.code + '.svg'"
+            [src]="picture(card.code)"
             alt=""
           />
         } @else {
@@ -65,8 +65,8 @@
   @if (!compact() && holding() !== null) {
     <!-- What they are holding, which is a number and a pile of backs. -->
     <span #pile class="seat__pile">
-      <img class="seat__back" src="cards/2B.svg" alt="" />
-      <img class="seat__back" src="cards/1B.svg" alt="" />
+      <img class="seat__back" [src]="picture('2B')" alt="" />
+      <img class="seat__back" [src]="picture('1B')" alt="" />
       @if (holding()) {
         <span class="seat__tally">{{ holding() }}</span>
       }

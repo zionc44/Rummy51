@@ -10,12 +10,11 @@ import {
 } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { HeldCard } from '../../../core/cards/card';
+import { pictureOf } from '../../../core/cards/deck';
 import { TableSeat as Seat } from '../../../core/lobby/lobby.models';
 import { IconSort } from '../../../shared/icons/icon-sort/icon-sort';
 import { PlayerAvatar } from '../../../shared/player-avatar/player-avatar';
 
-/** A card shown here is seen whole, so it is read from the whole-card deck. */
-const Deck = 'cards/';
 
 /**
  * One place at the table, taken or not: who is sitting there, whether they
@@ -101,7 +100,7 @@ export class TableSeat {
 
   readonly sorted = output();
 
-  protected readonly deck = Deck;
+  protected readonly picture = pictureOf;
 
   private readonly landings = viewChildren<ElementRef<HTMLElement>>('landing');
 

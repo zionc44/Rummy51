@@ -73,4 +73,6 @@ public sealed record HandView(
     bool HasDrawn,
     string? DiscardTop,
     int DiscardCount,
+    IReadOnlyList<MeldView> Melds,
+    bool CanUndo,
     Waiting? Waiting);

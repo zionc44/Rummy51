@@ -8,6 +8,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
+import { pictureOf } from '../../../core/cards/deck';
 import { revealedAt, revealedOrder } from '../../../core/cards/the-cut';
 import { HandView } from '../../../core/lobby/lobby.models';
 
@@ -71,6 +72,8 @@ export class TableCut {
    * on that path. Empty unless the server was asked to send them.
    */
   protected readonly jokers = computed(() => new Set(this.hand().jokerPositions));
+
+  protected readonly picture = pictureOf;
 
   protected readonly takeable = computed(() => this.yours() && !this.sweeping());
 

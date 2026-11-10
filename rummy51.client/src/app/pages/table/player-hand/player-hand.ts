@@ -12,17 +12,11 @@ import {
   untracked,
 } from '@angular/core';
 import { HeldCard } from '../../../core/cards/card';
+import { pictureOf } from '../../../core/cards/deck';
 import { meldsIn } from '../../../core/cards/melds';
 import { cardsAmong, placesIn } from './drawn-hand';
 import { HandDrag } from './hand-drag';
 import { slideFrom, whereTheyAre } from './hand-slide';
-
-/**
- * The deck a hand is read from. It is held overlapped, so all that shows of
- * a card is the corner that names it, and that deck is drawn for exactly
- * this. Everywhere a card is seen whole reads from the other one.
- */
-const Deck = 'cards/corners/';
 
 /**
  * A line that has emptied still keeps one place, or there would be nowhere
@@ -61,7 +55,7 @@ function oneRowFits(): Signal<boolean> {
   selector: 'app-player-hand',
   changeDetection: ChangeDetectionStrategy.OnPush,
   hostDirectives: [
-    { directive: HandDrag, inputs: ['arrangeable'], outputs: ['moved', 'tapped', 'released'] },
+    { directive: HandDrag, inputs: ['arrangeable'], outputs: ['moved', 'tapped', 'released', 'played'] },
   ],
   templateUrl: './player-hand.html',
   styleUrl: './player-hand.scss',
@@ -96,7 +90,7 @@ export class PlayerHand {
 
   private readonly drag = inject(HandDrag);
 
-  protected readonly deck = Deck;
+  protected readonly picture = pictureOf;
 
   private readonly oneRow = oneRowFits();
 

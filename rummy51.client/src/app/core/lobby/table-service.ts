@@ -52,6 +52,25 @@ export class TableService {
       .pipe(failWithApiErrors());
   }
 
+  /**
+   * Cards onto the table, which happens between the two halves of a turn
+   * and ends neither: several may be laid, and one still has to be thrown
+   * away afterwards.
+   */
+  lay(tableId: string, cardIds: readonly number[]): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/meld`, { cardIds })
+      .pipe(failWithApiErrors());
+  }
+
+  /**
+   * Takes back the last thing this turn did - a meld laid, or the card
+   * taken off the discard pile. Never a card off the stock.
+   */
+  undo(tableId: string): Observable<HandView> {
+    return this.http.post<HandView>(`${API}/${tableId}/undo`, {}).pipe(failWithApiErrors());
+  }
+
   /** Leaves whichever table the player is at, which is at most one. */
   leave(): Observable<void> {
     return this.http.post<void>(`${API}/leave`, {}).pipe(

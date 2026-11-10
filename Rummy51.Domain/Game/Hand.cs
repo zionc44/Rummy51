@@ -31,6 +31,24 @@ public enum DrawnFrom
 public sealed class Hand
 {
     private readonly List<List<HeldCard>> hands;
+    private readonly List<Meld> melds = [];
+
+    /// <summary>
+    /// What this turn has done that can still be taken back, newest last.
+    /// Only melds go in it: a card off the stock is not in here because it
+    /// cannot come back out, and a card off the discard pile is the single
+    /// flag below rather than an entry, since there is at most one draw in
+    /// a turn and it is always the first thing in it.
+    /// </summary>
+    private readonly List<Meld> laidThisTurn = [];
+
+    /// <summary>
+    /// The number given to the card taken off the discard pile this turn,
+    /// if that is where the draw came from. By number and not by position:
+    /// a meld taken back puts its cards at the end of the hand, so the card
+    /// that was drawn is not the last one for long.
+    /// </summary>
+    private int? theDiscardTaken;
     private readonly List<Card> stock = [];
     private readonly List<Card> discards = [];
     private IReadOnlyList<Card> deck;
@@ -137,6 +155,13 @@ public sealed class Hand
     /// <summary>The one card of the pile lying face up, or null before any.</summary>
     public Card? TopOfDiscards => discards.Count == 0 ? null : discards[^1];
 
+    /// <summary>
+    /// What is lying on the table, in the order it was laid there. Nobody
+    /// owns it any more in the sense of holding it, but whose it was still
+    /// matters, so each one says.
+    /// </summary>
+    public IReadOnlyList<Meld> Melds => melds;
+
     /// <summary>The deal as the eye should see it, pass by pass.</summary>
     public IReadOnlyList<DealPass> Passes { get; private set; } = [];
 
@@ -176,6 +201,7 @@ public sealed class Hand
         Phase = HandPhase.Playing;
         TurnSeat = (DealerSeat + 1) % Seats;
         HasDrawn = true;
+        Forget();
 
         return true;
     }
@@ -230,8 +256,13 @@ public sealed class Hand
             return false;
         }
 
+        // Read before the card is given one, which is the number it will
+        // be given, and the only way to find it again afterwards.
+        var number = given;
+
         Give(seat, [taken]);
         HasDrawn = true;
+        theDiscardTaken = from == DrawnFrom.Discards ? number : null;
 
         return true;
     }
@@ -261,8 +292,131 @@ public sealed class Hand
         hands[seat].RemoveAt(held);
         TurnSeat = (TurnSeat + 1) % Seats;
         HasDrawn = false;
+        Forget();
 
         return true;
+    }
+
+    /// <summary>
+    /// Lays cards on the table, which is the move between taking one and
+    /// throwing one. It does not ask whether they are a run or a set, or
+    /// whether they are worth fifty-one between them: those are the rules of
+    /// going down and they are not written yet. What it does ask is that the
+    /// cards are in that player's hand, and that it is their turn to be
+    /// laying anything at all.
+    /// </summary>
+    public bool LayDown(int seat, IReadOnlyList<int> cardIds)
+    {
+        if (!IsTheirTurn(seat) || !HasDrawn || cardIds.Count == 0)
+        {
+            return false;
+        }
+
+        // One card named twice would be laid twice and taken out once.
+        if (cardIds.Distinct().Count() != cardIds.Count)
+        {
+            return false;
+        }
+
+        var held = hands[seat];
+        var places = cardIds.Select(id => held.FindIndex(card => card.Id == id)).ToList();
+
+        if (places.Contains(-1))
+        {
+            return false;
+        }
+
+        var meld = new Meld(seat, [.. places.Select(at => held[at])]);
+
+        melds.Add(meld);
+        laidThisTurn.Add(meld);
+
+        // From the back, so that taking one out does not move the places of
+        // those still to be taken.
+        foreach (var at in places.OrderDescending())
+        {
+            held.RemoveAt(at);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Whether the player whose turn it is has anything left to take back.
+    /// Everybody is told: a meld being laid and then taken up again is
+    /// something the whole table watched happen.
+    /// </summary>
+    public bool CanUndo => laidThisTurn.Count > 0 || theDiscardTaken is not null;
+
+    /// <summary>
+    /// Takes back the last thing this turn did, which is the last meld laid
+    /// or, once they are all back, the card taken off the discard pile.
+    ///
+    /// A card off the stock is never taken back. Putting it where it came
+    /// from would let a player look at the top of the stock and then decide
+    /// not to have looked, and there is no undoing knowing something.
+    ///
+    /// The melds come back first because they came last, and because one of
+    /// them may hold the very card that was taken off the pile.
+    /// </summary>
+    public bool Undo(int seat)
+    {
+        if (!IsTheirTurn(seat))
+        {
+            return false;
+        }
+
+        return TakeBackTheLastMeld() || PutTheDiscardBack(seat);
+    }
+
+    private bool TakeBackTheLastMeld()
+    {
+        if (laidThisTurn.Count == 0)
+        {
+            return false;
+        }
+
+        var meld = laidThisTurn[^1];
+
+        laidThisTurn.RemoveAt(laidThisTurn.Count - 1);
+        melds.Remove(meld);
+        hands[meld.Seat].AddRange(meld.Cards);
+
+        return true;
+    }
+
+    /// <summary>
+    /// The card is found by the number it was given when it was taken, so
+    /// the one that goes back is the one that came - and not its twin out
+    /// of the other pack, which the player may have been holding all along.
+    /// </summary>
+    private bool PutTheDiscardBack(int seat)
+    {
+        if (theDiscardTaken is not { } number)
+        {
+            return false;
+        }
+
+        var at = hands[seat].FindIndex(card => card.Id == number);
+
+        if (at == -1)
+        {
+            return false;
+        }
+
+        discards.Add(hands[seat][at].Card);
+        hands[seat].RemoveAt(at);
+        HasDrawn = false;
+        theDiscardTaken = null;
+
+        return true;
+    }
+
+    /// <summary>Nothing of one turn is left to take back in the next.</summary>
+    private void Forget()
+    {
+        laidThisTurn.Clear();
+        theDiscardTaken = null;
     }
 
     private bool IsTheirTurn(int seat) => Phase == HandPhase.Playing && seat == TurnSeat;

@@ -65,11 +65,18 @@ export class HandDrag {
   readonly moved = output<CardMove>();
 
   /**
-   * One card touched and let go of without travelling. A band carries a
-   * whole run and there is nothing a run can be singled out by, so a tap on
-   * one is a tap on nothing.
+   * One card touched and let go of without travelling, which is how a card
+   * is singled out of a hand.
    */
   readonly tapped = output<number>();
+
+  /**
+   * A band touched and let go of without travelling. The band is the part
+   * that says these cards go together, so dragging it carries them together
+   * and tapping it plays them together - which is the one thing a run can
+   * be asked to do that a card cannot.
+   */
+  readonly played = output<readonly number[]>();
 
   readonly released = output<CardRelease>();
 
@@ -188,8 +195,14 @@ export class HandDrag {
     if (carried === null) {
       // A finger lifted, and not a gesture the browser took away: a pointer
       // cancelled mid-press is not somebody choosing a card.
-      if (event !== undefined && grasp?.ids.length === 1) {
+      if (event === undefined || grasp === null) {
+        return;
+      }
+
+      if (grasp.ids.length === 1) {
         this.tapped.emit(grasp.ids[0]);
+      } else {
+        this.played.emit(grasp.ids);
       }
 
       return;

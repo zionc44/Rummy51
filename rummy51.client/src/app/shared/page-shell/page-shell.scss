@@ -8,6 +8,20 @@
   color: var(--text);
 }
 
+// A page that has to fit is given exactly the screen and no more, and what
+// will not fit inside it is cut rather than pushed below the fold. Its
+// header gives up some of its height as well: on a page that is played
+// rather than read, every line of it is a line the table does not get.
+:host(.shell--fits) .shell {
+  block-size: 100dvh;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+:host(.shell--fits) .shell__header {
+  padding-block: 0.5rem;
+}
+
 .shell__header {
   display: flex;
   align-items: center;

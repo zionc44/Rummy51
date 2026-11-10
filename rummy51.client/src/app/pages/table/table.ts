@@ -4,6 +4,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
 import { ArrangedHand } from '../../core/cards/arranged-hand';
+import { pictureOf } from '../../core/cards/deck';
 import { HandPhase } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { Turn } from './turn';
@@ -11,6 +12,7 @@ import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { ProfileMenu } from '../../shared/profile-menu/profile-menu';
 import { CardJourney } from './card-journey';
+import { MeldJourney } from './meld-journey';
 import { Moves } from './moves';
 import { Seating } from './seating';
 import { Dealing, Spots } from './dealing';
@@ -18,6 +20,7 @@ import { CardMove, CardRelease } from './player-hand/hand-drag';
 import { PlayerHand } from './player-hand/player-hand';
 import { TableCut } from './table-cut/table-cut';
 import { TableSeat } from './table-seat/table-seat';
+import { TableMelds } from './table-melds/table-melds';
 import { TableTerms } from './table-terms/table-terms';
 
 /**
@@ -35,6 +38,7 @@ import { TableTerms } from './table-terms/table-terms';
     PlayerHand,
     ProfileMenu,
     TableCut,
+    TableMelds,
     TableSeat,
     TableTerms,
   ],
@@ -50,6 +54,9 @@ export class Table implements OnDestroy {
   private readonly tables = inject(TableService);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
+  private readonly element: ElementRef<HTMLElement> = inject(ElementRef);
+
+  protected readonly picture = pictureOf;
 
   protected readonly hand = this.lobby.hand;
 
@@ -119,6 +126,13 @@ export class Table implements OnDestroy {
     discards: () => this.discardPile()?.nativeElement,
     cardAt: (id) => this.nearHand()?.cardAt(id),
   });
+
+  /**
+   * Cards seen to cross between the hand and the felt, whichever way they
+   * are going. It is given the whole page to look in, because that is the
+   * only thing that holds both ends of the journey.
+   */
+  private readonly crossing = new MeldJourney(() => this.element.nativeElement);
 
   /** What this player does at the table, and what the server said about it. */
   protected readonly moves = new Moves(this.tableId, this.tables, this.router, this.journey);
@@ -192,6 +206,15 @@ export class Table implements OnDestroy {
       }
     });
 
+    // Whatever crossed between the hand and the felt is flown once both
+    // ends have been drawn again. Nothing happens unless cards were being
+    // watched, so every other change to the table passes straight through.
+    effect(() => {
+      this.hand();
+
+      afterNextRender(() => this.crossing.arrived(), { injector: this.injector });
+    });
+
     // A card drawn is flown in once it is lying where it will lie, which is
     // one render after the hand has heard of it. By then it is also the card
     // standing out of the hand, which is how it is found: a card just drawn
@@ -209,6 +232,7 @@ export class Table implements OnDestroy {
   ngOnDestroy(): void {
     this.show.stop();
     this.journey.land();
+    this.crossing.land();
     void this.lobby.unwatch(this.tableId());
   }
 
@@ -229,6 +253,32 @@ export class Table implements OnDestroy {
     if (this.turn.canThrow() && picked !== null) {
       this.moves.discard(picked);
     }
+  }
+
+  /**
+   * A run tapped by its band, which lays it on the table. The window is the
+   * same one a card is thrown in - after taking one and before giving one
+   * back - because laying cards down ends neither half of a turn.
+   */
+  protected layDown(ids: readonly number[]): void {
+    if (!this.turn.toThrow()) {
+      return;
+    }
+
+    this.crossing.leaving(ids);
+    this.moves.lay(ids);
+  }
+
+  /**
+   * The last thing this turn did, taken back. The cards watched are the
+   * last meld's: if the server takes back the drawn card instead, they are
+   * found where they already were and nothing travels.
+   */
+  protected undo(): void {
+    const last = this.hand()?.melds.at(-1);
+
+    this.crossing.leaving(last?.cards.map((card) => card.id) ?? []);
+    this.moves.undo();
   }
 
   /**
