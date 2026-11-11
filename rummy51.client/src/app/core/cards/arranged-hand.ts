@@ -1,6 +1,6 @@
 import { Signal, computed, linkedSignal, signal } from '@angular/core';
 import { HeldCard } from './card';
-import { HandOrder, arrangedLike, inOrder, moved } from './card-order';
+import { HandOrder, arrangedLike, inOrder, keepingTheirPlaces, moved } from './card-order';
 
 /**
  * Where a hand wraps until its owner says otherwise. Eight is what leaves
@@ -78,13 +78,20 @@ export class ArrangedHand {
    */
   sort(): void {
     this.sortedBy = this.sortedBy === 'byRank' ? 'bySuit' : 'byRank';
-    this.laid.set(inOrder(this.held(), this.sortedBy));
+
+    // Everything, including what is lying on the table: a card laid down is
+    // still one of this hand's, and sorting puts it where it belongs so
+    // that it is already there if it comes back.
+    this.laid.set(inOrder(this.everything(), this.sortedBy));
     this.firstLine.set(Math.min(PerRow, this.held().length));
   }
 
   /** One card, or a whole run, put down somewhere else in the hand. */
   move(ids: readonly number[], to: number, firstLine: number | null): void {
-    this.laid.set(moved(this.cards(), ids, to));
+    // The place counts over the cards lying in the hand, so the move is made
+    // in those terms and then folded back into the whole of the
+    // arrangement, places kept and all.
+    this.laid.set(keepingTheirPlaces(moved(this.cards(), ids, to), this.laid() ?? []));
 
     // Putting a card down somewhere drops the mark on it. The player has
     // said what they wanted with that card, and it was not "this one".
@@ -101,6 +108,17 @@ export class ArrangedHand {
    */
   pick(id: number): void {
     this.picked.update((standing) => (standing === id ? null : id));
+  }
+
+  /**
+   * Every card this hand has held, which is not the same as every card it
+   * is holding: what has been laid on the table is still arranged.
+   */
+  private everything(): readonly HeldCard[] {
+    const held = this.held();
+    const here = new Set(held.map((card) => card.id));
+
+    return [...held, ...(this.laid() ?? []).filter((card) => !here.has(card.id))];
   }
 
   /** A new hand. Whatever was decided about the last one goes with it. */

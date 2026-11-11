@@ -87,3 +87,55 @@ export function arrangedLike(
 
   return [...placed, ...held.filter((card) => !known.has(card.id))];
 }
+
+/**
+ * An arrangement with the cards that are not in the hand put back where
+ * they were lying.
+ *
+ * A card laid on the table has not left its owner's hand in the sense that
+ * matters here: they still know where it was, and when it comes back - a
+ * turn taken back - it belongs there and not at the end. So the places they
+ * gave their cards are kept for cards that are somewhere else for a while.
+ *
+ * Each absent card is remembered by the card it was lying after, which
+ * survives the hand being rearranged around it in a way an index does not.
+ */
+export function keepingTheirPlaces(
+  order: readonly HeldCard[],
+  remembered: readonly HeldCard[],
+): readonly HeldCard[] {
+  const here = new Set(order.map((card) => card.id));
+  const behind = new Map<number | null, HeldCard[]>();
+
+  remembered.forEach((card, at) => {
+    if (!here.has(card.id)) {
+      const after = at === 0 ? null : remembered[at - 1].id;
+
+      behind.set(after, [...(behind.get(after) ?? []), card]);
+    }
+  });
+
+  if (behind.size === 0) {
+    return order;
+  }
+
+  const laid: HeldCard[] = [];
+
+  // Whatever was lying behind this card, and whatever was lying behind
+  // that: cards that left together come back together.
+  const following = (id: number | null) => {
+    for (const card of behind.get(id) ?? []) {
+      laid.push(card);
+      following(card.id);
+    }
+  };
+
+  following(null);
+
+  for (const card of order) {
+    laid.push(card);
+    following(card.id);
+  }
+
+  return laid;
+}
