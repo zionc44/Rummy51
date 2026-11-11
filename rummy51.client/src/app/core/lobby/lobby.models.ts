@@ -142,6 +142,8 @@ export interface HandView {
   readonly melds: readonly MeldView[];
   /** Whether the player whose turn it is has anything left to take back. */
   readonly canUndo: boolean;
+  /** And whether they have gone down, so may add to what is lying there. */
+  readonly canAdd: boolean;
   readonly waiting: Waiting | null;
 }
 

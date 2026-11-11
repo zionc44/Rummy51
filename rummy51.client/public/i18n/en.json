@@ -175,6 +175,7 @@
     "NotAtThisTable": "You are not sitting at this table",
     "CannotAddToMeld": "That card cannot join that meld",
     "CannotBuyThatJoker": "That card does not stand in for that joker",
-    "GoingDownIsShort": "What you laid does not come to fifty-one with a clean run"
+    "GoingDownIsShort": "What you laid does not come to fifty-one with a clean run",
+    "TakenCardStillHeld": "A card you took off the table has to be back on it before you throw"
   }
 }

@@ -168,7 +168,24 @@ public sealed class InMemoryTables(
             tableId,
             playerId,
             (table, seat) => table.Discard(seat, cardId),
-            (table, seat) => table.CouldEndTheTurn(seat) ? "CannotDiscard" : "GoingDownIsShort");
+            WhyNotThrow);
+
+    /// <summary>
+    /// Why a throw was refused. Two of the rules of going down can catch a
+    /// player out here, and the wrong one named is worse than none: what
+    /// they laid is short, or what they took off the table is still in
+    /// their hand. Anything else is a race or a bug, which is the usual
+    /// case and has nothing to say.
+    /// </summary>
+    private static string WhyNotThrow(OpenTable table, int seat)
+    {
+        if (!table.HasPutBackWhatItTook(seat))
+        {
+            return "TakenCardStillHeld";
+        }
+
+        return table.CouldEndTheTurn(seat) ? "CannotDiscard" : "GoingDownIsShort";
+    }
 
     public Result<HandView> LayDown(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
         Move(tableId, playerId, (table, seat) => table.LayDown(seat, cardIds), Refused("CannotLayDown"));

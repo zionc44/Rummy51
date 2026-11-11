@@ -59,6 +59,32 @@ internal sealed class TurnSoFar
     /// <summary>The draw undone, which only the discard pile ever allows.</summary>
     public void GaveItBack() => drawn = null;
 
+    /// <summary>
+    /// What this turn took off the table and owes back to it: the card off
+    /// the discard pile, and every joker bought out of a meld. A card off
+    /// the stock owes nothing, because the stock is not the table - it came
+    /// from nowhere anybody could see and goes wherever its holder likes.
+    ///
+    /// It is an account of what was taken and not of what is still held.
+    /// Whether a card is back on the table is read off the hand, which is
+    /// the only thing that knows what is in it.
+    /// </summary>
+    public IEnumerable<int> Owed
+    {
+        get
+        {
+            foreach (var swap in putDown.OfType<Move.Swapped>())
+            {
+                yield return swap.Joker.Id;
+            }
+
+            if (TheDiscard is int card)
+            {
+                yield return card;
+            }
+        }
+    }
+
     public void Laid(int meld) => putDown.Add(new Move.Laid(meld));
 
     /// <summary>

@@ -81,4 +81,5 @@ public sealed record HandView(
     int DiscardCount,
     IReadOnlyList<MeldView> Melds,
     bool CanUndo,
+    bool CanAdd,
     Waiting? Waiting);

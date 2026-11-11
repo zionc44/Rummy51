@@ -55,6 +55,14 @@ export class Turn {
    */
   readonly canUndo = computed(() => this.mine() && (this.hand()?.canUndo ?? false));
 
+  /**
+   * Whether a place on the table may be pressed. The places still show
+   * where a card would go when it may not go there yet - knowing that is
+   * half of deciding what to lay - but pressing one does nothing until
+   * this player has gone down.
+   */
+  readonly canAdd = computed(() => this.toThrow() && (this.hand()?.canAdd ?? false));
+
   /** What the table is waiting for, in a line. Null when it waits elsewhere. */
   readonly prompt = computed(() => {
     if (!this.mine() || this.animating()) {

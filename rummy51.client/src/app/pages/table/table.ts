@@ -29,6 +29,9 @@ import { TableMelds } from './table-melds/table-melds';
 import { TableTally } from './table-tally/table-tally';
 import { TableTerms } from './table-terms/table-terms';
 
+/** The refusal that says a card taken off the table is still in the hand. */
+const CardOwed = 'TakenCardStillHeld';
+
 /**
  * The table, before and after it fills. Nothing changes screens when the last
  * seat is taken: the felt between the seats is already everything left over on
@@ -269,6 +272,27 @@ export class Table implements OnDestroy {
       const landed = untracked(() => this.arranged.picked());
 
       afterNextRender(() => this.journey.arrived(landed), { injector: this.injector });
+    });
+
+    // A throw refused because a card taken off the table is still in the
+    // hand. The player had picked out the card they meant to throw, which
+    // is now the wrong one to be looking at: the one that has to go back
+    // takes its place, so it is standing clear when the notice is read and
+    // the next place pressed lays it.
+    effect(() => {
+      const owing = this.moves.errors().some((error) => error.code === CardOwed);
+
+      if (!owing) {
+        return;
+      }
+
+      untracked(() => {
+        const owed = this.myCards().find((card) => card.owed);
+
+        if (owed !== undefined) {
+          this.arranged.singleOut(owed.id);
+        }
+      });
     });
   }
 

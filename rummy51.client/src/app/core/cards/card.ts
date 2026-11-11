@@ -35,6 +35,13 @@ export interface HeldCard {
 
   /** The jokers on the table this card is the card for, worked out the same way. */
   readonly buys?: readonly Swap[];
+
+  /**
+   * Whether this card was taken off the table this turn and has to be back
+   * on it before the turn ends. Only its owner is told, because only they
+   * are holding it.
+   */
+  readonly owed?: boolean;
 }
 
 /** Clubs, diamonds, hearts, spades, as the cards name themselves. */

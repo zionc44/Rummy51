@@ -102,7 +102,7 @@
                 [melds]="hand.melds"
                 [fits]="fits()"
                 [buys]="buys()"
-                [offered]="turn.toThrow()"
+                [offered]="turn.canAdd()"
                 (chose)="addToMeld($event)"
                 (bought)="swapForJoker($event)"
               />

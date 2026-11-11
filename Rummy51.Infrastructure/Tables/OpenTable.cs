@@ -137,6 +137,8 @@ internal sealed class OpenTable
     /// </summary>
     public bool CouldEndTheTurn(int seat) => hand?.CanEndTheTurn(seat) != false;
 
+    public bool HasPutBackWhatItTook(int seat) => hand?.HasPutBackWhatItTook(seat) != false;
+
     /// <summary>
     /// A card onto a meld already lying there. Like laying one down, this
     /// happens inside a turn and ends neither half of it, so the clock is
@@ -226,9 +228,14 @@ internal sealed class OpenTable
     {
         var seat = SeatOf(playerId);
 
-        return hand is null || seat == -1
-            ? []
-            : [.. hand.Hands[seat].Select(Held)];
+        if (hand is null || seat == -1)
+        {
+            return [];
+        }
+
+        var owed = hand.StillOwed(seat).ToHashSet();
+
+        return [.. hand.Hands[seat].Select(card => Held(card, owed.Contains(card.Id)))];
     }
 
     /// <summary>
@@ -236,8 +243,13 @@ internal sealed class OpenTable
     /// is on the table. Those places are nobody else's business: they are
     /// worked out from a hand only one player may see.
     /// </summary>
-    private HeldCardView Held(HeldCard card) =>
-        new(card.Id, card.Card.Code, [.. WhereItFits(card.Card)], [.. WhatItBuys(card.Card)]);
+    private HeldCardView Held(HeldCard card, bool owed) =>
+        new(
+            card.Id,
+            card.Card.Code,
+            [.. WhereItFits(card.Card)],
+            [.. WhatItBuys(card.Card)],
+            owed);
 
     private IEnumerable<FitView> WhereItFits(Card card) =>
         Lying().SelectMany((meld, at) =>
@@ -277,6 +289,7 @@ internal sealed class OpenTable
                 hand.Board.Discards.Count,
                 [.. hand.Board.Melds.Select(Laid)],
                 hand.CanUndo,
+                hand.TurnSeat != -1 && hand.CanAddToTheTable(hand.TurnSeat),
                 countdown.Describe(hand.WaitingSeat));
 
     /// <summary>Everything on the table is everybody's to read.</summary>

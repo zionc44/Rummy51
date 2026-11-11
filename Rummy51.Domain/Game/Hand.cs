@@ -99,9 +99,49 @@ public sealed class Hand
     /// showing stand is a rule, and lives with the rules.
     /// </summary>
     public bool CanEndTheTurn(int seat) =>
-        wentDown[seat]
-        || turn.Laying.Count == 0
-        || Melding.IsAShowing([.. turn.Laying.Select(Lying)]);
+        HasPutBackWhatItTook(seat)
+        && (wentDown[seat] || turn.Laying.Count == 0 || Melding.IsAShowing(Showing));
+
+    /// <summary>
+    /// Whether everything this turn took off the table is back on it. The
+    /// card off the discard pile and a joker bought out of a meld are the
+    /// same rule and not two: both were taken from the table, and whatever
+    /// is taken from the table is on it again before the turn ends.
+    ///
+    /// A card still owed is a card still in the hand, so the question is
+    /// asked of the hand. The card about to be thrown is in it when this is
+    /// asked, which is what stops a player throwing back the very card they
+    /// took - they took it to use it.
+    /// </summary>
+    public bool HasPutBackWhatItTook(int seat) => StillOwed(seat).Count == 0;
+
+    /// <summary>
+    /// Which cards those are, so that the player can be shown the one they
+    /// have to put down rather than told that one exists. Empty for a seat
+    /// that is not playing: a turn's debts are its own.
+    /// </summary>
+    public IReadOnlyList<int> StillOwed(int seat) =>
+        IsTheirTurn(seat)
+            ? [.. turn.Owed.Where(owed => hands[seat].Any(card => card.Id == owed))]
+            : [];
+
+    /// <summary>
+    /// Whether this seat may add to what is lying on the table, or buy a
+    /// joker out of it. Going down is what earns the right, and it is
+    /// earned the moment what has been laid this turn is a showing - not
+    /// when the throw makes it final. Those are the same turn, and the
+    /// written rule says doing both in one is fine.
+    ///
+    /// Which means it can be lost again in the same turn: take back part of
+    /// a showing and it stops being one, and the right goes with it. That
+    /// is the same breath in which the right to end the turn goes, so a
+    /// player cannot be left having added to a table they never joined.
+    /// </summary>
+    public bool CanAddToTheTable(int seat) =>
+        wentDown[seat] || (turn.Laying.Count > 0 && Melding.IsAShowing(Showing));
+
+    /// <summary>What this turn has laid, as the rules of going down read it.</summary>
+    private IReadOnlyList<IReadOnlyList<Card>> Showing => [.. turn.Laying.Select(Lying)];
 
     /// <summary>The deal as the eye should see it, pass by pass.</summary>
     public IReadOnlyList<DealPass> Passes { get; private set; } = [];
@@ -323,13 +363,17 @@ public sealed class Hand
     }
 
     /// <summary>
-    /// It does not yet ask whether this player has gone down and is entitled
-    /// to be adding to anything at all, which is the other half of going
-    /// down and is not written.
+    /// A card onto a meld already lying there, which only a player who has
+    /// gone down may do.
     /// </summary>
     public bool AddTo(int seat, int meldAt, int cardId, MeldEnd end)
     {
-        if (!IsTheirTurn(seat) || !HasDrawn || meldAt < 0 || meldAt >= Board.Melds.Count)
+        if (!IsTheirTurn(seat) || !HasDrawn || !CanAddToTheTable(seat))
+        {
+            return false;
+        }
+
+        if (meldAt < 0 || meldAt >= Board.Melds.Count)
         {
             return false;
         }
@@ -361,13 +405,19 @@ public sealed class Hand
     /// was dealt: a card is given its number once and carries it wherever it
     /// goes, which is what lets the screen follow one across the table.
     ///
-    /// It does not yet ask whether this player has gone down, nor hold them
-    /// to giving the joker back before the turn ends. Both are the other
-    /// half of going down, and neither is written.
+    /// Only a player who has gone down may buy one, for the same reason
+    /// they alone may add to a meld. It does not yet hold them to giving the
+    /// joker back before the turn ends, which is the half of this rule
+    /// still unenforced.
     /// </summary>
     public bool SwapForJoker(int seat, int meldAt, int at, int cardId)
     {
-        if (!IsTheirTurn(seat) || !HasDrawn || meldAt < 0 || meldAt >= Board.Melds.Count)
+        if (!IsTheirTurn(seat) || !HasDrawn || !CanAddToTheTable(seat))
+        {
+            return false;
+        }
+
+        if (meldAt < 0 || meldAt >= Board.Melds.Count)
         {
             return false;
         }

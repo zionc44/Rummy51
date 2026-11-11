@@ -30,8 +30,14 @@ public sealed record SwapView(int Meld, int At);
 /// The jokers on the table this card is the card for, worked out here for
 /// the same reason and sent the same way.
 /// </param>
+/// <param name="Owed">
+/// Whether this card was taken off the table this turn and has to be back
+/// on it before the turn ends. Only its owner is told, because only they
+/// can do anything about it.
+/// </param>
 public sealed record HeldCardView(
     int Id,
     string Code,
     IReadOnlyList<FitView> Fits,
-    IReadOnlyList<SwapView> Buys);
+    IReadOnlyList<SwapView> Buys,
+    bool Owed);

@@ -111,6 +111,16 @@ export class ArrangedHand {
   }
 
   /**
+   * This card and no other, whatever was standing out before. A tap
+   * toggles because a tap on a card already out means putting it back;
+   * this is the table pointing at a card, and pointing twice points at the
+   * same card.
+   */
+  singleOut(id: number): void {
+    this.picked.set(id);
+  }
+
+  /**
    * Every card this hand has held, which is not the same as every card it
    * is holding: what has been laid on the table is still arranged.
    */
