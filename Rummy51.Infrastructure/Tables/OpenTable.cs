@@ -182,7 +182,7 @@ internal sealed class OpenTable
         if (hand.Phase == HandPhase.Cutting)
         {
             // There is no wrong place to cut, so it is cut where chance says.
-            return CutAt(Random.Shared.Next(hand.DeckSize));
+            return CutAt(Random.Shared.Next(hand.Deck.Size));
         }
 
         if (hand.Phase == HandPhase.Dealing)
@@ -261,12 +261,12 @@ internal sealed class OpenTable
                 hand.Phase,
                 hand.DealerSeat,
                 hand.CutterSeat,
-                hand.DeckSize,
-                hand.CutPosition,
-                [.. hand.Backs.Select(back => $"{back}B")],
-                markJokers ? hand.JokerPositions : [],
-                [.. hand.RevealedAtCut.Select(card => card.Code)],
-                hand.FinishingCard?.Code,
+                hand.Deck.Size,
+                hand.Deck.CutPosition,
+                [.. hand.Deck.Backs.Select(back => $"{back}B")],
+                markJokers ? hand.Deck.JokerPositions : [],
+                [.. hand.Deck.RevealedAtCut.Select(card => card.Code)],
+                hand.Deck.FinishingCard?.Code,
                 [.. hand.Hands.Select(cards => cards.Count)],
                 hand.Passes,
                 hand.Board.Stock.Count,
