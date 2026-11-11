@@ -8,7 +8,12 @@ namespace Rummy51.Domain.Game;
 /// </summary>
 internal abstract record Move
 {
-    public sealed record Laid : Move;
+    /// <summary>
+    /// A meld laid, by its place on the table. Melds are only ever put at
+    /// the end and only ever taken back in the turn that laid them, so the
+    /// places this turn used stay where they are until it is over.
+    /// </summary>
+    public sealed record Laid(int Meld) : Move;
 
     public sealed record Joined(int Meld, HeldCard Card) : Move;
 
@@ -54,7 +59,14 @@ internal sealed class TurnSoFar
     /// <summary>The draw undone, which only the discard pile ever allows.</summary>
     public void GaveItBack() => drawn = null;
 
-    public void Laid() => putDown.Add(new Move.Laid());
+    public void Laid(int meld) => putDown.Add(new Move.Laid(meld));
+
+    /// <summary>
+    /// The melds this turn has laid and not taken back, by their places on
+    /// the table. What they come to between them is what the fifty-one is
+    /// asked of.
+    /// </summary>
+    public IReadOnlyList<int> Laying => [.. putDown.OfType<Move.Laid>().Select(laid => laid.Meld)];
 
     public void Joined(int meld, HeldCard card) => putDown.Add(new Move.Joined(meld, card));
 

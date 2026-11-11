@@ -16,8 +16,13 @@ Two packs always, a hundred and four cards, plus the jokers the table was
 opened with: none, two or four.
 
 The ace is worth eleven wherever it appears, A-2-3 included, which is why
-`Rank` starts at two and nothing is worth one. Every picture is worth ten. A
-joker is worth whatever the card it stands in for is worth.
+`Rank` starts at two and nothing is worth one. Every picture is worth ten.
+Every other card is worth its number.
+
+A joker lying on the table is worth whatever the card it stands in for is
+worth. A joker in somebody's hand is worth twenty, which is a different
+question: on the table it is a card, and in a hand it is a card nobody got
+to use.
 
 ## Dealing
 
@@ -70,10 +75,33 @@ what they lay there must be a clean ascending run of at least three cards
 with no joker in it.
 
 The clean three may be part of a longer run that does use a joker:
-6-7-8-joker-10 holds one, 5-6-joker-8-9 does not. Only the clean part of
-such a run counts towards the fifty-one, so 6-7-8-joker-10 is worth
-twenty-one there and not forty — which is why 6-7-8-joker-10 laid down
-with three tens comes to exactly fifty-one and is allowed by a hair.
+6-7-8-joker-10 holds one, 5-6-joker-8-9 does not.
+
+Everything laid counts for what it is worth, a joker counting as the card it
+is standing in for — with one exception, and the exception is the run that is
+providing the clean three. Only the clean part of that one counts.
+
+So 6-7-8-joker-10 laid with three tens comes to exactly fifty-one: three tens
+are a set and a set can never be anybody's clean run, so the run has to
+provide it and is worth twenty-one there rather than thirty-nine. But
+5-6-7-joker-9 laid beside a clean run of its own is worth all of thirty-five,
+because it is not the one doing the providing. Laid alone it is worth
+eighteen, which is the clean three of it.
+
+A run that holds a joker and no clean three can never be the one providing,
+and so is always worth all of itself: 9-10-joker-Q is thirty-nine wherever it
+is laid, and the clean run it is counted beside has to come from somewhere
+else.
+
+Nothing is ever taken off a set, because a set is not a run and this is a
+rule about runs: 7-7-joker is worth twenty-one, the joker counting as the
+seven it stands in for.
+
+The fifty-one is counted over everything laid in one turn and not over each
+run on its own. The turn is the move: cards go down one run at a time, and
+what they come to is asked when the turn ends. A player who has laid
+something they cannot stand behind cannot throw a card and end the turn on
+it — they take it back, or they lay enough to make it good.
 
 Only once a player has gone down may they add cards to runs and sets already
 on the table, and doing both in the same turn is fine.
@@ -104,8 +132,10 @@ Going down is allowed in the first round; finishing is not.
 
 ## Scoring
 
-The winner of a hand takes minus thirty; everyone else takes the value of the
-cards still in their hand.
+The winner of a hand takes minus thirty. Everyone else takes the value of the
+cards still in their hand — unless they never went down at all, and then they
+take a hundred whatever they are holding. A hand nobody ever showed is not
+worth counting.
 
 Doubling is blanket — it applies to the winner's minus as much as to
 everybody else's penalty — and the two conditions stack, so x4 is reachable

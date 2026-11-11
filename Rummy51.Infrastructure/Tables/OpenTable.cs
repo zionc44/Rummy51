@@ -131,6 +131,13 @@ internal sealed class OpenTable
     public bool Undo(int seat) => hand?.Undo(seat) == true;
 
     /// <summary>
+    /// Whether this seat could end its turn on what it has laid, which is
+    /// the one thing a throw is refused for that the player can do anything
+    /// about.
+    /// </summary>
+    public bool CouldEndTheTurn(int seat) => hand?.CanEndTheTurn(seat) != false;
+
+    /// <summary>
     /// A card onto a meld already lying there. Like laying one down, this
     /// happens inside a turn and ends neither half of it, so the clock is
     /// left alone.
@@ -264,6 +271,7 @@ internal sealed class OpenTable
                 hand.Passes,
                 hand.Board.Stock.Count,
                 hand.TurnSeat,
+                hand.WentDown,
                 hand.HasDrawn,
                 hand.Board.TopOfDiscards?.Code,
                 hand.Board.Discards.Count,

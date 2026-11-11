@@ -161,16 +161,20 @@ public sealed class InMemoryTables(
     }
 
     public Result<HandView> Draw(Guid tableId, Guid playerId, DrawnFrom from) =>
-        Move(tableId, playerId, (table, seat) => table.Draw(seat, from), "CannotDraw");
+        Move(tableId, playerId, (table, seat) => table.Draw(seat, from), Refused("CannotDraw"));
 
     public Result<HandView> Discard(Guid tableId, Guid playerId, int cardId) =>
-        Move(tableId, playerId, (table, seat) => table.Discard(seat, cardId), "CannotDiscard");
+        Move(
+            tableId,
+            playerId,
+            (table, seat) => table.Discard(seat, cardId),
+            (table, seat) => table.CouldEndTheTurn(seat) ? "CannotDiscard" : "GoingDownIsShort");
 
     public Result<HandView> LayDown(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
-        Move(tableId, playerId, (table, seat) => table.LayDown(seat, cardIds), "CannotLayDown");
+        Move(tableId, playerId, (table, seat) => table.LayDown(seat, cardIds), Refused("CannotLayDown"));
 
     public Result<HandView> Undo(Guid tableId, Guid playerId) =>
-        Move(tableId, playerId, (table, seat) => table.Undo(seat), "NothingToUndo");
+        Move(tableId, playerId, (table, seat) => table.Undo(seat), Refused("NothingToUndo"));
 
     /// <summary>
     /// A player's move, which always asks the same three questions before the
@@ -185,7 +189,7 @@ public sealed class InMemoryTables(
         Guid tableId,
         Guid playerId,
         Func<OpenTable, int, bool> move,
-        string refusal)
+        Func<OpenTable, int, string> refusal)
     {
         lock (gate)
         {
@@ -203,7 +207,7 @@ public sealed class InMemoryTables(
 
             if (!move(table, seat))
             {
-                return Result<HandView>.Fail(FailureKind.Conflict, new Error(refusal));
+                return Result<HandView>.Fail(FailureKind.Conflict, new Error(refusal(table, seat)));
             }
 
             return Result<HandView>.Success(table.DescribeHand()!);
@@ -215,14 +219,14 @@ public sealed class InMemoryTables(
             tableId,
             playerId,
             (table, seat) => table.AddTo(seat, join.Meld, join.CardId, join.End),
-            "CannotAddToMeld");
+            Refused("CannotAddToMeld"));
 
     public Result<HandView> SwapForJoker(Guid tableId, Guid playerId, SwapRequest swap) =>
         Move(
             tableId,
             playerId,
             (table, seat) => table.SwapForJoker(seat, swap.Meld, swap.At, swap.CardId),
-            "CannotBuyThatJoker");
+            Refused("CannotBuyThatJoker"));
 
     public IReadOnlyList<HeldCardView> CardsOf(Guid tableId, Guid playerId)
     {
@@ -260,6 +264,9 @@ public sealed class InMemoryTables(
             return tables.TryGetValue(tableId, out var table) ? table.Describe() : null;
         }
     }
+
+    /// <summary>A move with only one thing to say when it is refused.</summary>
+    private static Func<OpenTable, int, string> Refused(string code) => (_, _) => code;
 
     private static Result<LobbyTable> Refused(string code, FailureKind kind) =>
         Result<LobbyTable>.Fail(kind, new Error(code));

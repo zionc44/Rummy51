@@ -30,10 +30,17 @@ public enum DrawnFrom
 /// </summary>
 public sealed class Hand
 {
+
     private readonly List<List<HeldCard>> hands;
 
     /// <summary>What this turn has done and can still take back.</summary>
     private readonly TurnSoFar turn = new();
+
+    /// <summary>
+    /// Who has shown a hand. Until a player has, everything they hold costs
+    /// them a flat hundred however cheap it is.
+    /// </summary>
+    private readonly bool[] wentDown;
     private IReadOnlyList<Card> deck;
     private Cut? cut;
     private int given;
@@ -42,6 +49,7 @@ public sealed class Hand
     {
         Seats = seats;
         hands = [.. Enumerable.Range(0, seats).Select(_ => new List<HeldCard>())];
+        wentDown = new bool[seats];
         DealerSeat = dealerSeat;
         CutterSeat = (dealerSeat + seats - 1) % seats;
         Seed = seed;
@@ -131,6 +139,28 @@ public sealed class Hand
     /// when; what is there is the board's own.
     /// </summary>
     public Board Board { get; } = new();
+
+    /// <summary>Who has gone down, which the whole table may see.</summary>
+    public IReadOnlyList<bool> WentDown => wentDown;
+
+    /// <summary>
+    /// What that hand would cost its owner if the hand ended now: a flat
+    /// hundred until they have gone down, and after that what they hold.
+    /// </summary>
+    public int WorthOf(int seat) =>
+        wentDown[seat] ? Worth.Held(hands[seat].Select(card => card.Card)) : Worth.NeverWentDown;
+
+    /// <summary>
+    /// Whether this seat could end its turn on what it has laid. A player
+    /// who has laid nothing may always end it - nobody has to go down - and
+    /// one who is down already may lay whatever is a meld. It is the first
+    /// showing that has to stand up, and what makes one is a rule and lives
+    /// with the rules.
+    /// </summary>
+    public bool CanEndTheTurn(int seat) =>
+        wentDown[seat]
+        || turn.Laying.Count == 0
+        || Melding.IsAShowing([.. turn.Laying.Select(Lying)]);
 
     /// <summary>The deal as the eye should see it, pass by pass.</summary>
     public IReadOnlyList<DealPass> Passes { get; private set; } = [];
@@ -246,7 +276,7 @@ public sealed class Hand
     /// </summary>
     public bool Discard(int seat, int cardId)
     {
-        if (!IsTheirTurn(seat) || !HasDrawn)
+        if (!IsTheirTurn(seat) || !HasDrawn || !CanEndTheTurn(seat))
         {
             return false;
         }
@@ -257,6 +287,10 @@ public sealed class Hand
         {
             return false;
         }
+
+        // The throw is what makes a showing final. Until it lands, what was
+        // laid can still be taken back and nobody has gone down on it.
+        wentDown[seat] = wentDown[seat] || turn.Laying.Count > 0;
 
         Board.Throw(hands[seat][held].Card);
         hands[seat].RemoveAt(held);
@@ -283,9 +317,7 @@ public sealed class Hand
             return false;
         }
 
-        while (Undo(seat))
-        {
-        }
+        Undo(seat);
 
         if (!HasDrawn)
         {
@@ -354,8 +386,15 @@ public sealed class Hand
 
         var meld = new Meld(seat, [.. places.Select(at => held[at])]);
 
+        // What goes down has to be a run or a set. Nothing else is a meld,
+        // and the table is not somewhere to put cards that are not one.
+        if (!Melding.IsMeld([.. meld.Cards.Select(lying => lying.Card)]))
+        {
+            return false;
+        }
+
         Board.Lay(meld);
-        turn.Laid();
+        turn.Laid(Board.Melds.Count - 1);
 
         // From the back, so that taking one out does not move the places of
         // those still to be taken.
@@ -454,15 +493,18 @@ public sealed class Hand
     public bool CanUndo => turn.Anything;
 
     /// <summary>
-    /// Takes back the last thing this turn did, which is the last meld laid
-    /// or, once they are all back, the card taken off the discard pile.
+    /// Takes the turn back: every meld it laid, last first, and after them
+    /// the card it took off the discard pile. All of it and not the last
+    /// thing alone, because what a player wants back is the move, and
+    /// taking it apart a piece at a time is the same decision undone four
+    /// times.
+    ///
+    /// The melds come first because they came last, and because one of them
+    /// may hold the very card that was taken off the pile.
     ///
     /// A card off the stock is never taken back. Putting it where it came
     /// from would let a player look at the top of the stock and then decide
     /// not to have looked, and there is no undoing knowing something.
-    ///
-    /// The melds come back first because they came last, and because one of
-    /// them may hold the very card that was taken off the pile.
     /// </summary>
     public bool Undo(int seat)
     {
@@ -471,7 +513,14 @@ public sealed class Hand
             return false;
         }
 
-        return TakeBackTheLastThing(seat) || PutTheDiscardBack(seat);
+        var anything = false;
+
+        while (TakeBackTheLastThing(seat) || PutTheDiscardBack(seat))
+        {
+            anything = true;
+        }
+
+        return anything;
     }
 
     /// <summary>
@@ -544,6 +593,10 @@ public sealed class Hand
     private void Forget() => turn.Forget();
 
     private bool IsTheirTurn(int seat) => Phase == HandPhase.Playing && seat == TurnSeat;
+
+    /// <summary>The cards of one meld as the rules read them.</summary>
+    private IReadOnlyList<Card> Lying(int at) =>
+        [.. Board.Melds[at].Cards.Select(card => card.Card)];
 
     /// <summary>
     /// Cards reaching a hand, each numbered as it arrives. That number is

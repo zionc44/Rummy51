@@ -25,6 +25,39 @@ public static class Melding
     /// <summary>The most that can be a set, there being four suits.</summary>
     private const int Most = 4;
 
+    /// <summary>What a first showing has to come to.</summary>
+    private const int FiftyOne = 51;
+
+    /// <summary>
+    /// Whether what a player has laid is a showing they can stand behind:
+    /// fifty-one between all of it, and a clean run somewhere among it. It
+    /// is asked of everything laid in one turn rather than of each run on
+    /// its own, because the turn is the move.
+    /// </summary>
+    public static bool IsAShowing(IReadOnlyList<IReadOnlyList<Card>> laid) =>
+        laid.Any(HasCleanRun) && ShowingWorth(laid) >= FiftyOne;
+
+    /// <summary>
+    /// What a showing comes to. Every meld counts for what it is worth, a
+    /// joker counting as the card it stands in for - except the one run
+    /// providing the clean three, which counts only its clean part.
+    ///
+    /// Which run provides it is whichever costs least to give up, and a run
+    /// with no joker costs nothing at all: it is clean end to end, so a
+    /// showing that holds one is never docked. Only a player whose clean
+    /// three is buried inside a run with a joker pays for it.
+    /// </summary>
+    public static int ShowingWorth(IReadOnlyList<IReadOnlyList<Card>> laid)
+    {
+        var whole = laid.Sum(WorthOnTheTable);
+        var providers = laid
+            .Where(HasCleanRun)
+            .Select(meld => WorthOnTheTable(meld) - Worth.Held(CleanRunIn(meld)))
+            .ToList();
+
+        return providers.Count == 0 ? whole : whole - providers.Min();
+    }
+
     /// <summary>
     /// The ends of this meld that card could join it at: both, one, or
     /// none at all.
@@ -91,6 +124,103 @@ public static class Melding
         swapped[at] = card;
 
         return IsMeld(swapped);
+    }
+
+    /// <summary>
+    /// Whether this meld holds a clean run: three or more in a row with no
+    /// joker among them. A run with no joker at all is clean from end to
+    /// end; one with a joker holds a clean run only where three of its
+    /// cards still sit together. 6-7-8-joker-10 holds one and
+    /// 5-6-joker-8-9 does not.
+    /// </summary>
+    public static bool HasCleanRun(IReadOnlyList<Card> meld) => CleanRunIn(meld).Count >= Least;
+
+    /// <summary>
+    /// What a meld lying on the table is worth. Every card counts for
+    /// itself, and a joker counts for the card it is standing in for: in a
+    /// set that is the rank, and in a run it is whatever the place it fills
+    /// asks for.
+    /// </summary>
+    public static int WorthOnTheTable(IReadOnlyList<Card> meld)
+    {
+        if (!IsMeld(meld))
+        {
+            return 0;
+        }
+
+        return IsSet(meld)
+            ? meld.Count * Worth.OfRank(meld.OfType<Card.Suited>().First().Rank)
+            : PlacesOf(meld).Sum(WorthOfPlace);
+    }
+
+    /// <summary>
+    /// The rank each place in a run asks for, jokers included, read off
+    /// whichever way the run is in order. Empty where it is no run.
+    /// </summary>
+    private static IReadOnlyList<int> PlacesOf(IReadOnlyList<Card> run)
+    {
+        if (InOrderBy(run, High, 1, 2, (int)Rank.Ace))
+        {
+            return Places(run, High, 1);
+        }
+
+        if (InOrderBy(run, High, -1, 2, (int)Rank.Ace))
+        {
+            return Places(run, High, -1);
+        }
+
+        if (InOrderBy(run, Low, 1, 1, (int)Rank.King))
+        {
+            return Places(run, Low, 1);
+        }
+
+        return InOrderBy(run, Low, -1, 1, (int)Rank.King) ? Places(run, Low, -1) : [];
+    }
+
+    private static IReadOnlyList<int> Places(
+        IReadOnlyList<Card> run,
+        Func<Card, int> rank,
+        int step)
+    {
+        var anchor = run.ToList().FindIndex(card => card is Card.Suited);
+        var from = rank(run[anchor]);
+
+        return [.. run.Select((_, at) => from + (step * (at - anchor)))];
+    }
+
+    /// <summary>
+    /// A place in a run read as a card. One is the ace read low, which is
+    /// the only way A-2-3 is in order, and the ace is eleven either way.
+    /// </summary>
+    private static int WorthOfPlace(int rank) =>
+        Worth.OfRank(rank == 1 ? Rank.Ace : (Rank)rank);
+
+    /// <summary>
+    /// The longest stretch of the meld with no joker in it, as cards. Only a
+    /// run has one worth asking about; it is asked of anything and answers
+    /// honestly either way.
+    /// </summary>
+    private static IReadOnlyList<Card> CleanRunIn(IReadOnlyList<Card> meld)
+    {
+        if (!IsRun(meld))
+        {
+            return [];
+        }
+
+        List<Card> longest = [];
+        List<Card> running = [];
+
+        foreach (var card in meld)
+        {
+            running = card is Card.Joker ? [] : [.. running, card];
+
+            if (running.Count > longest.Count)
+            {
+                longest = running;
+            }
+        }
+
+        return longest;
     }
 
     public static bool IsMeld(IReadOnlyList<Card> cards) =>
