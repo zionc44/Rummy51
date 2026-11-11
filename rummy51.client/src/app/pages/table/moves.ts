@@ -29,6 +29,11 @@ export class Moves {
   /** What the server refused, in codes the client words itself. */
   readonly errors = signal<readonly ApiError[]>([]);
 
+  /** Read and acknowledged, so the table can be seen again. */
+  understood(): void {
+    this.errors.set([]);
+  }
+
   cut(position: number): void {
     this.send(this.tables.cut(this.tableId(), position));
   }

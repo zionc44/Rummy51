@@ -1,0 +1,43 @@
+// A narrow column beside the hand, so each reading is a name over a number
+// rather than a name beside one: there is no width here for a line.
+.tally {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 0.1875rem;
+  margin: 0;
+}
+
+.tally__line {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.0625rem 0.25rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+// What the hand would cost, which is the one of these that is bad news.
+.tally__line--costly {
+  border-color: var(--clock-urgent);
+  color: var(--clock-urgent);
+}
+
+// A reading that has got somewhere.
+.tally__line--met {
+  border-color: var(--felt-500);
+  color: var(--felt-500);
+}
+
+.tally__name {
+  font-size: 0.5rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tally__value {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}

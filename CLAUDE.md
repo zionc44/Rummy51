@@ -318,6 +318,15 @@ hand wraps is the player's too — only carrying a card between the lines moves
 the break, so a run gathered on one line stays there. None of this crosses
 the wire: the server sends a hand and is never told an order.
 
+What a run and a set are is written twice, on purpose. `Melding.cs` is the
+one that decides - the server refuses anything it disagrees with - and
+`core/cards/melds.ts` is there so the screen can answer the player without
+asking. The copy exists because the thing the screen reads is the hand as
+its owner has arranged it, and an arrangement never crosses the wire: a band
+that waited for a round trip would lag the finger that drew it. The same
+goes for `Worth.cs` and `core/cards/worth.ts`. Each pair is changed together
+or not at all, and where they disagree the server is right.
+
 Runs and sets are banded as they are laid. The scan reads the hand as it is
 arranged rather than searching it for the best it could be — a meld is a meld
 because the player has put the cards beside each other, which is also why one

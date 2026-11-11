@@ -1,0 +1,26 @@
+<!-- Four readings of one hand, narrow enough to sit beside it. -->
+<dl class="tally">
+  <div class="tally__line" [class.tally__line--costly]="costly()">
+    <dt class="tally__name">{{ 'table.tally.worth' | translate }}</dt>
+    <dd class="tally__value">{{ worth() }}</dd>
+  </div>
+
+  <div class="tally__line" [class.tally__line--met]="points() > 0">
+    <dt class="tally__name">{{ 'table.tally.points' | translate }}</dt>
+    <dd class="tally__value">{{ points() }}</dd>
+  </div>
+
+  <div class="tally__line" [class.tally__line--met]="clean()">
+    <dt class="tally__name">{{ 'table.tally.clean' | translate }}</dt>
+    <dd class="tally__value">{{ (clean() ? 'table.tally.yes' : 'table.tally.no') | translate }}</dd>
+  </div>
+
+  @if (!wentDown()) {
+    <div class="tally__line" [class.tally__line--met]="canGoDown()">
+      <dt class="tally__name">{{ 'table.tally.down' | translate }}</dt>
+      <dd class="tally__value">
+        {{ (canGoDown() ? 'table.tally.yes' : 'table.tally.no') | translate }}
+      </dd>
+    </div>
+  }
+</dl>

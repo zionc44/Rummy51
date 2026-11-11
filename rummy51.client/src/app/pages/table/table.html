@@ -107,6 +107,19 @@
                 (bought)="swapForJoker($event)"
               />
 
+              @if (seating.seated() && myCards().length > 0) {
+                <!-- Arranging a hand is nobody's turn, so this is here
+                     whosever it is, beside the one that takes a move back. -->
+                <button
+                  type="button"
+                  class="board__sort"
+                  [attr.aria-label]="'table.sortHand' | translate"
+                  (click)="sortHand()"
+                >
+                  <app-icon-sort />
+                </button>
+              }
+
               @if (turn.canUndo()) {
                 <!-- Only while there is something to take back, which is
                      most of the time there is not. -->
@@ -147,16 +160,27 @@
             (released)="cardReleased($event)"
             (played)="layDown($event)"
           />
-          <app-table-seat
-            [seat]="mySeat"
-            [mine]="seating.seated()"
-            [dealer]="seating.nearSeat() === seating.dealerSeat()"
-            [holding]="seating.holdingAt(seating.nearSeat())"
-            [clock]="seating.clockFor(seating.nearSeat())"
-            [compact]="true"
-            [sortable]="seating.seated() && myCards().length > 0"
-            (sorted)="sortHand()"
-          />
+          <!-- The player's own column: who they are at the top of it, and
+               under that what their hand is worth and what it could do. -->
+          <div class="table__me">
+            <app-table-seat
+              [seat]="mySeat"
+              [mine]="seating.seated()"
+              [dealer]="seating.nearSeat() === seating.dealerSeat()"
+              [holding]="seating.holdingAt(seating.nearSeat())"
+              [clock]="seating.clockFor(seating.nearSeat())"
+              [compact]="true"
+            />
+            @if (seating.seated() && myCards().length > 0) {
+              <app-table-tally
+                [worth]="worth()"
+                [points]="meldPoints()"
+                [clean]="hasCleanRun()"
+                [canGoDown]="canGoDown()"
+                [wentDown]="wentDown()"
+              />
+            }
+          </div>
         </div>
       }
     } @else if (gone()) {
@@ -168,6 +192,9 @@
       </div>
     }
 
-    <app-error-messages [errors]="moves.errors()" />
+    <!-- A move the table refused, in the middle of the screen. Under the
+         board it was a line below the fold, which is no use to somebody
+         looking at their cards. -->
+    <app-notice [errors]="moves.errors()" (closed)="moves.understood()" />
   </main>
 </app-page-shell>

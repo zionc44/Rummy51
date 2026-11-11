@@ -214,7 +214,11 @@
 // In the corner under the board, out of the way of the line that says
 // whose move it is. It appears only when there is something to take back,
 // so the rest of the time it costs nothing at all.
-.board__undo {
+// Beside each other at the foot of the board: one takes a move back and the
+// other only tidies a hand, which is why that one is there whosever turn it
+// is and this one comes and goes.
+.board__undo,
+.board__sort {
   position: absolute;
   inset-block-end: 0;
   inset-inline-start: 0;
@@ -230,6 +234,20 @@
     border-color: var(--felt-500);
     color: var(--felt-500);
   }
+}
+
+// The sort sits inside the undo's place, so the two never collide whether
+// or not there is anything to take back.
+.board__sort {
+  display: grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  padding: 0;
+}
+
+.board__undo {
+  inset-inline-start: 1.875rem;
 }
 
 // Under the board rather than over it: the cards are what matters and this
@@ -250,6 +268,18 @@
 }
 
 // Nothing to sit at, so the page says so and offers the way back.
+// The player's own column: the picture at the top of it and the readings
+// under, rather than everything sitting in the middle of the height the
+// hand beside it takes.
+.table__me {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  align-self: stretch;
+}
+
 .table__gone {
   display: flex;
   flex: 1;

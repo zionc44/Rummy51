@@ -124,6 +124,11 @@ export interface HandView {
   /** Whose turn it is, or -1 before play has begun. */
   readonly turnSeat: number;
   /**
+   * Who has shown a hand, by seat. Public, because their melds are lying on
+   * the table for everybody to read.
+   */
+  readonly wentDown: readonly boolean[];
+  /**
    * Whether they have taken their card yet. Public, because at a real table
    * everybody watches the hand go to the stock and come back.
    */

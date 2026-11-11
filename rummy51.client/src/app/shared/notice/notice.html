@@ -1,0 +1,13 @@
+@if (errors().length) {
+  <div class="notice">
+    <!-- One way out, which is the button. A press on the way past it is
+         not an answer to something that had to be read. -->
+    <div class="notice__panel" role="alertdialog" aria-modal="true">
+      <app-error-messages [errors]="errors()" />
+
+      <button type="button" class="btn-primary notice__ok" (click)="closed.emit()">
+        {{ 'common.ok' | translate }}
+      </button>
+    </div>
+  </div>
+}

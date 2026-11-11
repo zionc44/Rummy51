@@ -9,7 +9,8 @@
     "login": "התחברות"
   },
   "common": {
-    "cancel": "ביטול"
+    "cancel": "ביטול",
+    "ok": "אישור"
   },
   "language": {
     "switch": "שינוי שפה"
@@ -109,7 +110,7 @@
     "finishingCard": "קלף גמירה",
     "dealer": "מחלק",
     "sortHand": "מיון הקלפים",
-    "undo": "ביטול",
+    "undo": "ביטול התור",
     "drawStock": "משיכה מהחבילה",
     "drawDiscard": "לקיחת הקלף הזרוק",
     "emptyPile": "אין קלף זרוק",
@@ -117,7 +118,15 @@
     "turnThrow": "תורך — זרוק קלף",
     "throwHere": "זריקת הקלף המסומן",
     "addHere": "הוספת הקלף כאן",
-    "buyJoker": "קניית הגוקר בקלף הזה"
+    "buyJoker": "קניית הגוקר בקלף הזה",
+    "tally": {
+      "worth": "עלות",
+      "points": "בסדרות",
+      "clean": "נקייה",
+      "down": "לרדת",
+      "yes": "כן",
+      "no": "לא"
+    }
   },
   "profile": {
     "open": "תפריט החשבון",
@@ -165,6 +174,7 @@
     "CannotDiscard": "אי אפשר לזרוק עכשיו",
     "NotAtThisTable": "אתה לא יושב בשולחן הזה",
     "CannotAddToMeld": "אי אפשר להצמיד את הקלף לסדרה הזאת",
-    "CannotBuyThatJoker": "הקלף הזה לא מחליף את הגוקר הזה"
+    "CannotBuyThatJoker": "הקלף הזה לא מחליף את הגוקר הזה",
+    "GoingDownIsShort": "מה שהנחת לא מגיע לחמישים ואחת עם סדרה נקייה"
   }
 }

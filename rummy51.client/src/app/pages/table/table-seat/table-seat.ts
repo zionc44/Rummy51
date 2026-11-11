@@ -4,7 +4,7 @@ import {
   ElementRef,
   computed,
   input,
-  output,
+
   viewChild,
   viewChildren,
 } from '@angular/core';
@@ -12,9 +12,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { HeldCard } from '../../../core/cards/card';
 import { pictureOf } from '../../../core/cards/deck';
 import { TableSeat as Seat } from '../../../core/lobby/lobby.models';
-import { IconSort } from '../../../shared/icons/icon-sort/icon-sort';
 import { PlayerAvatar } from '../../../shared/player-avatar/player-avatar';
-
 
 /**
  * One place at the table, taken or not: who is sitting there, whether they
@@ -28,7 +26,7 @@ import { PlayerAvatar } from '../../../shared/player-avatar/player-avatar';
  */
 @Component({
   selector: 'app-table-seat',
-  imports: [TranslatePipe, IconSort, PlayerAvatar],
+  imports: [TranslatePipe, PlayerAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.seat--compact]': 'compact()' },
   templateUrl: './table-seat.html',
@@ -94,11 +92,6 @@ export class TableSeat {
       flash: `${(clock.left - clock.of * 0.25).toFixed(2)}s`,
     };
   });
-
-  /** Only your own hand can be sorted, and only while you are holding one. */
-  readonly sortable = input(false);
-
-  readonly sorted = output();
 
   protected readonly picture = pictureOf;
 

@@ -9,7 +9,8 @@
     "login": "Sign in"
   },
   "common": {
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "ok": "OK"
   },
   "language": {
     "switch": "Change language"
@@ -109,7 +110,7 @@
     "finishingCard": "Finishing card",
     "dealer": "Dealer",
     "sortHand": "Sort the hand",
-    "undo": "Undo",
+    "undo": "Take the turn back",
     "drawStock": "Take from the deck",
     "drawDiscard": "Take the discarded card",
     "emptyPile": "No card has been thrown",
@@ -117,7 +118,15 @@
     "turnThrow": "Your turn — throw a card",
     "throwHere": "Throw the card you picked",
     "addHere": "Add the card here",
-    "buyJoker": "Buy the joker with this card"
+    "buyJoker": "Buy the joker with this card",
+    "tally": {
+      "worth": "Cost",
+      "points": "In melds",
+      "clean": "Clean run",
+      "down": "Can go down",
+      "yes": "Yes",
+      "no": "No"
+    }
   },
   "profile": {
     "open": "Account menu",
@@ -165,6 +174,7 @@
     "CannotDiscard": "You cannot discard now",
     "NotAtThisTable": "You are not sitting at this table",
     "CannotAddToMeld": "That card cannot join that meld",
-    "CannotBuyThatJoker": "That card does not stand in for that joker"
+    "CannotBuyThatJoker": "That card does not stand in for that joker",
+    "GoingDownIsShort": "What you laid does not come to fifty-one with a clean run"
   }
 }

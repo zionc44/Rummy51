@@ -31,16 +31,6 @@
            is a number you want without stopping to count it. -->
       <span class="seat__count">{{ holding() }}</span>
     }
-    @if (sortable()) {
-      <button
-        type="button"
-        class="seat__sort"
-        [attr.aria-label]="'table.sortHand' | translate"
-        (click)="sorted.emit()"
-      >
-        <app-icon-sort />
-      </button>
-    }
   </span>
   @if (held().length) {
     <!-- The jokers the cut gave this player, face up for the table to read.

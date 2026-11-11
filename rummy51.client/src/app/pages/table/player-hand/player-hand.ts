@@ -175,6 +175,28 @@ export class PlayerHand {
     return this.melds()[line]?.[at] ?? null;
   }
 
+  /**
+   * The runs and sets the hand is lying in, as the cards themselves. It is
+   * read off the same laying the bands are, so what is counted is what is
+   * banded: a meld broken across the two lines is not one, and a hand
+   * nobody has arranged holds none.
+   */
+  readonly inMelds = computed<readonly (readonly HeldCard[])[]>(() => {
+    const found = new Map<number, HeldCard[]>();
+
+    this.rows().forEach((row, line) =>
+      row.forEach((card, at) => {
+        const meld = this.meldAt(line, at);
+
+        if (card !== null && meld !== null) {
+          found.set(meld, [...(found.get(meld) ?? []), card]);
+        }
+      }),
+    );
+
+    return [...found.values()];
+  });
+
   /** The colour of the band under a card, or null where it is in no meld. */
   protected bandOf(line: number, at: number): string | null {
     const meld = this.meldAt(line, at);

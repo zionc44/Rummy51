@@ -53,3 +53,4 @@ export const suitOf = (card: HeldCard) => Suits.indexOf(card.code[0]);
 
 export const Ace = 14;
 export const King = 13;
+export const Jack = 11;

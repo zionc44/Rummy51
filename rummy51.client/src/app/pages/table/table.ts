@@ -5,11 +5,13 @@ import { AuthService } from '../../core/auth/auth-service';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
 import { ArrangedHand } from '../../core/cards/arranged-hand';
 import { Fit, Swap } from '../../core/cards/card';
+import { GoingDown, hasCleanRun, showingWorth } from '../../core/cards/melds';
+import { NeverWentDown, worthOfHand } from '../../core/cards/worth';
 import { pictureOf } from '../../core/cards/deck';
 import { HandPhase, HandView } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { Turn } from './turn';
-import { ErrorMessages } from '../../shared/error-messages/error-messages';
+import { Notice } from '../../shared/notice/notice';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { ProfileMenu } from '../../shared/profile-menu/profile-menu';
 import { CardJourney } from './card-journey';
@@ -21,8 +23,10 @@ import { Dealing, Spots } from './dealing';
 import { CardMove, CardRelease } from './player-hand/hand-drag';
 import { PlayerHand } from './player-hand/player-hand';
 import { TableCut } from './table-cut/table-cut';
+import { IconSort } from '../../shared/icons/icon-sort/icon-sort';
 import { TableSeat } from './table-seat/table-seat';
 import { TableMelds } from './table-melds/table-melds';
+import { TableTally } from './table-tally/table-tally';
 import { TableTerms } from './table-terms/table-terms';
 
 /**
@@ -35,12 +39,14 @@ import { TableTerms } from './table-terms/table-terms';
   selector: 'app-table',
   imports: [
     TranslatePipe,
-    ErrorMessages,
+    Notice,
     PageShell,
     PlayerHand,
     ProfileMenu,
     TableCut,
+    IconSort,
     TableMelds,
+    TableTally,
     TableSeat,
     TableTerms,
   ],
@@ -353,6 +359,31 @@ export class Table implements OnDestroy {
       this.moves.swapForJoker(picked, swap);
     }
   }
+
+  /** The runs and sets this hand is lying in, as its owner has laid them. */
+  private readonly inMelds = computed(() => this.nearHand()?.inMelds() ?? []);
+
+  /** What the melds come to, counted the way the fifty-one counts. */
+  protected readonly meldPoints = computed(() => showingWorth(this.inMelds()));
+
+  protected readonly hasCleanRun = computed(() => this.inMelds().some(hasCleanRun));
+
+  /** Whether this player has shown a hand, which the whole table may see. */
+  protected readonly wentDown = computed(
+    () => this.hand()?.wentDown[this.seating.nearSeat()] ?? false,
+  );
+
+  /**
+   * What this hand costs if the hand ends now. A flat hundred until its
+   * owner has gone down, whatever they are holding.
+   */
+  protected readonly worth = computed(() =>
+    this.wentDown() ? worthOfHand(this.myCards()) : NeverWentDown,
+  );
+
+  protected readonly canGoDown = computed(
+    () => this.hasCleanRun() && this.meldPoints() >= GoingDown,
+  );
 
   /** The last thing this turn did, taken back. */
   protected undo(): void {

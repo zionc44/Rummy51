@@ -1,4 +1,5 @@
 import { Ace, HeldCard, King, isJoker, rankOf, suitOf } from './card';
+import { worthOfHand, worthOfRank } from './worth';
 
 /**
  * Which cards in a line of a hand are lying in a run or a set together.
@@ -15,6 +16,9 @@ import { Ace, HeldCard, King, isJoker, rankOf, suitOf } from './card';
 
 /** The fewest cards that can be a run or a set. */
 const Least = 3;
+
+/** What a first showing has to come to. */
+export const GoingDown = 51;
 
 /** The most that can be a set, there being four suits and no duplicates. */
 const Most = 4;
@@ -64,10 +68,11 @@ function longestFrom(line: readonly (HeldCard | null)[], at: number): number {
   return 0;
 }
 
-const isMeld = (cards: readonly HeldCard[]) => isSet(cards) || isRun(cards);
+/** Whether these cards are a run or a set, which is what a meld is. */
+export const isMeld = (cards: readonly HeldCard[]) => isSet(cards) || isRun(cards);
 
 /** Three or four of one rank, each from a different suit. */
-function isSet(cards: readonly HeldCard[]): boolean {
+export function isSet(cards: readonly HeldCard[]): boolean {
   if (cards.length > Most) {
     return false;
   }
@@ -89,7 +94,7 @@ function isSet(cards: readonly HeldCard[]): boolean {
  * with a joker standing in for whatever is missing. Q-K-A is a run and so
  * is A-2-3, which is the whole reason the ace is asked about twice.
  */
-function isRun(cards: readonly HeldCard[]): boolean {
+export function isRun(cards: readonly HeldCard[]): boolean {
   const named = cards.filter((card) => !isJoker(card));
 
   if (named.length === 0) {
@@ -136,4 +141,90 @@ function inOrderBy(
 
     return isJoker(card) || rank(card) === wanted;
   });
+}
+
+/**
+ * Whether this meld holds a clean run: three or more in a row with no joker
+ * among them. A run with no joker at all is clean end to end; one with a
+ * joker holds a clean run only where three of its cards still sit together.
+ * 6-7-8-joker-10 holds one and 5-6-joker-8-9 does not.
+ */
+export const hasCleanRun = (meld: readonly HeldCard[]) => cleanRunIn(meld).length >= Least;
+
+/**
+ * What a meld lying on the table is worth. Every card counts for itself,
+ * and a joker counts for the card it is standing in for: in a set that is
+ * the rank, and in a run it is whatever the place it fills asks for.
+ */
+export function worthOnTable(meld: readonly HeldCard[]): number {
+  if (meld.length < Least || !isMeld(meld)) {
+    return 0;
+  }
+
+  return isSet(meld)
+    ? meld.length * worthOfRank(rankOf(meld.filter((card) => !isJoker(card))[0]))
+    : placesOf(meld).reduce((all, place) => all + worthOfRank(place === 1 ? Ace : place), 0);
+}
+
+/**
+ * What a showing comes to. Every meld counts for what it is worth - except
+ * the one run providing the clean three, which counts only its clean part.
+ *
+ * Which run provides it is whichever costs least to give up, and a run with
+ * no joker costs nothing at all: it is clean end to end, so a showing that
+ * holds one is never docked. Only a player whose clean three is buried
+ * inside a run with a joker pays for it.
+ */
+export function showingWorth(laid: readonly (readonly HeldCard[])[]): number {
+  const whole = laid.reduce((all, meld) => all + worthOnTable(meld), 0);
+  const providers = laid
+    .filter(hasCleanRun)
+    .map((meld) => worthOnTable(meld) - worthOfHand(cleanRunIn(meld)));
+
+  return providers.length === 0 ? whole : whole - Math.min(...providers);
+}
+
+/**
+ * The rank each place in a run asks for, jokers included, read off
+ * whichever way the run is in order. Empty where it is no run.
+ */
+function placesOf(run: readonly HeldCard[]): readonly number[] {
+  const high = (card: HeldCard) => rankOf(card);
+  const low = (card: HeldCard) => (rankOf(card) === Ace ? 1 : rankOf(card));
+
+  for (const [rank, step, lowest, highest] of [
+    [high, 1, 2, Ace],
+    [high, -1, 2, Ace],
+    [low, 1, 1, King],
+    [low, -1, 1, King],
+  ] as const) {
+    if (inOrderBy(run, rank, step, lowest, highest)) {
+      const anchor = run.findIndex((card) => !isJoker(card));
+      const from = rank(run[anchor]);
+
+      return run.map((_, at) => from + step * (at - anchor));
+    }
+  }
+
+  return [];
+}
+
+/** The longest stretch of the meld with no joker in it. */
+function cleanRunIn(meld: readonly HeldCard[]): readonly HeldCard[] {
+  if (!isRun(meld)) {
+    return [];
+  }
+
+  let longest: readonly HeldCard[] = [];
+  let running: readonly HeldCard[] = [];
+
+  for (const card of meld) {
+    running = isJoker(card) ? [] : [...running, card];
+
+    if (running.length > longest.length) {
+      longest = running;
+    }
+  }
+
+  return longest;
 }
