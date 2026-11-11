@@ -62,7 +62,7 @@ export interface LobbyTable {
 }
 
 /** Mirrors HandPhase on the server, which sends the name rather than the ordinal. */
-export type HandPhase = 'cutting' | 'dealing' | 'playing';
+export type HandPhase = 'cutting' | 'dealing' | 'playing' | 'finished';
 
 /** One pass of the deal: how many cards landed at which seat. */
 export interface DealPass {
@@ -123,6 +123,9 @@ export interface HandView {
   readonly stockSize: number;
   /** Whose turn it is, or -1 before play has begun. */
   readonly turnSeat: number;
+
+  /** Who took the hand, or -1 while it is still being played. */
+  readonly winnerSeat: number;
   /**
    * Who has shown a hand, by seat. Public, because their melds are lying on
    * the table for everybody to read.

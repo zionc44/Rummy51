@@ -40,7 +40,9 @@ dealer, fourteen for the rest.
 
 ## A turn
 
-The player after the dealer opens by discarding and doing nothing else.
+The player after the dealer opens by discarding. They take no card - the
+fifteenth they were dealt is their draw - but like anybody else in their turn
+they may put cards on the table before they throw.
 
 After that each player in turn takes either the card the player before them
 discarded or the top of the stock, and ends by discarding. Only the top of
@@ -134,6 +136,21 @@ joker bought this way cannot be part of the going down that paid for it, nor
 stay in the hand past the end of the turn, because it was taken from the
 table and everything taken from the table is back on it before the turn
 ends.
+
+## Finishing
+
+A player goes out by throwing their last card. Everything else they held is
+on the table by then, in runs and sets of their own or added to what was
+already lying there: fifteen cards in the hand, fourteen laid down, one
+thrown. Whoever does it has won, and the hand ends on that throw.
+
+So a hand is never emptied onto the table. Three cards left that happen to
+be a run are not a win - laying them would leave nothing to throw, and a
+turn ends on a throw and on nothing else. Two of the three are no meld, so
+the run waits a turn.
+
+Buying a joker is the one way onto the table that cannot empty a hand: a
+card goes out and the joker comes in.
 
 Going down is allowed in the first round; finishing is not.
 

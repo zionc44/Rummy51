@@ -6,7 +6,9 @@ public enum HandPhase
 
     Dealing,
 
-    Playing
+    Playing,
+
+    Finished
 }
 
 public enum DrawnFrom
@@ -58,6 +60,9 @@ public sealed class Hand
     /// <summary>Whose turn it is, or -1 before play has begun.</summary>
     public int TurnSeat { get; private set; } = -1;
 
+    /// <summary>Who took the hand, or -1 while it is still being played.</summary>
+    public int WinnerSeat { get; private set; } = -1;
+
     public bool HasDrawn { get; private set; }
 
     /// <summary>
@@ -101,6 +106,18 @@ public sealed class Hand
     public bool CanEndTheTurn(int seat) =>
         HasPutBackWhatItTook(seat)
         && (wentDown[seat] || turn.Laying.Count == 0 || Melding.IsAShowing(Showing));
+
+    /// <summary>
+    /// Whether this seat can put that many cards on the table and still
+    /// have a hand. One card always stays behind, because a turn ends on a
+    /// throw and on nothing else: a hand laid out to the last card could
+    /// not end its own turn.
+    ///
+    /// Which is also what makes going out a throw rather than a lay. Three
+    /// cards left that happen to be a run are not a win - two of them are
+    /// no meld, so the run waits a turn.
+    /// </summary>
+    private bool CanPartWith(int seat, int many) => hands[seat].Count > many;
 
     /// <summary>
     /// Whether everything this turn took off the table is back on it. The
@@ -265,9 +282,32 @@ public sealed class Hand
 
         Board.Throw(hands[seat][held].Card);
         hands[seat].RemoveAt(held);
+
+        if (hands[seat].Count == 0)
+        {
+            Won(seat);
+
+            return true;
+        }
+
         HandItOn();
 
         return true;
+    }
+
+    /// <summary>
+    /// The hand is over and this seat took it: they laid every card they
+    /// held but one and threw that one. Nobody is waited for afterwards -
+    /// <see cref="WaitingSeat"/> answers for no seat once the hand is not
+    /// being played, so the clock stops without being told to.
+    /// </summary>
+    private void Won(int seat)
+    {
+        WinnerSeat = seat;
+        Phase = HandPhase.Finished;
+        TurnSeat = -1;
+        HasDrawn = false;
+        Forget();
     }
 
     /// <summary>
@@ -342,6 +382,11 @@ public sealed class Hand
             return false;
         }
 
+        if (!CanPartWith(seat, places.Count))
+        {
+            return false;
+        }
+
         var meld = new Meld(seat, [.. places.Select(at => held[at])]);
 
         if (!Melding.IsMeld([.. meld.Cards.Select(lying => lying.Card)]))
@@ -380,7 +425,7 @@ public sealed class Hand
 
         var held = hands[seat].FindIndex(card => card.Id == cardId);
 
-        if (held == -1)
+        if (held == -1 || !CanPartWith(seat, 1))
         {
             return false;
         }
@@ -406,9 +451,10 @@ public sealed class Hand
     /// goes, which is what lets the screen follow one across the table.
     ///
     /// Only a player who has gone down may buy one, for the same reason
-    /// they alone may add to a meld. It does not yet hold them to giving the
-    /// joker back before the turn ends, which is the half of this rule
-    /// still unenforced.
+    /// they alone may add to a meld, and it is owed back to the table
+    /// before the turn ends like anything else taken off it. A hand keeps
+    /// the size it had: a card goes out and the joker comes in, so this is
+    /// the one way onto the table that cannot empty a hand.
     /// </summary>
     public bool SwapForJoker(int seat, int meldAt, int at, int cardId)
     {

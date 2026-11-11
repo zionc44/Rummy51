@@ -186,6 +186,29 @@
   padding: 0;
 }
 
+// Cards are thrown onto the pile and not stacked on it, so the ones under
+// the top card lie askew. They are drawn face down, and that is the whole
+// of the rule: only the card on top may be taken, so only it may be read,
+// however much of the ones beneath it shows.
+.discard__under {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  border-radius: 0.1875rem;
+  transform: rotate(-7deg);
+}
+
+// The other way, because two cards at the same angle are a stack again.
+.discard__under + .discard__under {
+  transform: rotate(5deg);
+}
+
+// The top card is off true as well - it was thrown there like the rest -
+// but barely, being the one card of the pile anybody has to read.
+.discard__top {
+  transform: rotate(-2deg);
+}
+
 // An outline where the pile will be, so the corner reads as a place waiting
 // for a card rather than as nothing at all.
 .discard__empty {
@@ -264,6 +287,21 @@
   margin: 0;
   color: var(--felt-500);
   font-size: 0.75rem;
+  text-align: center;
+}
+
+// The same place as the prompt, because the two never show at once: a hand
+// being played is waiting for somebody, and a hand that is over is not. It
+// is said louder, being the last thing the board has to say.
+.board__won {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  pointer-events: none;
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
   text-align: center;
 }
 

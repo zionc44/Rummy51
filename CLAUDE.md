@@ -331,8 +331,7 @@ Runs and sets are banded as they are laid. The scan reads the hand as it is
 arranged rather than searching it for the best it could be — a meld is a meld
 because the player has put the cards beside each other, which is also why one
 broken across two lines is not one. Being a meld and being allowed to go down
-are different questions: the second needs a clean run and fifty-one points,
-and nothing asks it yet. The band is deep enough to take hold of, and that is
+are different questions, and both are now asked. The band is deep enough to take hold of, and that is
 what it is for: a finger on the band carries the whole run, a finger on the
 card above it carries one card out of it.
 
@@ -340,9 +339,33 @@ A turn is a card in and a card out, and between them cards onto the table.
 Tapping the band that marks a run lays that run down - the band already says
 these cards go together, so dragging it carries them together and tapping it
 plays them together. Several may be laid in one turn and one card still has
-to be thrown afterwards. Nothing yet asks whether what was laid is a run at
-all, or worth fifty-one, or holds a clean one: those are the rules of going
-down and they are the next thing to be written.
+to be thrown afterwards.
+
+Going down is three questions and they are asked in three places, because
+they fall due at three different moments. A meld is refused as it is laid if
+it is not a run or a set. What a turn has laid has to come to fifty-one with
+a clean run among it, and that is asked when the throw ends the turn, since
+until the throw lands anything can still be taken back. And a player has
+gone down the moment what they laid stands as a showing rather than when the
+throw makes it final - which is what lets going down and adding to the table
+happen in one turn, and what takes the right away again if part of the
+showing is taken back.
+
+Only a player who is down may add a card to a meld lying there, or buy a
+joker out of one with the card it stands for. And whatever is taken off the
+table is back on it before the turn ends - the card off the discard pile and
+a bought joker are one rule and not two, so there is one account of what a
+turn owes and one question asked of the hand. A card off the stock owes
+nothing; the stock is not the table. A throw refused says which of the two
+caught the player, and the card that has to go back takes the place of the
+one they tried to throw, so it is standing clear when the notice is read and
+the next place they press lays it.
+
+The screen says where a hand stands before any of that is asked: what the
+melds in it come to, whether one of them holds a clean run, whether that is
+enough to go down on, and what the hand would cost if it ended now. It reads
+the hand as its owner has arranged it, which is why it can answer without
+asking.
 
 Anything a turn did can be taken back, last thing first: the melds in the
 order they were laid, and after them the card taken off the discard pile. A
@@ -362,10 +385,20 @@ page shell asks for: a card below the fold is a card nobody can reach. So
 the board does not grow to hold more - what gives way as it fills is the
 size of the cards laid on it.
 
-Next: the rules of going down. Fifty-one points, a clean run among them, and
-adding to what is already on the table.
+Next: the end of a hand. Going out, the counting that follows, and the
+finishing card finally doing whatever it is going to do.
 
-Still open: the Google link on the account page; rate limiting
-and CAPTCHA on registration — it cannot require a credential, so those are its
+Still open in the game: nothing sequences hands, so a game is one deal and
+stops — `GameMode` is chosen when a table is opened, checked, and then read
+by nobody. Nothing scores a hand, nothing doubles, nothing records a leaver's
+loss. Tables live in memory, so a restart loses every table and every result
+in it. Two of those wait on rules `docs/rules.md` still calls unsettled.
+
+Still open around it: the Google link on the account page; rate limiting and
+CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
+
+There is no test project. What has been checked was checked by harnesses
+built against the real code and thrown away afterwards, which is why nothing
+notices when one of them goes stale.

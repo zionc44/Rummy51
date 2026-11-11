@@ -283,6 +283,7 @@ internal sealed class OpenTable
                 hand.Passes,
                 hand.Board.Stock.Count,
                 hand.TurnSeat,
+                hand.WinnerSeat,
                 hand.WentDown,
                 hand.HasDrawn,
                 hand.Board.TopOfDiscards?.Code,

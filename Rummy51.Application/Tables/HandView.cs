@@ -34,6 +34,10 @@ namespace Rummy51.Application.Tables;
 /// how many cards went where and never which.
 /// </param>
 /// <param name="TurnSeat">Whose turn it is, or -1 before play has begun.</param>
+/// <param name="WinnerSeat">
+/// Who took the hand, or -1 while it is still being played. Public, and it
+/// has to be: the hand is over and everybody is owed the reason.
+/// </param>
 /// <param name="WentDown">
 /// Who has shown a hand, by seat. Public: their melds are lying on the
 /// table for everybody to read, so what it says is already visible - and
@@ -75,6 +79,7 @@ public sealed record HandView(
     IReadOnlyList<DealPass> Passes,
     int StockSize,
     int TurnSeat,
+    int WinnerSeat,
     IReadOnlyList<bool> WentDown,
     bool HasDrawn,
     string? DiscardTop,

@@ -116,6 +116,8 @@
     "emptyPile": "No card has been thrown",
     "turnDraw": "Your turn — take a card",
     "turnThrow": "Your turn — throw a card",
+    "youWon": "You took the hand",
+    "theyWon": "The hand goes to {{0}}",
     "throwHere": "Throw the card you picked",
     "addHere": "Add the card here",
     "buyJoker": "Buy the joker with this card",

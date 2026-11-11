@@ -91,7 +91,11 @@
                   (click)="pileClicked()"
                 >
                   @if (hand.discardTop; as code) {
-                    <img class="stack__face" [src]="picture(code)" alt="" />
+                    @if (hand.discardCount > 1) {
+                      <img class="discard__under" [src]="picture('2B')" alt="" />
+                      <img class="discard__under" [src]="picture('1B')" alt="" />
+                    }
+                    <img class="stack__face discard__top" [src]="picture(code)" alt="" />
                   } @else {
                     <span class="discard__empty">{{ 'table.emptyPile' | translate }}</span>
                   }
@@ -130,6 +134,14 @@
 
               @if (turn.prompt(); as line) {
                 <p class="board__prompt">{{ line | translate }}</p>
+              }
+
+              <!-- Said to the whole table, because the hand is over for
+                   everybody at it and not only for whoever took it. -->
+              @if (seating.winner(); as won) {
+                <p class="board__won">
+                  {{ (won.mine ? 'table.youWon' : 'table.theyWon') | translate: { '0': won.name } }}
+                </p>
               }
             </div>
           }

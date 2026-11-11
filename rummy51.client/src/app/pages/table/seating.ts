@@ -77,6 +77,18 @@ export class Seating {
   });
 
   /**
+   * Who took the hand, and whether it was the player reading this. Null
+   * until somebody has: that is every moment of a hand but its last.
+   */
+  readonly winner = computed(() => {
+    const at = this.hand()?.winnerSeat ?? -1;
+
+    return at === -1
+      ? null
+      : { name: this.seats()[at]?.displayName ?? '', mine: at === this.ownSeat() };
+  });
+
+  /**
    * How long this seat has left to act, and out of how long. Null for
    * every seat but the one being waited for, which is most of them.
    */
