@@ -1,6 +1,11 @@
 import { HandView, MeldView } from '../../core/lobby/lobby.models';
 
-/** Cards that went onto the table or came back off it, and whose they are. */
+/**
+ * Cards that went onto the table or came back off it, and the seat they
+ * came from or went to - which is whoever's turn it was, and not whose
+ * meld it is: a card added to somebody else's run came out of the hand of
+ * the player making the move.
+ */
 export interface MeldCrossing {
   readonly ids: readonly number[];
   readonly seat: number;
@@ -28,8 +33,12 @@ export function whatCrossed(before: HandView | null, now: HandView | null): Cros
     return Nothing;
   }
 
+  const crossed = [...cardsNotIn(now.melds, before.melds), ...cardsNotIn(before.melds, now.melds)];
+
   return {
-    meld: meldCrossed(now.melds, before.melds) ?? meldCrossed(before.melds, now.melds),
+    // Both ways at once, because one move can be both: a joker bought out
+    // of a meld is a card arriving on the table and a card leaving it.
+    meld: crossed.length === 0 ? null : { ids: crossed, seat: before.turnSeat },
     // A card on the pile that ends a turn was thrown; one that does not is
     // a player taking back what they picked up off it, which is the same
     // card going back where it came from and travels nowhere.
@@ -40,10 +49,9 @@ export function whatCrossed(before: HandView | null, now: HandView | null): Cros
   };
 }
 
-/** The cards in the first that the second has not, and the seat they are of. */
-function meldCrossed(these: readonly MeldView[], those: readonly MeldView[]): MeldCrossing | null {
+/** The cards lying in the first that are not lying in the second. */
+function cardsNotIn(these: readonly MeldView[], those: readonly MeldView[]): readonly number[] {
   const already = new Set(those.flatMap((meld) => meld.cards.map((card) => card.id)));
-  const meld = these.find((laid) => laid.cards.some((card) => !already.has(card.id)));
 
-  return meld === undefined ? null : { ids: meld.cards.map((card) => card.id), seat: meld.seat };
+  return these.flatMap((meld) => meld.cards.map((card) => card.id)).filter((id) => !already.has(id));
 }
