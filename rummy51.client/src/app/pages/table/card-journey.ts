@@ -55,6 +55,20 @@ export class CardJourney {
   }
 
   /**
+   * Somebody else's card thrown. Their hand is drawn nowhere - it is a pile
+   * of backs and a count - so the card comes out of that pile, and it comes
+   * out as itself: by the time anybody sees it, it is lying face up on the
+   * discard pile and is nobody's secret any more.
+   */
+  threwFrom(hand: HTMLElement | undefined): void {
+    const pile = this.piles.discards();
+
+    if (hand !== undefined && pile !== undefined) {
+      this.fly(pile, hand.getBoundingClientRect(), pile.getBoundingClientRect());
+    }
+  }
+
+  /**
    * A card thrown, which waits for nothing: it is still lying in the hand
    * and the pile it is going to is already where it will be.
    */

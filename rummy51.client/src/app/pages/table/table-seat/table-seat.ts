@@ -106,6 +106,8 @@ export class TableSeat {
 
   private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
 
+  private readonly back = viewChild<ElementRef<HTMLElement>>('back');
+
   /** Where a card flying to this seat comes to rest, place by place. */
   landingSpot(step: number): HTMLElement | undefined {
     return this.landings()[step]?.nativeElement;
@@ -114,5 +116,14 @@ export class TableSeat {
   /** Where a card nobody may see comes to rest instead. */
   pileSpot(): HTMLElement | undefined {
     return this.pile()?.nativeElement;
+  }
+
+  /**
+   * The back lying on top of that pile. It is what a card becomes on its
+   * way into a hand nobody may look at - and the pile itself cannot stand
+   * in for it, because a pile carries the count as well as the cards.
+   */
+  backSpot(): HTMLElement | undefined {
+    return this.back()?.nativeElement;
   }
 }

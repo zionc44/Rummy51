@@ -1,17 +1,18 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Injector, OnDestroy, afterNextRender, computed, effect, inject, input, untracked, viewChild, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Injector, OnDestroy, afterNextRender, afterRenderEffect, computed, effect, inject, input, untracked, viewChild, viewChildren } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
 import { ArrangedHand } from '../../core/cards/arranged-hand';
 import { pictureOf } from '../../core/cards/deck';
-import { HandPhase } from '../../core/lobby/lobby.models';
+import { HandPhase, HandView } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { Turn } from './turn';
 import { ErrorMessages } from '../../shared/error-messages/error-messages';
 import { PageShell } from '../../shared/page-shell/page-shell';
 import { ProfileMenu } from '../../shared/profile-menu/profile-menu';
 import { CardJourney } from './card-journey';
+import { Crossings, whatCrossed } from './crossings';
 import { MeldJourney } from './meld-journey';
 import { Moves } from './moves';
 import { Seating } from './seating';
@@ -80,6 +81,7 @@ export class Table implements OnDestroy {
   private readonly otherSpots = viewChildren<TableSeat>('seatSpot');
   private readonly finishingSlot = viewChild<ElementRef<HTMLElement>>('finishingSlot');
   private seenPhase: HandPhase | null = null;
+  private seen: HandView | null = null;
 
   /** Everything the cut and the deal have to aim at, found in this view. */
   private spots(): Spots {
@@ -107,6 +109,16 @@ export class Table implements OnDestroy {
   }
 
   /** The place across the table at that seat, if it is one of them. */
+  /**
+   * Where the cards of a hand nobody may see are drawn, which is a pile of
+   * backs beside that player. The near seat shows no pile - its cards are
+   * all there to be looked at - and needs none: they are found where they
+   * lie.
+   */
+  private pileAt(seat: number): HTMLElement | undefined {
+    return this.otherSeatAt(seat)?.backSpot();
+  }
+
   private otherSeatAt(seat: number): TableSeat | undefined {
     const among = this.seating.others().findIndex((place) => place.at === seat);
 
@@ -206,13 +218,37 @@ export class Table implements OnDestroy {
       }
     });
 
-    // Whatever crossed between the hand and the felt is flown once both
-    // ends have been drawn again. Nothing happens unless cards were being
-    // watched, so every other change to the table passes straight through.
-    effect(() => {
-      this.hand();
+    // Whatever crossed between a hand and the felt is flown after the
+    // render that moved it. Reading where everything is and then asking
+    // what moved are the two halves of one measurement, so they are two
+    // phases of one effect and cannot be separated by a render.
+    //
+    // Nobody tells this that a move is coming. Every player at the table
+    // learns of one the same way - the table changed - so every player
+    // sees the same cards travel, and the one who made the move is not a
+    // special case.
+    afterRenderEffect({
+      earlyRead: () => {
+        const hand = this.hand();
+        const before = this.seen;
 
-      afterNextRender(() => this.crossing.arrived(), { injector: this.injector });
+        // The hand as the table sends it and the hand as its owner has laid
+        // it out, because both of them move cards: a run laid down leaves
+        // from wherever the player last sorted it to, and a measurement
+        // taken before that sort would send it from somewhere it has not
+        // been for a while.
+        this.arranged.cards();
+
+        this.seen = hand;
+        this.crossing.remember();
+
+        return whatCrossed(before, hand);
+      },
+      write: (crossed) => {
+        const what = crossed();
+
+        untracked(() => this.fly(what));
+      },
     });
 
     // A card drawn is flown in once it is lying where it will lie, which is
@@ -227,6 +263,21 @@ export class Table implements OnDestroy {
 
       afterNextRender(() => this.journey.arrived(landed), { injector: this.injector });
     });
+  }
+
+  /**
+   * What crossed the table, flown. A throw of this player's own was already
+   * sent from the card itself as they let go of it; everybody else's comes
+   * out of a pile of backs, because that is all anyone was ever shown of it.
+   */
+  private fly(what: Crossings): void {
+    if (what.meld !== null) {
+      this.crossing.crossed(what.meld.ids, this.pileAt(what.meld.seat));
+    }
+
+    if (what.thrownFrom !== null && what.thrownFrom !== this.seating.ownSeat()) {
+      this.journey.threwFrom(this.pileAt(what.thrownFrom));
+    }
   }
 
   ngOnDestroy(): void {
@@ -265,19 +316,11 @@ export class Table implements OnDestroy {
       return;
     }
 
-    this.crossing.leaving(ids);
     this.moves.lay(ids);
   }
 
-  /**
-   * The last thing this turn did, taken back. The cards watched are the
-   * last meld's: if the server takes back the drawn card instead, they are
-   * found where they already were and nothing travels.
-   */
+  /** The last thing this turn did, taken back. */
   protected undo(): void {
-    const last = this.hand()?.melds.at(-1);
-
-    this.crossing.leaving(last?.cards.map((card) => card.id) ?? []);
     this.moves.undo();
   }
 

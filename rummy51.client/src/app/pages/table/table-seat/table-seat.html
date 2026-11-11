@@ -66,7 +66,7 @@
     <!-- What they are holding, which is a number and a pile of backs. -->
     <span #pile class="seat__pile">
       <img class="seat__back" [src]="picture('2B')" alt="" />
-      <img class="seat__back" [src]="picture('1B')" alt="" />
+      <img #back class="seat__back" [src]="picture('1B')" alt="" />
       @if (holding()) {
         <span class="seat__tally">{{ holding() }}</span>
       }
