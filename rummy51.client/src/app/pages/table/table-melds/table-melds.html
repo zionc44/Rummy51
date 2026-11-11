@@ -1,13 +1,42 @@
 <div class="melds" [style.--laid]="size()">
-  @for (meld of melds(); track $index) {
+  @for (meld of melds(); track $index; let at = $index) {
     <div class="melds__meld">
-      @for (card of meld.cards; track card.id) {
+      <!-- A place for the picked card, at whichever end it would go. A run
+           has two of them and a set has one, and which is which is the
+           server's answer rather than this one's. -->
+      @if (fitsAt(at, 'front')) {
+        <button
+          type="button"
+          class="melds__place"
+          [disabled]="!offered()"
+          [attr.aria-label]="'table.addHere' | translate"
+          (click)="chose.emit({ meld: at, end: 'front' })"
+        ></button>
+      }
+      @for (card of meld.cards; track card.id; let place = $index) {
+        <!-- A joker the picked card is standing in for stands up out of the
+             run, which is the same thing a picked card does in a hand. -->
         <img
           class="melds__card"
+          [class.melds__card--buyable]="buyable(at, place)"
           [attr.data-id]="card.id"
+          [attr.role]="forSale(at, place) ? 'button' : null"
+          [attr.tabindex]="forSale(at, place) ? 0 : null"
+          [attr.aria-label]="buyable(at, place) ? ('table.buyJoker' | translate) : null"
           [src]="picture(card.code)"
           alt=""
+          (click)="buy(at, place)"
+          (keydown.enter)="buy(at, place)"
         />
+      }
+      @if (fitsAt(at, 'back')) {
+        <button
+          type="button"
+          class="melds__place"
+          [disabled]="!offered()"
+          [attr.aria-label]="'table.addHere' | translate"
+          (click)="chose.emit({ meld: at, end: 'back' })"
+        ></button>
       }
     </div>
   }

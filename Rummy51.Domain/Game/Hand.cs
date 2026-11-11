@@ -32,22 +32,8 @@ public sealed class Hand
 {
     private readonly List<List<HeldCard>> hands;
 
-    /// <summary>
-    /// What this turn has done that can still be taken back, newest last.
-    /// Only melds go in it: a card off the stock is not in here because it
-    /// cannot come back out, and a card off the discard pile is the single
-    /// flag below rather than an entry, since there is at most one draw in
-    /// a turn and it is always the first thing in it.
-    /// </summary>
-    private readonly List<Meld> laidThisTurn = [];
-
-    /// <summary>
-    /// The card drawn this turn and where it came from, or null before the
-    /// draw. By number and not by position: a meld taken back puts its cards
-    /// at the end of the hand, so the card that was drawn is not the last
-    /// one for long.
-    /// </summary>
-    private (int Card, DrawnFrom From)? drawn;
+    /// <summary>What this turn has done and can still take back.</summary>
+    private readonly TurnSoFar turn = new();
     private IReadOnlyList<Card> deck;
     private Cut? cut;
     private int given;
@@ -246,7 +232,7 @@ public sealed class Hand
 
         Give(seat, [taken]);
         HasDrawn = true;
-        drawn = (number, from);
+        turn.Took(number, from);
 
         return true;
     }
@@ -324,8 +310,7 @@ public sealed class Hand
     /// owner left it. Whoever opens the hand drew theirs during the deal and
     /// has no such card, so for them it is the last one they were dealt.
     /// </summary>
-    private int WhatCameOffTheStock(int seat) =>
-        drawn is { From: DrawnFrom.Stock } taken ? taken.Card : hands[seat][^1].Id;
+    private int WhatCameOffTheStock(int seat) => turn.OffTheStock ?? hands[seat][^1].Id;
 
     /// <summary>
     /// The turn passed on, which is the only way one ever ends. Nothing of
@@ -370,7 +355,7 @@ public sealed class Hand
         var meld = new Meld(seat, [.. places.Select(at => held[at])]);
 
         Board.Lay(meld);
-        laidThisTurn.Add(meld);
+        turn.Laid();
 
         // From the back, so that taking one out does not move the places of
         // those still to be taken.
@@ -383,11 +368,90 @@ public sealed class Hand
     }
 
     /// <summary>
+    /// A card out of a hand and onto a meld already lying on the table. It
+    /// asks that the card fits where it is being put, which is a rule of
+    /// the game and is answered in one place; it does not yet ask whether
+    /// this player has gone down and is entitled to be adding to anything
+    /// at all, which is the other half of going down and is not written.
+    /// </summary>
+    public bool AddTo(int seat, int meldAt, int cardId, MeldEnd end)
+    {
+        if (!IsTheirTurn(seat) || !HasDrawn || meldAt < 0 || meldAt >= Board.Melds.Count)
+        {
+            return false;
+        }
+
+        var held = hands[seat].FindIndex(card => card.Id == cardId);
+
+        if (held == -1)
+        {
+            return false;
+        }
+
+        var card = hands[seat][held];
+        var meld = Board.Melds[meldAt];
+
+        if (!Melding.WhereItFits([.. meld.Cards.Select(lying => lying.Card)], card.Card).Contains(end))
+        {
+            return false;
+        }
+
+        Board.Grow(meldAt, end, card);
+        hands[seat].RemoveAt(held);
+        turn.Joined(meldAt, card);
+
+        return true;
+    }
+
+    /// <summary>
+    /// A joker bought out of a meld with the card it was standing in for.
+    /// The card goes where the joker was lying and the joker comes into the
+    /// hand that paid for it, keeping the number it has had since it was
+    /// dealt. A card is given its number once and carries it wherever it
+    /// goes, which is what lets the screen follow one across the table.
+    ///
+    /// It does not yet ask whether this player has gone down and is entitled
+    /// to be buying anything, nor hold them to giving the joker back before
+    /// the turn ends. Both are the other half of going down, and neither is
+    /// written.
+    /// </summary>
+    public bool SwapForJoker(int seat, int meldAt, int at, int cardId)
+    {
+        if (!IsTheirTurn(seat) || !HasDrawn || meldAt < 0 || meldAt >= Board.Melds.Count)
+        {
+            return false;
+        }
+
+        var held = hands[seat].FindIndex(card => card.Id == cardId);
+
+        if (held == -1)
+        {
+            return false;
+        }
+
+        var card = hands[seat][held];
+        var meld = Board.Melds[meldAt];
+
+        if (!Melding.CanReplace([.. meld.Cards.Select(lying => lying.Card)], at, card.Card))
+        {
+            return false;
+        }
+
+        var joker = Board.Swap(meldAt, at, card);
+
+        hands[seat].RemoveAt(held);
+        hands[seat].Add(joker);
+        turn.Swapped(meldAt, at, card, joker);
+
+        return true;
+    }
+
+    /// <summary>
     /// Whether the player whose turn it is has anything left to take back.
     /// Everybody is told: a meld being laid and then taken up again is
     /// something the whole table watched happen.
     /// </summary>
-    public bool CanUndo => laidThisTurn.Count > 0 || drawn?.From == DrawnFrom.Discards;
+    public bool CanUndo => turn.Anything;
 
     /// <summary>
     /// Takes back the last thing this turn did, which is the last meld laid
@@ -407,21 +471,44 @@ public sealed class Hand
             return false;
         }
 
-        return TakeBackTheLastMeld() || PutTheDiscardBack(seat);
+        return TakeBackTheLastThing(seat) || PutTheDiscardBack(seat);
     }
 
-    private bool TakeBackTheLastMeld()
+    /// <summary>
+    /// The last thing put on the table, picked up again. A meld comes back
+    /// whole to the hand that laid it; a card added to somebody else's meld
+    /// comes back on its own.
+    /// </summary>
+    private bool TakeBackTheLastThing(int seat)
     {
-        if (laidThisTurn.Count == 0)
+        var last = turn.TakeBackTheLast();
+
+        if (last is null)
         {
             return false;
         }
 
-        var meld = laidThisTurn[^1];
+        if (last is Move.Joined(var at, var card))
+        {
+            Board.Shrink(at, card.Id);
+            hands[seat].Add(card);
 
-        laidThisTurn.RemoveAt(laidThisTurn.Count - 1);
-        Board.TakeBack(meld);
-        hands[meld.Seat].AddRange(meld.Cards);
+            return true;
+        }
+
+        if (last is Move.Swapped(var meldAt, var place, var paid, var joker))
+        {
+            Board.Swap(meldAt, place, joker);
+            hands[seat].RemoveAll(held => held.Id == joker.Id);
+            hands[seat].Add(paid);
+
+            return true;
+        }
+
+        if (Board.TakeBackTheLast() is { } meld)
+        {
+            hands[meld.Seat].AddRange(meld.Cards);
+        }
 
         return true;
     }
@@ -433,12 +520,10 @@ public sealed class Hand
     /// </summary>
     private bool PutTheDiscardBack(int seat)
     {
-        if (drawn is not { From: DrawnFrom.Discards } taken)
+        if (turn.TheDiscard is not { } number)
         {
             return false;
         }
-
-        var number = taken.Card;
 
         var at = hands[seat].FindIndex(card => card.Id == number);
 
@@ -450,17 +535,13 @@ public sealed class Hand
         Board.Throw(hands[seat][at].Card);
         hands[seat].RemoveAt(at);
         HasDrawn = false;
-        drawn = null;
+        turn.GaveItBack();
 
         return true;
     }
 
     /// <summary>Nothing of one turn is left to take back in the next.</summary>
-    private void Forget()
-    {
-        laidThisTurn.Clear();
-        drawn = null;
-    }
+    private void Forget() => turn.Forget();
 
     private bool IsTheirTurn(int seat) => Phase == HandPhase.Playing && seat == TurnSeat;
 

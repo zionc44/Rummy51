@@ -59,6 +59,16 @@ public interface ITables
     Result<HandView> Undo(Guid tableId, Guid playerId);
 
     /// <summary>
+    /// A card out of a hand and onto a meld already lying on the table.
+    /// </summary>
+    Result<HandView> AddToMeld(Guid tableId, Guid playerId, AddRequest join);
+
+    /// <summary>
+    /// A joker bought out of a meld with the card it was standing in for.
+    /// </summary>
+    Result<HandView> SwapForJoker(Guid tableId, Guid playerId, SwapRequest swap);
+
+    /// <summary>
     /// One player's own cards. They go to that player's own connection and
     /// never to a group, which is why they are asked for separately rather
     /// than carried by <see cref="HandView"/>. Empty before the deal, and

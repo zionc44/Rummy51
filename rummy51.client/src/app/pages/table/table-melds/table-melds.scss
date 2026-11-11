@@ -38,3 +38,36 @@
     margin-inline-start: calc(var(--laid) * -0.55);
   }
 }
+
+// Where the picked card would go, drawn the size of a card so the run is
+// seen to make room for it rather than simply to be marked.
+.melds__place {
+  flex: none;
+  inline-size: var(--laid);
+  aspect-ratio: 240 / 336;
+  border: 2px dashed var(--felt-500);
+  border-radius: 0.1875rem;
+  background: none;
+  padding: 0;
+}
+
+// Only on the turn that could use it. The rest of the time it says that the
+// card has a place here, which is worth knowing while you wait for a turn.
+.melds__place:enabled {
+  background: color-mix(in srgb, var(--felt-500) 22%, transparent);
+  cursor: pointer;
+}
+
+.melds__place:enabled:hover {
+  background: color-mix(in srgb, var(--felt-500) 38%, transparent);
+}
+
+// A joker the picked card is standing in for. It stands up out of the run
+// the way a picked card stands up out of a hand, which is the same thing
+// said in the same way about a different place.
+.melds__card--buyable {
+  z-index: 2;
+  translate: 0 -0.5rem;
+  outline: 2px solid var(--felt-500);
+  outline-offset: -2px;
+}

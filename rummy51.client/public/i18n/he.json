@@ -115,7 +115,9 @@
     "emptyPile": "אין קלף זרוק",
     "turnDraw": "תורך — משוך קלף",
     "turnThrow": "תורך — זרוק קלף",
-    "throwHere": "זריקת הקלף המסומן"
+    "throwHere": "זריקת הקלף המסומן",
+    "addHere": "הוספת הקלף כאן",
+    "buyJoker": "קניית הגוקר בקלף הזה"
   },
   "profile": {
     "open": "תפריט החשבון",
@@ -161,6 +163,8 @@
     "AlreadyCut": "החבילה כבר נחתכה",
     "CannotDraw": "אי אפשר למשוך עכשיו",
     "CannotDiscard": "אי אפשר לזרוק עכשיו",
-    "NotAtThisTable": "אתה לא יושב בשולחן הזה"
+    "NotAtThisTable": "אתה לא יושב בשולחן הזה",
+    "CannotAddToMeld": "אי אפשר להצמיד את הקלף לסדרה הזאת",
+    "CannotBuyThatJoker": "הקלף הזה לא מחליף את הגוקר הזה"
   }
 }

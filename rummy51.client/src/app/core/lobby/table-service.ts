@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { Fit, Swap } from '../cards/card';
 import { failWithApiErrors } from '../errors/api-error';
 import { CreateTableRequest, DrawnFrom, HandView, LobbyTable } from './lobby.models';
 
@@ -69,6 +70,26 @@ export class TableService {
    */
   undo(tableId: string): Observable<HandView> {
     return this.http.post<HandView>(`${API}/${tableId}/undo`, {}).pipe(failWithApiErrors());
+  }
+
+  /**
+   * A card added to a meld already lying on the table. The meld is named by
+   * its place there, which is the same place for everybody watching.
+   */
+  addToMeld(tableId: string, cardId: number, fit: Fit): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/add`, { cardId, meld: fit.meld, end: fit.end })
+      .pipe(failWithApiErrors());
+  }
+
+  /**
+   * A joker bought out of a meld with the card it was standing in for. The
+   * card goes where the joker lay and the joker comes into the hand.
+   */
+  swapForJoker(tableId: string, cardId: number, swap: Swap): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/swap`, { cardId, meld: swap.meld, at: swap.at })
+      .pipe(failWithApiErrors());
   }
 
   /** Leaves whichever table the player is at, which is at most one. */

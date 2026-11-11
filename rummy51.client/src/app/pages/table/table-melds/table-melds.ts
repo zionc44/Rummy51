@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Fit, MeldEnd, Swap } from '../../../core/cards/card';
 import { pictureOf } from '../../../core/cards/deck';
 import { MeldView } from '../../../core/lobby/lobby.models';
 
@@ -10,6 +12,7 @@ import { MeldView } from '../../../core/lobby/lobby.models';
  */
 @Component({
   selector: 'app-table-melds',
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-melds.html',
   styleUrl: './table-melds.scss',
@@ -17,7 +20,49 @@ import { MeldView } from '../../../core/lobby/lobby.models';
 export class TableMelds {
   readonly melds = input<readonly MeldView[]>([]);
 
+  /**
+   * Where the card the player has picked out could join what is lying here.
+   * Shown whosever turn it is: knowing that a card has a place is worth
+   * knowing while you wait for your turn to use it.
+   */
+  readonly fits = input<readonly Fit[]>([]);
+
+  /**
+   * The jokers lying here that the picked card could buy out. Shown the
+   * same way and for the same reason: that a card has a joker waiting for
+   * it is worth knowing before it is your turn to pay for it.
+   */
+  readonly buys = input<readonly Swap[]>([]);
+
+  /** Whether pressing one of those places would do anything. */
+  readonly offered = input(false);
+
+  readonly chose = output<Fit>();
+
+  readonly bought = output<Swap>();
+
   protected readonly picture = pictureOf;
+
+  /** Whether the picked card could join that meld at that end. */
+  protected fitsAt(meld: number, end: MeldEnd): boolean {
+    return this.fits().some((fit) => fit.meld === meld && fit.end === end);
+  }
+
+  /** Whether the card lying there is a joker the picked card could buy. */
+  protected buyable(meld: number, at: number): boolean {
+    return this.buys().some((swap) => swap.meld === meld && swap.at === at);
+  }
+
+  /** Whether pressing it would buy it, which also needs it to be their turn. */
+  protected forSale(meld: number, at: number): boolean {
+    return this.offered() && this.buyable(meld, at);
+  }
+
+  protected buy(meld: number, at: number): void {
+    if (this.forSale(meld, at)) {
+      this.bought.emit({ meld, at });
+    }
+  }
 
   /**
    * How wide a laid card is drawn. The board does not grow to hold more -

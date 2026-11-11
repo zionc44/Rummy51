@@ -4,6 +4,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
 import { ArrangedHand } from '../../core/cards/arranged-hand';
+import { Fit, Swap } from '../../core/cards/card';
 import { pictureOf } from '../../core/cards/deck';
 import { HandPhase, HandView } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
@@ -317,6 +318,40 @@ export class Table implements OnDestroy {
     }
 
     this.moves.lay(ids);
+  }
+
+  /**
+   * Where the card the player has picked out could join what is lying on
+   * the table. The places are the server's answer, carried on the card
+   * itself, so the screen offers them without knowing the rule.
+   */
+  protected readonly fits = computed(() => this.thePicked()?.fits ?? []);
+
+  /** And the jokers it is standing in for, which it could buy out. */
+  protected readonly buys = computed(() => this.thePicked()?.buys ?? []);
+
+  private readonly thePicked = computed(() => {
+    const picked = this.arranged.picked();
+
+    return this.myCards().find((card) => card.id === picked);
+  });
+
+  /** One of those places pressed, which sends the card to it. */
+  protected addToMeld(fit: Fit): void {
+    const picked = this.arranged.picked();
+
+    if (picked !== null) {
+      this.moves.addToMeld(picked, fit);
+    }
+  }
+
+  /** A lifted joker pressed, which buys it with the card that was picked. */
+  protected swapForJoker(swap: Swap): void {
+    const picked = this.arranged.picked();
+
+    if (picked !== null) {
+      this.moves.swapForJoker(picked, swap);
+    }
   }
 
   /** The last thing this turn did, taken back. */

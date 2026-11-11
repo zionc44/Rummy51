@@ -115,7 +115,9 @@
     "emptyPile": "No card has been thrown",
     "turnDraw": "Your turn — take a card",
     "turnThrow": "Your turn — throw a card",
-    "throwHere": "Throw the card you picked"
+    "throwHere": "Throw the card you picked",
+    "addHere": "Add the card here",
+    "buyJoker": "Buy the joker with this card"
   },
   "profile": {
     "open": "Account menu",
@@ -161,6 +163,8 @@
     "AlreadyCut": "The deck has already been cut",
     "CannotDraw": "You cannot take a card now",
     "CannotDiscard": "You cannot discard now",
-    "NotAtThisTable": "You are not sitting at this table"
+    "NotAtThisTable": "You are not sitting at this table",
+    "CannotAddToMeld": "That card cannot join that meld",
+    "CannotBuyThatJoker": "That card does not stand in for that joker"
   }
 }

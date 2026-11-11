@@ -210,6 +210,20 @@ public sealed class InMemoryTables(
         }
     }
 
+    public Result<HandView> AddToMeld(Guid tableId, Guid playerId, AddRequest join) =>
+        Move(
+            tableId,
+            playerId,
+            (table, seat) => table.AddTo(seat, join.Meld, join.CardId, join.End),
+            "CannotAddToMeld");
+
+    public Result<HandView> SwapForJoker(Guid tableId, Guid playerId, SwapRequest swap) =>
+        Move(
+            tableId,
+            playerId,
+            (table, seat) => table.SwapForJoker(seat, swap.Meld, swap.At, swap.CardId),
+            "CannotBuyThatJoker");
+
     public IReadOnlyList<HeldCardView> CardsOf(Guid tableId, Guid playerId)
     {
         lock (gate)

@@ -79,9 +79,60 @@ public sealed class Board
 
     public void Lay(Meld meld) => melds.Add(meld);
 
+    /// <summary>A card joining a meld already lying here, at one end of it.</summary>
+    public void Grow(int at, MeldEnd end, HeldCard card)
+    {
+        var meld = melds[at];
+
+        melds[at] = meld with
+        {
+            Cards = end == MeldEnd.Front ? [card, .. meld.Cards] : [.. meld.Cards, card],
+        };
+    }
+
     /// <summary>
-    /// A meld picked up again, which only ever happens in the turn that laid
-    /// it: once a turn has ended, what is on the table stays there.
+    /// A card put where a card of that meld is lying, and the one that was
+    /// there handed back. It is how a joker is bought out of a meld, and how
+    /// it is put back again when the buyer changes their mind.
     /// </summary>
-    public void TakeBack(Meld meld) => melds.Remove(meld);
+    public HeldCard Swap(int at, int place, HeldCard card)
+    {
+        var meld = melds[at];
+        var was = meld.Cards[place];
+
+        melds[at] = meld with
+        {
+            Cards = [.. meld.Cards.Select((lying, where) => where == place ? card : lying)],
+        };
+
+        return was;
+    }
+
+    /// <summary>And that card taken off it again.</summary>
+    public void Shrink(int at, int cardId)
+    {
+        var meld = melds[at];
+
+        melds[at] = meld with { Cards = [.. meld.Cards.Where(card => card.Id != cardId)] };
+    }
+
+    /// <summary>
+    /// The last meld laid, picked up again. Melds are only ever put at the
+    /// end of the table and only ever taken back in the turn that laid them,
+    /// so the last one laid is the last one lying here. Null where the table
+    /// is bare.
+    /// </summary>
+    public Meld? TakeBackTheLast()
+    {
+        if (melds.Count == 0)
+        {
+            return null;
+        }
+
+        var meld = melds[^1];
+
+        melds.RemoveAt(melds.Count - 1);
+
+        return meld;
+    }
 }

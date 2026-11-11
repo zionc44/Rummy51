@@ -98,7 +98,14 @@
                 </button>
               </div>
 
-              <app-table-melds [melds]="hand.melds" />
+              <app-table-melds
+                [melds]="hand.melds"
+                [fits]="fits()"
+                [buys]="buys()"
+                [offered]="turn.toThrow()"
+                (chose)="addToMeld($event)"
+                (bought)="swapForJoker($event)"
+              />
 
               @if (turn.canUndo()) {
                 <!-- Only while there is something to take back, which is

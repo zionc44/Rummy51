@@ -131,6 +131,21 @@ internal sealed class OpenTable
     public bool Undo(int seat) => hand?.Undo(seat) == true;
 
     /// <summary>
+    /// A card onto a meld already lying there. Like laying one down, this
+    /// happens inside a turn and ends neither half of it, so the clock is
+    /// left alone.
+    /// </summary>
+    public bool AddTo(int seat, int meldAt, int cardId, MeldEnd end) =>
+        hand?.AddTo(seat, meldAt, cardId, end) == true;
+
+    /// <summary>
+    /// A joker bought out of a meld. Inside a turn like the rest of them, so
+    /// the clock is left where it is.
+    /// </summary>
+    public bool SwapForJoker(int seat, int meldAt, int at, int cardId) =>
+        hand?.SwapForJoker(seat, meldAt, at, cardId) == true;
+
+    /// <summary>
     /// A player throws one away, which hands the turn on - and with it the
     /// clock, which begins again for whoever it reached.
     /// </summary>
@@ -206,8 +221,31 @@ internal sealed class OpenTable
 
         return hand is null || seat == -1
             ? []
-            : [.. hand.Hands[seat].Select(card => new HeldCardView(card.Id, card.Card.Code))];
+            : [.. hand.Hands[seat].Select(Held)];
     }
+
+    /// <summary>
+    /// A card as its owner is shown it, with the places it could join what
+    /// is on the table. Those places are nobody else's business: they are
+    /// worked out from a hand only one player may see.
+    /// </summary>
+    private HeldCardView Held(HeldCard card) =>
+        new(card.Id, card.Card.Code, [.. WhereItFits(card.Card)], [.. WhatItBuys(card.Card)]);
+
+    private IEnumerable<FitView> WhereItFits(Card card) =>
+        Lying().SelectMany((meld, at) =>
+            Melding.WhereItFits(meld, card).Select(end => new FitView(at, end)));
+
+    private IEnumerable<SwapView> WhatItBuys(Card card) =>
+        Lying().SelectMany((meld, at) => Enumerable
+            .Range(0, meld.Count)
+            .Where(place => Melding.CanReplace(meld, place, card))
+            .Select(place => new SwapView(at, place)));
+
+    /// <summary>What is on the table, as the rules read it: cards and no more.</summary>
+    private IEnumerable<IReadOnlyList<Card>> Lying() =>
+        (hand?.Board.Melds ?? []).Select(IReadOnlyList<Card> (meld) =>
+            [.. meld.Cards.Select(lying => lying.Card)]);
 
     public HandView? DescribeHand() =>
         hand is null
@@ -235,7 +273,7 @@ internal sealed class OpenTable
 
     /// <summary>Everything on the table is everybody's to read.</summary>
     private static MeldView Laid(Meld meld) =>
-        new(meld.Seat, [.. meld.Cards.Select(card => new HeldCardView(card.Id, card.Card.Code))]);
+        new(meld.Seat, [.. meld.Cards.Select(card => new LaidCardView(card.Id, card.Card.Code))]);
 
     public LobbyTable Describe() =>
         new(Id, Mode, Limit, Jokers, [.. seats.Select(Occupant)], Started);

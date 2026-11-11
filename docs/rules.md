@@ -78,6 +78,28 @@ with three tens comes to exactly fifty-one and is allowed by a hair.
 Only once a player has gone down may they add cards to runs and sets already
 on the table, and doing both in the same turn is fine.
 
+A card joins a run at either end of it, where it carries the suit on: the
+rank below the lowest card or the rank above the highest. The ace does not
+turn the corner here either, so nothing goes above the ace of Q-K-A and
+nothing below the ace of A-2-3. A joker joins wherever a card could, and
+stands for whatever that place asks for.
+
+A card joins a set when it is of that rank and of a suit the set has not
+got, and only while the set is three. A set has no ends: four of a rank are
+the same four whichever way round they lie.
+
+A joker lying in a meld can be bought out of it with the card it is standing
+in for, and that card alone: in a run its place names one card exactly, and
+in a set it names the rank and leaves the suit to whichever the set has not
+got. A set gives its joker up only once it is four, because a joker in a set
+is paid for by completing it: two sevens and a joker are bought with both of
+the sevens that are missing, the first joining the set beside the joker and
+the second taking its place. The joker comes into the hand that paid for it. Like adding to a meld,
+this is only for a player who has gone down - and a joker bought this way
+cannot be part of the going down that paid for it, nor stay in the hand past
+the end of the turn, because it was taken from the table and everything
+taken from the table is back on it before the turn ends.
+
 Going down is allowed in the first round; finishing is not.
 
 ## Scoring

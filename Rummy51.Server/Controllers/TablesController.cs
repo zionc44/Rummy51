@@ -125,6 +125,28 @@ public class TablesController(
     public Task<IActionResult> Undo(Guid tableId) =>
         MoveAsync(tableId, playerId => tables.Undo(tableId, playerId));
 
+    /// <summary>
+    /// A card onto a meld already lying on the table, which like laying one
+    /// down happens inside a turn and ends neither half of it.
+    /// </summary>
+    [HttpPost("{tableId:guid}/add")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> AddToMeld(Guid tableId, AddRequest request) =>
+        MoveAsync(tableId, playerId => tables.AddToMeld(tableId, playerId, request));
+
+    /// <summary>
+    /// A joker bought out of a meld with the card it was standing in for,
+    /// which like the rest of these happens inside a turn.
+    /// </summary>
+    [HttpPost("{tableId:guid}/swap")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> SwapForJoker(Guid tableId, SwapRequest request) =>
+        MoveAsync(tableId, playerId => tables.SwapForJoker(tableId, playerId, request));
+
     /// <summary>The second half, which ends the turn and hands it on.</summary>
     [HttpPost("{tableId:guid}/discard")]
     [ProducesResponseType<HandView>(StatusCodes.Status200OK)]

@@ -1,6 +1,7 @@
 import { Signal, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { Fit, Swap } from '../../core/cards/card';
 import { ApiError } from '../../core/errors/api-error';
 import { DrawnFrom, HandView } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
@@ -44,6 +45,16 @@ export class Moves {
 
   lay(cardIds: readonly number[]): void {
     this.send(this.tables.lay(this.tableId(), cardIds));
+  }
+
+  /** A card out of the hand and onto a meld already lying on the table. */
+  addToMeld(cardId: number, fit: Fit): void {
+    this.send(this.tables.addToMeld(this.tableId(), cardId, fit));
+  }
+
+  /** A joker bought out of a meld with the card it was standing in for. */
+  swapForJoker(cardId: number, swap: Swap): void {
+    this.send(this.tables.swapForJoker(this.tableId(), cardId, swap));
   }
 
   undo(): void {
