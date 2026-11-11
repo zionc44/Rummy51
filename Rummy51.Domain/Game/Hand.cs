@@ -31,7 +31,6 @@ public enum DrawnFrom
 public sealed class Hand
 {
     private readonly List<List<HeldCard>> hands;
-    private readonly List<Meld> melds = [];
 
     /// <summary>
     /// What this turn has done that can still be taken back, newest last.
@@ -43,14 +42,12 @@ public sealed class Hand
     private readonly List<Meld> laidThisTurn = [];
 
     /// <summary>
-    /// The number given to the card taken off the discard pile this turn,
-    /// if that is where the draw came from. By number and not by position:
-    /// a meld taken back puts its cards at the end of the hand, so the card
-    /// that was drawn is not the last one for long.
+    /// The card drawn this turn and where it came from, or null before the
+    /// draw. By number and not by position: a meld taken back puts its cards
+    /// at the end of the hand, so the card that was drawn is not the last
+    /// one for long.
     /// </summary>
-    private int? theDiscardTaken;
-    private readonly List<Card> stock = [];
-    private readonly List<Card> discards = [];
+    private (int Card, DrawnFrom From)? drawn;
     private IReadOnlyList<Card> deck;
     private Cut? cut;
     private int given;
@@ -143,24 +140,11 @@ public sealed class Hand
     /// </summary>
     public IReadOnlyList<IReadOnlyList<HeldCard>> Hands => hands;
 
-    /// <summary>What is left to draw from once the deal is done.</summary>
-    public IReadOnlyList<Card> Stock => stock;
-
     /// <summary>
-    /// What has been thrown away, oldest first. Only the last of them is any
-    /// player's business, and that is all the table is ever told.
+    /// Everything lying on the felt. A hand says who may reach for it and
+    /// when; what is there is the board's own.
     /// </summary>
-    public IReadOnlyList<Card> Discards => discards;
-
-    /// <summary>The one card of the pile lying face up, or null before any.</summary>
-    public Card? TopOfDiscards => discards.Count == 0 ? null : discards[^1];
-
-    /// <summary>
-    /// What is lying on the table, in the order it was laid there. Nobody
-    /// owns it any more in the sense of holding it, but whose it was still
-    /// matters, so each one says.
-    /// </summary>
-    public IReadOnlyList<Meld> Melds => melds;
+    public Board Board { get; } = new();
 
     /// <summary>The deal as the eye should see it, pass by pass.</summary>
     public IReadOnlyList<DealPass> Passes { get; private set; } = [];
@@ -231,7 +215,7 @@ public sealed class Hand
             Give(seat, dealt.Hands[seat]);
         }
 
-        stock.AddRange(dealt.Stock);
+        Board.StockWith(dealt.Stock);
         Passes = dealt.Passes;
 
         return true;
@@ -249,7 +233,7 @@ public sealed class Hand
             return false;
         }
 
-        var taken = from == DrawnFrom.Stock ? TakeFromStock() : TakeFromDiscards();
+        var taken = from == DrawnFrom.Stock ? Board.TakeFromStock() : Board.TakeFromDiscards();
 
         if (taken is null)
         {
@@ -262,7 +246,7 @@ public sealed class Hand
 
         Give(seat, [taken]);
         HasDrawn = true;
-        theDiscardTaken = from == DrawnFrom.Discards ? number : null;
+        drawn = (number, from);
 
         return true;
     }
@@ -288,13 +272,70 @@ public sealed class Hand
             return false;
         }
 
-        discards.Add(hands[seat][held].Card);
+        Board.Throw(hands[seat][held].Card);
         hands[seat].RemoveAt(held);
+        HandItOn();
+
+        return true;
+    }
+
+    /// <summary>
+    /// A turn nobody took. Everything it did is taken back first - the runs
+    /// and sets it laid, and the card it took off the pile, which goes back
+    /// where it came from - and then a card off the stock goes straight onto
+    /// the pile. Whoever walked away comes back to the hand they left, one
+    /// card of the stock the poorer, and the table as they found it.
+    ///
+    /// How long a table waits before deciding a turn is nobody's is the
+    /// table's own business. What happens then is a rule of the game, so it
+    /// is here.
+    /// </summary>
+    public bool PlayOutTheTurn(int seat)
+    {
+        if (!IsTheirTurn(seat))
+        {
+            return false;
+        }
+
+        while (Undo(seat))
+        {
+        }
+
+        if (!HasDrawn)
+        {
+            Draw(seat, DrawnFrom.Stock);
+        }
+
+        // Nothing left to throw, which a hand being played should never
+        // reach. The turn goes on anyway: a table that cannot end a turn is
+        // a table nobody can leave.
+        if (hands[seat].Count == 0)
+        {
+            HandItOn();
+
+            return true;
+        }
+
+        return Discard(seat, WhatCameOffTheStock(seat));
+    }
+
+    /// <summary>
+    /// The card this turn drew, which is the one that leaves the hand as its
+    /// owner left it. Whoever opens the hand drew theirs during the deal and
+    /// has no such card, so for them it is the last one they were dealt.
+    /// </summary>
+    private int WhatCameOffTheStock(int seat) =>
+        drawn is { From: DrawnFrom.Stock } taken ? taken.Card : hands[seat][^1].Id;
+
+    /// <summary>
+    /// The turn passed on, which is the only way one ever ends. Nothing of
+    /// it is left to take back in the next.
+    /// </summary>
+    private void HandItOn()
+    {
         TurnSeat = (TurnSeat + 1) % Seats;
         HasDrawn = false;
         Forget();
-
-        return true;
     }
 
     /// <summary>
@@ -328,7 +369,7 @@ public sealed class Hand
 
         var meld = new Meld(seat, [.. places.Select(at => held[at])]);
 
-        melds.Add(meld);
+        Board.Lay(meld);
         laidThisTurn.Add(meld);
 
         // From the back, so that taking one out does not move the places of
@@ -346,7 +387,7 @@ public sealed class Hand
     /// Everybody is told: a meld being laid and then taken up again is
     /// something the whole table watched happen.
     /// </summary>
-    public bool CanUndo => laidThisTurn.Count > 0 || theDiscardTaken is not null;
+    public bool CanUndo => laidThisTurn.Count > 0 || drawn?.From == DrawnFrom.Discards;
 
     /// <summary>
     /// Takes back the last thing this turn did, which is the last meld laid
@@ -379,7 +420,7 @@ public sealed class Hand
         var meld = laidThisTurn[^1];
 
         laidThisTurn.RemoveAt(laidThisTurn.Count - 1);
-        melds.Remove(meld);
+        Board.TakeBack(meld);
         hands[meld.Seat].AddRange(meld.Cards);
 
         return true;
@@ -392,10 +433,12 @@ public sealed class Hand
     /// </summary>
     private bool PutTheDiscardBack(int seat)
     {
-        if (theDiscardTaken is not { } number)
+        if (drawn is not { From: DrawnFrom.Discards } taken)
         {
             return false;
         }
+
+        var number = taken.Card;
 
         var at = hands[seat].FindIndex(card => card.Id == number);
 
@@ -404,10 +447,10 @@ public sealed class Hand
             return false;
         }
 
-        discards.Add(hands[seat][at].Card);
+        Board.Throw(hands[seat][at].Card);
         hands[seat].RemoveAt(at);
         HasDrawn = false;
-        theDiscardTaken = null;
+        drawn = null;
 
         return true;
     }
@@ -416,7 +459,7 @@ public sealed class Hand
     private void Forget()
     {
         laidThisTurn.Clear();
-        theDiscardTaken = null;
+        drawn = null;
     }
 
     private bool IsTheirTurn(int seat) => Phase == HandPhase.Playing && seat == TurnSeat;
@@ -434,33 +477,4 @@ public sealed class Hand
         }
     }
 
-    /// <summary>The front, which is where the deal left off.</summary>
-    private Card? TakeFromStock()
-    {
-        if (stock.Count == 0)
-        {
-            return null;
-        }
-
-        var card = stock[0];
-
-        stock.RemoveAt(0);
-
-        return card;
-    }
-
-    /// <summary>The back, which is where the player before threw.</summary>
-    private Card? TakeFromDiscards()
-    {
-        if (discards.Count == 0)
-        {
-            return null;
-        }
-
-        var card = discards[^1];
-
-        discards.RemoveAt(discards.Count - 1);
-
-        return card;
-    }
 }

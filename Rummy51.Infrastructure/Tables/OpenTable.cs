@@ -168,14 +168,12 @@ internal sealed class OpenTable
             return BeginPlay();
         }
 
-        if (PlayTheTurnFor(hand.TurnSeat))
-        {
-            return true;
-        }
+        PlayTheTurnFor(hand.TurnSeat);
 
-        // Nothing could be played for them, which is not a thing that should
-        // happen. The wait ends rather than being asked again every tick.
-        countdown.Stop();
+        // However that went, the table is no longer waiting for the move it
+        // was waiting for. A wait left standing is asked again every tick,
+        // for ever.
+        countdown.Restart(TimeSpan.FromSeconds(turns.TurnSeconds));
 
         return true;
     }
@@ -193,27 +191,10 @@ internal sealed class OpenTable
     }
 
     /// <summary>
-    /// A turn nobody took, played in the way that changes that hand least: a
-    /// card off the stock and the same card straight back. Whoever opens the
-    /// hand has already drawn - their fifteenth card was the draw - so for
-    /// them it is the last card they were dealt that goes instead.
+    /// A turn nobody took. What that means for the cards is the hand's to
+    /// say; all this table knows is that it has stopped waiting.
     /// </summary>
-    private bool PlayTheTurnFor(int seat)
-    {
-        if (hand is null)
-        {
-            return false;
-        }
-
-        if (!hand.HasDrawn)
-        {
-            hand.Draw(seat, DrawnFrom.Stock);
-        }
-
-        var held = hand.Hands[seat];
-
-        return held.Count > 0 && Discard(seat, held[^1].Id);
-    }
+    private bool PlayTheTurnFor(int seat) => hand?.PlayOutTheTurn(seat) == true;
 
     /// <summary>
     /// One player's own cards, which is the one thing here that never goes
@@ -243,12 +224,12 @@ internal sealed class OpenTable
                 hand.FinishingCard?.Code,
                 [.. hand.Hands.Select(cards => cards.Count)],
                 hand.Passes,
-                hand.Stock.Count,
+                hand.Board.Stock.Count,
                 hand.TurnSeat,
                 hand.HasDrawn,
-                hand.TopOfDiscards?.Code,
-                hand.Discards.Count,
-                [.. hand.Melds.Select(Laid)],
+                hand.Board.TopOfDiscards?.Code,
+                hand.Board.Discards.Count,
+                [.. hand.Board.Melds.Select(Laid)],
                 hand.CanUndo,
                 countdown.Describe(hand.WaitingSeat));
 

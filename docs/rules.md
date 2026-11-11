@@ -47,6 +47,14 @@ does anything else a player picks up from the table.
 
 If the stock runs out, the discard pile is shuffled and becomes the stock.
 
+A turn nobody takes is taken back. Everything that turn did is undone, last
+thing first - the runs and sets it laid, and the card it took off the discard
+pile, which goes back where it came from - and then a card off the stock goes
+straight onto the pile. The player comes back to the hand they walked away
+from, one card of the stock the poorer for it, and the table is as they found
+it. How long a table waits before deciding a turn is nobody's is the table's
+own business and not a rule of the game.
+
 ## Runs and sets
 
 A run is three or more of the same suit in ascending order; a set is three or
