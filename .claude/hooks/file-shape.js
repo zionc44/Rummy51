@@ -12,25 +12,12 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-
-/** Everything written by hand here. Anything else is generated or installed. */
-const Watched = [
-  '.claude/hooks',
-  'rummy51.client/src/app',
-  'Rummy51.Domain',
-  'Rummy51.Application',
-  'Rummy51.Infrastructure',
-  'Rummy51.Server',
-];
-
-/** Not ours to judge: built output, installed packages, generated migrations. */
-const Skipped = new Set(['node_modules', 'obj', 'bin', 'dist', 'Migrations', '.git', '.vs']);
+const { named, watched, filesUnder, read } = require('./files');
 
 /**
  * Measured from the project rather than chosen: the largest file that was
  * honestly one job was the avatar cropper at 221 lines, the longest template
- * the table at 144. Stylesheets are left out - a long one is usually just a
- * long one.
+ * the table at 144.
  */
 const Alarm = { '.ts': 250, '.html': 180, '.cs': 250, '.js': 250 };
 
@@ -68,81 +55,24 @@ const Ask = {
 const AskProse =
   'CLAUDE.md: names instead of comments, and comment why rather than what. A game rule belongs in docs/rules.md and is named from the code by its number, never repeated: "// rules 5.7, 5.9" is the whole of what such a method needs. What earns its place is what the code cannot say about itself - a trap that makes correct code look wrong.';
 
-/** Windows spells a path one way and Git Bash another; this ends that. */
-const asPosix = (file) => file.replaceAll('\\', '/');
-
-const alarmFor = (file) => Alarm[path.extname(file)];
-
-const skipped = (file) => asPosix(file).split('/').some((part) => Skipped.has(part));
-
-const watched = (file) =>
-  alarmFor(file) !== undefined &&
-  !skipped(file) &&
-  Watched.some((root) => asPosix(file).includes(root));
-
-/** As a line counter counts them: the last line needs no newline after it. */
-function lines(text) {
-  const broken = text.split('\n').length;
-
-  return text.endsWith('\n') ? broken - 1 : broken;
-}
-
-/**
- * Counted by walking the file: the middle of a block says nothing about
- * itself, and a template's comments are very nearly all blocks, so reading
- * each line alone would report a fraction of what is there.
- */
-function prose(text, extension) {
-  const [opens, closes] = extension === '.html' ? ['<!--', '-->'] : ['/*', '*/'];
-  let inside = false;
-  let count = 0;
-
-  for (const line of text.split('\n')) {
-    const trimmed = line.trim();
-
-    if (inside) {
-      count += 1;
-      inside = !trimmed.includes(closes);
-      continue;
-    }
-
-    if (trimmed.startsWith('//')) {
-      count += 1;
-      continue;
-    }
-
-    if (trimmed.startsWith(opens)) {
-      count += 1;
-      inside = !trimmed.includes(closes);
-    }
-  }
-
-  return count;
-}
-
 function measure(file) {
-  const text = fs.readFileSync(file, 'utf8');
-  const extension = path.extname(file);
-  const total = lines(text);
-  const comment = prose(text, extension);
+  const one = read(file);
 
   return {
-    file,
-    total,
-    comment,
-    alarm: Alarm[extension],
-    budget: Math.floor(total * shareFor(total)),
+    ...one,
+    alarm: Alarm[path.extname(file)],
+    budget: Math.floor(one.total * shareFor(one.total)),
   };
 }
+
+const tooLong = (one) => one.total > one.alarm;
+
+const tooMuchProse = (one) => one.comment > one.budget;
 
 const share = (one) => `${Math.round((100 * one.comment) / one.total)}%`;
 
 /** What it is, against what a file that length is allowed. */
 const against = (one) => `${share(one)}, over ${Math.round(100 * shareFor(one.total))}%`;
-
-const tooLong = (one) => one.total > one.alarm;
-
-const tooMuchProse = (one) => one.comment > one.budget;
 
 // --- after a write, about the one file that was written -------------------
 
@@ -205,30 +135,12 @@ function check() {
 
 // --- on demand, about everything ------------------------------------------
 
-const Root = path.join(__dirname, '..', '..');
-
-function* filesUnder(dir) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-
-    if (entry.isDirectory()) {
-      if (!Skipped.has(entry.name)) {
-        yield* filesUnder(full);
-      }
-    } else if (watched(full)) {
-      yield full;
-    }
-  }
-}
-
-const named = (one) => asPosix(path.relative(Root, one.file));
-
 /** Longest first, the length being both the ranking and the question. */
 function reportLength(measured) {
   const over = measured.filter(tooLong).sort((a, b) => b.total - a.total);
 
   for (const one of over) {
-    console.log(`${String(one.total).padStart(5)}  (over ${one.alarm})  ${named(one)}`);
+    console.log(`${String(one.total).padStart(5)}  (over ${one.alarm})  ${named(one.file)}`);
   }
 
   console.log(
@@ -251,7 +163,7 @@ function reportProse(measured) {
   for (const one of over) {
     const past = String(one.comment - one.budget).padStart(4);
 
-    console.log(`${past} over   ${named(one)}   ${one.comment} of ${one.total} (${against(one)})`);
+    console.log(`${past} over   ${one.name}   ${one.comment} of ${one.total} (${against(one)})`);
   }
 
   console.log(
@@ -264,7 +176,7 @@ function reportProse(measured) {
 }
 
 function sweep() {
-  const measured = [...filesUnder(Root)].map(measure);
+  const measured = [...filesUnder()].map(measure);
 
   reportLength(measured);
   console.log('');

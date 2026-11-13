@@ -70,7 +70,23 @@ Everything else the sweep names is unfinished rather than exempt.
 
 ```bash
 node .claude/hooks/file-shape.js --all     # every file, not just the one just written
+node .claude/hooks/rule-links.js           # the rules and the code, checked against each other
+node .claude/hooks/line-report.js          # where the lines are, and what share of them is code
 ```
+
+`rule-links.js` asks both ways round, because code that names a rule by its
+number is only safe while the number still means what it meant. A number in
+the code that names no rule is a rule deleted under it. A rule nothing points
+at is a rule nobody is holding anybody to — which makes that second list the
+list of what is still open in the game, worked out rather than remembered. It
+cannot tell a rule that is unenforced from one that needs no enforcing: 7.5
+says nobody has to take the finishing card, and there is nothing to enforce
+about a permission.
+
+`line-report.js` is the one that is not about anything being wrong. It says
+where the lines are and what share of them is code, by layer and by file, so
+that two readings a month apart can be put beside each other and say which
+way this is moving. All three read the same walk, which is `files.js`.
 
 That second half matters more than it sounds. As a hook it only ever sees what
 is being touched, so a file that grew and was then left alone is never asked
