@@ -234,6 +234,29 @@ games with running results.
 **10.1** A player who walks away from a game in progress has their hand
 played out for them to the end, and the loss is recorded against them.
 
+## 11. What may be seen
+
+**11.1** A player's hand is theirs alone. Nobody else is ever told what is in
+it, and nothing that crosses to the table carries a card of it.
+
+**11.2** How many cards each player is holding is public. At a real table
+anybody can count them, and it is the one number that says who is close to
+going out.
+
+**11.3** Who has gone down is public, their runs and sets being lying there
+to be read, and so is everything on the table once it is down.
+
+**11.4** What the player in turn may do next is public: whether they have
+taken their card, whether the finishing card is still theirs to take, and who
+took the hand when one is taken. The table watches a turn happen.
+
+**11.5** The deck is face down and nothing about it is known - not its order,
+and not where the jokers are lying in it. Which pack each card came from is
+no secret, a deck of one colour looking only like a printer's mistake.
+
+**11.6** The deal is shown pass by pass: how many cards went where, and never
+which.
+
 ## Unsettled
 
 Questions, not rules, so they have no numbers of their own. A rule written

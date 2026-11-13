@@ -8,10 +8,7 @@ public static class AvatarRoute
 {
     public const string Template = "api/players/{playerId:guid}/avatar";
 
-    /// <summary>
-    /// The tag rides in the address, so a new picture is a new address. That
-    /// is what lets the answer be cached and then never asked for again.
-    /// </summary>
+    /// <summary>A new picture is a new address, so the answer caches for good.</summary>
     public static string For(Guid playerId, string tag) =>
         $"/api/players/{playerId}/avatar?v={tag}";
 }

@@ -2,31 +2,29 @@ import { Ace, HeldCard, King, isJoker, rankOf, suitOf } from './card';
 import { worthOfHand, worthOfRank } from './worth';
 
 /**
- * Which cards in a line of a hand are lying in a run or a set together.
+ * Chapters 4 and 5, the twin of `Melding.cs`. It is here so the screen can
+ * band a run under the finger that drew it, and it is a copy: the server
+ * decides, the two are changed together or not at all.
  *
  * It reads the hand as it is laid rather than searching it for the best
- * arrangement there could be. A card belongs to a meld because the player
+ * arrangement there could be. A card belongs to a run because the player
  * has put it beside the others, which is why arranging a hand by hand came
- * first - and why a run broken across two lines is not one.
- *
- * Being a meld is not the same as being allowed to go down. That needs a
- * clean run and fifty-one points besides, and it is a different question
- * asked of a different thing.
+ * first - and why one broken across two lines is not one.
  */
 
-/** The fewest cards that can be a run or a set. */
+/** Rule 4.1. */
 const Least = 3;
 
-/** What a first showing has to come to. */
+/** Rule 5.1. */
 export const GoingDown = 51;
 
-/** The most that can be a set, there being four suits and no duplicates. */
+/** Rule 4.1. */
 const Most = 4;
 
 /**
- * Each place in the line given the number of the meld it belongs to, or
- * null where it belongs to none. The numbers only have to differ between
- * neighbours, which is what lets one meld be told from the next.
+ * Each place given the number of the run it belongs to, or null for none.
+ * The numbers only have to differ between neighbours, which is what lets
+ * one be told from the next.
  */
 export function meldsIn(line: readonly (HeldCard | null)[]): readonly (number | null)[] {
   const marks: (number | null)[] = line.map(() => null);
@@ -52,10 +50,7 @@ export function meldsIn(line: readonly (HeldCard | null)[]): readonly (number | 
   return marks;
 }
 
-/**
- * The longest meld that starts here, because a run of five is one band and
- * not two overlapping threes. Zero where none starts here at all.
- */
+/** The longest, because a run of five is one band and not two threes. */
 function longestFrom(line: readonly (HeldCard | null)[], at: number): number {
   for (let length = line.length - at; length >= Least; length -= 1) {
     const group = line.slice(at, at + length);
@@ -68,10 +63,10 @@ function longestFrom(line: readonly (HeldCard | null)[], at: number): number {
   return 0;
 }
 
-/** Whether these cards are a run or a set, which is what a meld is. */
+/** Rule 4.1. */
 export const isMeld = (cards: readonly HeldCard[]) => isSet(cards) || isRun(cards);
 
-/** Three or four of one rank, each from a different suit. */
+/** Rule 4.1. */
 export function isSet(cards: readonly HeldCard[]): boolean {
   if (cards.length > Most) {
     return false;
@@ -89,11 +84,7 @@ export function isSet(cards: readonly HeldCard[]): boolean {
   return named.every((card) => rankOf(card) === rank) && suits.size === named.length;
 }
 
-/**
- * Three or more of one suit in order, up or down as they happen to be laid,
- * with a joker standing in for whatever is missing. Q-K-A is a run and so
- * is A-2-3, which is the whole reason the ace is asked about twice.
- */
+/** Rules 4.1, 4.2 - which is why the ace is asked about twice. */
 export function isRun(cards: readonly HeldCard[]): boolean {
   const named = cards.filter((card) => !isJoker(card));
 
@@ -143,19 +134,10 @@ function inOrderBy(
   });
 }
 
-/**
- * Whether this meld holds a clean run: three or more in a row with no joker
- * among them. A run with no joker at all is clean end to end; one with a
- * joker holds a clean run only where three of its cards still sit together.
- * 6-7-8-joker-10 holds one and 5-6-joker-8-9 does not.
- */
+/** Rules 5.1, 5.2. */
 export const hasCleanRun = (meld: readonly HeldCard[]) => cleanRunIn(meld).length >= Least;
 
-/**
- * What a meld lying on the table is worth. Every card counts for itself,
- * and a joker counts for the card it is standing in for: in a set that is
- * the rank, and in a run it is whatever the place it fills asks for.
- */
+/** Rules 1.3, 5.3. */
 export function worthOnTable(meld: readonly HeldCard[]): number {
   if (meld.length < Least || !isMeld(meld)) {
     return 0;
@@ -167,13 +149,8 @@ export function worthOnTable(meld: readonly HeldCard[]): number {
 }
 
 /**
- * What a showing comes to. Every meld counts for what it is worth - except
- * the one run providing the clean three, which counts only its clean part.
- *
- * Which run provides it is whichever costs least to give up, and a run with
- * no joker costs nothing at all: it is clean end to end, so a showing that
- * holds one is never docked. Only a player whose clean three is buried
- * inside a run with a joker pays for it.
+ * Rules 5.3, 5.4. Which run provides the clean three is whichever costs
+ * least to give up, and one with no joker costs nothing at all.
  */
 export function showingWorth(laid: readonly (readonly HeldCard[])[]): number {
   const whole = laid.reduce((all, meld) => all + worthOnTable(meld), 0);
@@ -184,10 +161,7 @@ export function showingWorth(laid: readonly (readonly HeldCard[])[]): number {
   return providers.length === 0 ? whole : whole - Math.min(...providers);
 }
 
-/**
- * The rank each place in a run asks for, jokers included, read off
- * whichever way the run is in order. Empty where it is no run.
- */
+/** Jokers included, read off whichever way the run is in order. */
 function placesOf(run: readonly HeldCard[]): readonly number[] {
   const high = (card: HeldCard) => rankOf(card);
   const low = (card: HeldCard) => (rankOf(card) === Ace ? 1 : rankOf(card));
@@ -209,7 +183,7 @@ function placesOf(run: readonly HeldCard[]): readonly number[] {
   return [];
 }
 
-/** The longest stretch of the meld with no joker in it. */
+/** Rule 5.2. */
 function cleanRunIn(meld: readonly HeldCard[]): readonly HeldCard[] {
   if (!isRun(meld)) {
     return [];

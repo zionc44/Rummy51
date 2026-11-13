@@ -10,10 +10,8 @@ public sealed class TestingSettings
     public const string SectionName = "Testing";
 
     /// <summary>
-    /// Tells every client where the jokers are lying in the deck, so a cut
-    /// onto one can be aimed at. It is plainly a cheat - which is why it
-    /// cannot be switched on in a real game - and the reason it exists is
-    /// that a joker at the cut is far too rare to meet by playing.
+    /// Breaks rule 11.5 on purpose, a joker at the cut being far too rare to
+    /// meet by playing. Plainly a cheat, which is why it is here.
     /// </summary>
     public bool MarkJokers { get; init; }
 }

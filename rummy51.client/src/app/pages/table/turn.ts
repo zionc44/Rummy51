@@ -2,16 +2,10 @@ import { Signal, computed } from '@angular/core';
 import { HandView } from '../../core/lobby/lobby.models';
 
 /**
- * What the player at this screen may do in the hand as it stands. A turn is
- * a card in and a card out, so there are only ever two things it can be
- * waiting for, and everything here is one of those two asked a slightly
- * different way: may they take one, may they throw one, and which of the two
- * the table is holding its breath over.
- *
- * It decides nothing about the game - the server does that, and refuses
- * anything it disagrees with. What this is for is the screen: a pile that
- * lights only when pressing it would do something, and a line that says
- * whose move it is.
+ * What the player at this screen may do, rule 3.2 leaving only two things a
+ * turn can be waiting for. It decides nothing - the server does that and
+ * refuses what it disagrees with - and exists so that a pile lights only
+ * when pressing it would do something.
  */
 export class Turn {
   constructor(
@@ -28,48 +22,32 @@ export class Turn {
     return hand?.phase === 'playing' && this.seat() === hand.turnSeat;
   });
 
-  /**
-   * Their turn with their half of it still to come. Not while cards are
-   * flying: the deal is still being watched, and what is on the screen is
-   * not yet what is in the hand.
-   */
+  /** Not while cards are flying: the screen is not yet the hand. */
   readonly toDraw = computed(() => this.mine() && !this.hand()?.hasDrawn && !this.animating());
 
   /**
-   * Whether the finishing card may be taken. It is a draw in shape and
-   * nothing like one in meaning, so the server answers it: whether this
-   * player has gone down, and whether the first round is over, are both
-   * its business and neither is worth a second copy here.
+   * Rules 7.1, 7.3, 6.4 - all of which the server answers, none of them
+   * being worth a second copy here.
    */
   readonly canTakeFinishing = computed(
     () => this.toDraw() && (this.hand()?.canTakeFinishing ?? false),
   );
 
-  /** The pile is only something to take from while a card lies on it. */
+  /** Rule 3.3: only while a card lies on it. */
   readonly canTakeDiscard = computed(() => this.toDraw() && this.hand()?.discardTop != null);
 
   /** Their card taken, so all that is left of the turn is to throw one. */
   readonly toThrow = computed(() => this.mine() && (this.hand()?.hasDrawn ?? false));
 
-  /**
-   * Whether throwing onto the pile would do anything, which needs a card
-   * picked out first. Dragging one there says which card by itself and does
-   * not ask this.
-   */
+  /** Needs a card picked out; dragging one there says which by itself. */
   readonly canThrow = computed(() => this.toThrow() && this.picked() !== null);
 
-  /**
-   * Whether there is anything of this turn left to take back. The server
-   * keeps the count of it: what can be undone is what was done, and only
-   * the hand knows that.
-   */
+  /** Rule 3.6. The server keeps the account; only the hand knows it. */
   readonly canUndo = computed(() => this.mine() && (this.hand()?.canUndo ?? false));
 
   /**
-   * Whether a place on the table may be pressed. The places still show
-   * where a card would go when it may not go there yet - knowing that is
-   * half of deciding what to lay - but pressing one does nothing until
-   * this player has gone down.
+   * Rule 5.7. The places still show where a card would go before it may go
+   * there, knowing that being half of deciding what to lay.
    */
   readonly canAdd = computed(() => this.toThrow() && (this.hand()?.canAdd ?? false));
 

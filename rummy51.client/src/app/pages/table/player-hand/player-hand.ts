@@ -25,7 +25,7 @@ import { slideFrom, whereTheyAre } from './hand-slide';
 const orAPlace = (line: readonly (HeldCard | null)[]): readonly (HeldCard | null)[] =>
   line.length === 0 ? [null] : line;
 
-/** How many colours the bands run through before starting again. */
+/** Before starting again. */
 const Bands = 5;
 
 /**
@@ -144,11 +144,7 @@ export class PlayerHand {
     return missing > 0 ? [...cards, ...Array<HeldCard | null>(missing).fill(null)] : cards;
   }
 
-  /**
-   * Which cards are lying in a run or a set together, line by line. It is
-   * read off the hand as it is laid, so a meld the player has not put side
-   * by side is not one, and nor is one broken across the two lines.
-   */
+  /** Line by line, as `meldsIn` reads them. */
   private readonly melds = computed(() => {
     const lines: (number | null)[][] = [];
     let found = 0;
@@ -166,21 +162,14 @@ export class PlayerHand {
   });
 
   /**
-   * Which run or set a card is lying in, or null where it is in none. The
-   * number differs between every meld in the hand and not only between
-   * neighbours, which is what lets one be told from the next, what lets a
-   * whole one be picked up, and what gives each of them its own colour.
+   * Numbered across the whole hand and not only between neighbours, which
+   * is what lets a whole run be picked up and each one have its own colour.
    */
   protected meldAt(line: number, at: number): number | null {
     return this.melds()[line]?.[at] ?? null;
   }
 
-  /**
-   * The runs and sets the hand is lying in, as the cards themselves. It is
-   * read off the same laying the bands are, so what is counted is what is
-   * banded: a meld broken across the two lines is not one, and a hand
-   * nobody has arranged holds none.
-   */
+  /** As the cards themselves, off the same laying the bands are. */
   readonly inMelds = computed<readonly (readonly HeldCard[])[]>(() => {
     const found = new Map<number, HeldCard[]>();
 

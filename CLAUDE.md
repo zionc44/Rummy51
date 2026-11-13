@@ -46,7 +46,27 @@ type that small is over a fifth and is right to be.
 
 Neither blocks anything and neither number is a budget to write up to; they
 only make somebody look. Their silence is not a clean bill of health, and the
-answer is sometimes no: `dealing.ts` sits above the length line on purpose.
+answer is sometimes no.
+
+These sit above the prose line on purpose, and should go on doing so:
+
+```
+core/dom/flight.ts              pages/table/dealing.ts
+pages/table/crossings.ts        pages/table/card-journey.ts
+pages/table/meld-journey.ts     pages/table/player-hand/hand-drag.ts
+                                pages/table/player-hand/player-hand.ts
+```
+
+They are the layer that measures the DOM and moves things in it, and almost
+every comment in them is a trap: why a measurement is read before the render
+that follows it, why an effect is `untracked`, why the hand must not slide
+while a card is being dragged. Each of those describes a bug this project
+actually had. Delete them to reach a number and the bugs come back — which is
+not a guess, because two of them came back once already.
+
+`dealing.ts` sits above the length line on purpose as well.
+
+Everything else the sweep names is unfinished rather than exempt.
 
 ```bash
 node .claude/hooks/file-shape.js --all     # every file, not just the one just written

@@ -24,62 +24,40 @@ public interface ITables
 
     IReadOnlyList<LobbyTable> All();
 
-    /// <summary>The hand at that table, or null while it has not begun.</summary>
+    /// <summary>Null while it has not begun.</summary>
     HandView? Hand(Guid tableId);
 
-    /// <summary>
-    /// The cutter chose where to cut. The card there becomes the finishing
-    /// card, and the one after it is the first that will be dealt.
-    /// </summary>
+    /// <summary>Rule 2.2.</summary>
     Result<HandView> CutDeck(Guid tableId, Guid playerId, int position);
 
-    /// <summary>
-    /// The first half of a turn: a card from the stock, or the one the player
-    /// before threw away.
-    /// </summary>
+    /// <summary>Rules 3.2, 7.1.</summary>
     Result<HandView> Draw(Guid tableId, Guid playerId, DrawnFrom from);
 
-    /// <summary>
-    /// The second half, which ends the turn and passes it on. The card is
-    /// named by its code, since the hand's order is the player's own.
-    /// </summary>
+    /// <summary>Rule 3.2. The card is named by its number, the order being the player's own.</summary>
     Result<HandView> Discard(Guid tableId, Guid playerId, int cardId);
 
-    /// <summary>
-    /// Cards laid on the table, which happens between the two halves and
-    /// ends neither of them: a player may lay several and still has to
-    /// throw one away afterwards.
-    /// </summary>
+    /// <summary>Rules 4.1, 5.6.</summary>
     Result<HandView> LayDown(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds);
 
-    /// <summary>
-    /// Takes back the last thing this turn did. Everything but a card off
-    /// the stock, which cannot be unknown once it has been seen.
-    /// </summary>
+    /// <summary>Rules 3.6, 7.4.</summary>
     Result<HandView> Undo(Guid tableId, Guid playerId);
 
-    /// <summary>
-    /// A card out of a hand and onto a meld already lying on the table.
-    /// </summary>
+    /// <summary>Rules 5.7, 5.9, 5.10.</summary>
     Result<HandView> AddToMeld(Guid tableId, Guid playerId, AddRequest join);
 
-    /// <summary>
-    /// A joker bought out of a meld with the card it was standing in for.
-    /// </summary>
+    /// <summary>Rules 5.11, 5.12.</summary>
     Result<HandView> SwapForJoker(Guid tableId, Guid playerId, SwapRequest swap);
 
     /// <summary>
-    /// One player's own cards. They go to that player's own connection and
-    /// never to a group, which is why they are asked for separately rather
-    /// than carried by <see cref="HandView"/>. Empty before the deal, and
-    /// for anybody not seated at that table.
+    /// Rule 11.1, which is why they are asked for separately rather than
+    /// carried by <see cref="HandView"/>: they go to one connection and
+    /// never to a group. Empty before the deal and for anybody not seated.
     /// </summary>
     IReadOnlyList<HeldCardView> CardsOf(Guid tableId, Guid playerId);
 
     /// <summary>
-    /// Acts for every player whose time has run out, and names the tables
-    /// that changed because of it. Called by the clock and by nobody else:
-    /// it is the one move here that nobody asked for.
+    /// Rule 3.6, and the tables that changed because of it. Called by the
+    /// clock and by nobody else: the one move here that nobody asked for.
     /// </summary>
     IReadOnlyList<Guid> ActForTheOverdue();
 

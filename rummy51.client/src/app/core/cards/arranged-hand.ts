@@ -2,10 +2,7 @@ import { Signal, computed, linkedSignal, signal } from '@angular/core';
 import { HeldCard } from './card';
 import { HandOrder, arrangedLike, inOrder, keepingTheirPlaces, moved } from './card-order';
 
-/**
- * Where a hand wraps until its owner says otherwise. Eight is what leaves
- * each card enough of itself showing to be read on a phone.
- */
+/** Eight leaves each card enough of itself showing to read on a phone. */
 const PerRow = 8;
 
 /**
@@ -71,10 +68,9 @@ export class ArrangedHand {
   });
 
   /**
-   * Two presses and two orders, because a run and a set are not the same
-   * shape: by rank the sets line up, by suit the runs do. Either of them
-   * takes over from an arrangement made by hand, which is what asking to
-   * have the hand sorted means.
+   * Two presses and two orders, rule 4.1 naming two shapes: by rank the sets
+   * line up, by suit the runs do. Either takes over from an arrangement made
+   * by hand, which is what asking to have it sorted means.
    */
   sort(): void {
     this.sortedBy = this.sortedBy === 'byRank' ? 'bySuit' : 'byRank';
@@ -120,10 +116,7 @@ export class ArrangedHand {
     this.picked.set(id);
   }
 
-  /**
-   * Every card this hand has held, which is not the same as every card it
-   * is holding: what has been laid on the table is still arranged.
-   */
+  /** Held, not holding: what was laid on the table is still arranged. */
   private everything(): readonly HeldCard[] {
     const held = this.held();
     const here = new Set(held.map((card) => card.id));

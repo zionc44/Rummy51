@@ -1,18 +1,11 @@
 import { HeldCard, isJoker, rankOf, suitOf } from './card';
 
-/**
- * The two ways a rummy hand is worth holding. A run is three of one suit in
- * ascending order and a set is three of one rank, and no single order shows
- * both - which is why a hand is sorted by pressing twice rather than once.
- */
+/** Rule 4.1 names two, and no single order shows both - hence two presses. */
 export type HandOrder = 'byRank' | 'bySuit';
 
 type Key = (card: HeldCard) => number;
 
-/**
- * Lowest first, which is how the hand is read: left to right, the two at
- * one end and the ace at the other.
- */
+/** Lowest first, which is how the hand is read: left to right. */
 function compare(left: HeldCard, right: HeldCard, first: Key, then: Key): number {
   // A joker is neither a rank nor a suit, so it belongs at an end rather
   // than anywhere among them - past the highest card there is.
@@ -28,12 +21,9 @@ function compare(left: HeldCard, right: HeldCard, first: Key, then: Key): number
 }
 
 /**
- * The hand laid out to be read. How it is laid is a view of the cards and
- * not a fact about them: the server sends a hand and is never told an
- * order, so this is the client's own and nobody else's business.
- *
- * The ace counts fourteen, so it sorts beside the king and not the two. It
- * opens A-2-3 as well, and no one line can put it at both ends of a suit.
+ * A view of the cards and not a fact about them: the server sends a hand and
+ * is never told an order. Rule 4.2 is what no one line can show - the ace
+ * sorts beside the king and opens A-2-3 as well.
  */
 export function inOrder(cards: readonly HeldCard[], order: HandOrder): readonly HeldCard[] {
   const first = order === 'byRank' ? rankOf : suitOf;

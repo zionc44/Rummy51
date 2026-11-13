@@ -14,24 +14,23 @@ export interface LobbyPlayer {
   readonly status: PlayerStatus;
 }
 
-/** A table is created for one of these and never changes to another. */
+/** Rule 9.2. */
 export type GameMode = 'single' | 'survival' | 'series';
 
 export const GAME_MODES: readonly GameMode[] = ['single', 'survival', 'series'];
 
 export const TABLE_SEATS: readonly number[] = [2, 3, 4];
 
-/** Even numbers only: a deck is made of whole packs, and each brings its pair. */
+/** Rule 1.1. */
 export const JOKER_COUNTS: readonly number[] = [0, 2, 4];
 
-/** What ends a survival game. The winner of a hand takes minus thirty, so a
+/** Rules 8.1 and 9.2. Ceilings, not targets: a
     score climbs with bad play and these are ceilings, not targets. */
 export const SURVIVAL_POINTS: readonly number[] = [100, 200, 500];
 
 /**
- * How many hands a series runs for, by the number of players. Every option
- * divides by that number, because each player has to deal the same number of
- * times - which is why this cannot be one list.
+ * By the number of players: rule 2.1 moves the deal on by one, so a series
+ * that did not divide would give somebody an extra deal.
  */
 export const SERIES_HANDS: Readonly<Record<number, readonly number[]>> = {
   2: [4, 6, 12],
@@ -47,9 +46,8 @@ export interface TableSeat {
 }
 
 /**
- * A table as the lobby sees it. The seats keep their order: whoever opened the
- * table took the first one, and someone leaving empties a seat rather than
- * moving everyone along.
+ * The seats keep their order: whoever opened the table took the first, and
+ * someone leaving empties a seat rather than moving everyone along.
  */
 export interface LobbyTable {
   readonly tableId: string;
@@ -84,76 +82,64 @@ export interface Waiting {
   readonly seconds: number;
 }
 
-/**
- * One run or set lying on the table, and whose it was. Every card of it is
- * named: once it is down it belongs to the table, and there is nothing in
- * it left to keep from anybody.
- */
+/** One run or set, and whose it was. Rules 5.7, 8.1, 11.3. */
 export interface MeldView {
   readonly seat: number;
   readonly cards: readonly HeldCard[];
 }
 
 /**
- * The hand as everyone at the table may see it. Cards arrive as their code,
- * which is also the name of the picture, so there is one name and not two.
+ * The hand as everyone at the table may see it, which is chapter 11 and
+ * nothing beyond it. Cards arrive as their code, which is also the name of
+ * the picture, so there is one name and not two.
  */
 export interface HandView {
   readonly phase: HandPhase;
   readonly dealerSeat: number;
   readonly cutterSeat: number;
-  /** Face down, so the count is all anyone is told. */
+  /** Rule 11.5. */
   readonly deckSize: number;
-  /** Where the cutter chose, as a position in the deck. Null until they have. */
+  /** Rule 2.2. Null until they have. */
   readonly cutAt: number | null;
-  /** The back each of those cards wears, by position. Decoration only. */
+  /** Rule 11.5: no secret, and decoration only. */
   readonly backs: readonly string[];
-  /**
-   * Where the jokers are lying in the deck, marked in the fan so a cut onto
-   * one can be aimed at. Empty unless the server was asked for them, which
-   * only a development setting does.
-   */
+  /** Rule 11.5 says nobody may know. Empty but for a development setting. */
   readonly jokerPositions: readonly number[];
   readonly revealedAtCut: readonly string[];
   readonly finishingCard: string | null;
-  /** How many cards each seat holds. Anybody at a table can count them. */
+  /** Rule 11.2. */
   readonly cardsPerSeat: readonly number[];
-  /** The deal pass by pass. It says how many went where and never which. */
+  /** Rule 11.6. */
   readonly passes: readonly DealPass[];
   readonly stockSize: number;
   /** Whose turn it is, or -1 before play has begun. */
   readonly turnSeat: number;
 
-  /** Who took the hand, or -1 while it is still being played. */
+  /** Rules 6.1, 11.4. -1 while the hand is still being played. */
   readonly winnerSeat: number;
 
-  /** Whether the seat in turn may take the finishing card. */
+  /** Rules 7.1, 11.4. */
   readonly canTakeFinishing: boolean;
-  /**
-   * Who has shown a hand, by seat. Public, because their melds are lying on
-   * the table for everybody to read.
-   */
+
+  /** Rule 11.3. */
   readonly wentDown: readonly boolean[];
-  /**
-   * Whether they have taken their card yet. Public, because at a real table
-   * everybody watches the hand go to the stock and come back.
-   */
+
+  /** Rule 11.4. */
   readonly hasDrawn: boolean;
-  /**
-   * The one card of the discard pile lying face up, which is also the only
-   * one anybody may take. Null until the hand's first discard.
-   */
+
+  /** Rule 3.3. Null until the hand's first discard. */
   readonly discardTop: string | null;
   readonly discardCount: number;
   readonly melds: readonly MeldView[];
-  /** Whether the player whose turn it is has anything left to take back. */
+  /** Rule 3.6. */
   readonly canUndo: boolean;
-  /** And whether they have gone down, so may add to what is lying there. */
+
+  /** Rule 5.7. */
   readonly canAdd: boolean;
   readonly waiting: Waiting | null;
 }
 
-/** Which of the two piles a player reached for. */
+/** Where a player reached. Rules 3.2 and 7.1. */
 export type DrawnFrom = 'stock' | 'discards' | 'finishing';
 
 export interface CreateTableRequest {

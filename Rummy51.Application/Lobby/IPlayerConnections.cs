@@ -9,23 +9,16 @@ namespace Rummy51.Application.Lobby;
 /// </summary>
 public interface IPlayerConnections
 {
-    /// <summary>
-    /// Records the connection as the player's only one.
-    /// </summary>
     /// <returns>
-    /// The connection this one displaced, or null if the player was not already
-    /// connected. The caller is expected to tell that connection why it is
-    /// going away.
+    /// The connection this one displaced, which the caller is expected to
+    /// tell why it is going away. Null if the player was not connected.
     /// </returns>
     string? Register(PlayerSummary player, string connectionId);
 
-    /// <summary>
-    /// Forgets the connection.
-    /// </summary>
     /// <returns>
-    /// The player, when this was the connection they were actually holding.
-    /// Null when a newer one had already replaced it, in which case they have
-    /// not gone anywhere and nothing of theirs should be given up.
+    /// The player, when this was the connection they were holding. Null when
+    /// a newer one had already replaced it, in which case they have not gone
+    /// anywhere and nothing of theirs should be given up.
     /// </returns>
     PlayerSummary? Remove(string connectionId);
 

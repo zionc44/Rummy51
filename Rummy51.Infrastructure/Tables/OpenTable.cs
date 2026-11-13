@@ -10,6 +10,11 @@ namespace Rummy51.Infrastructure.Tables;
 /// rather than a list because their positions are the point: the one who
 /// opened the table holds the first, and leaving empties a seat instead of
 /// moving everyone along.
+///
+/// A turn is given one clock and everything done inside it runs on that one
+/// clock - drawing, laying, taking back, buying. Only a throw restarts it,
+/// because only a throw hands the turn on. The moves below say nothing about
+/// the clock for that reason; where one does, it is the exception.
 /// </summary>
 internal sealed class OpenTable
 {
@@ -110,56 +115,32 @@ internal sealed class OpenTable
         return true;
     }
 
-    /// <summary>
-    /// A player takes their card. The wait is not restarted: a turn is given
-    /// one clock, and reaching for a card is part of what it is for.
-    /// </summary>
+    /// <summary>Rules 3.2, 7.1.</summary>
     public bool Draw(int seat, DrawnFrom from) => hand?.Draw(seat, from) == true;
 
-    /// <summary>
-    /// Cards onto the table. The turn is not over and the clock is not
-    /// restarted: laying one down is something done inside a turn, and the
-    /// time it takes is time the player chose to spend.
-    /// </summary>
+    /// <summary>Rules 4.1, 5.6.</summary>
     public bool LayDown(int seat, IReadOnlyList<int> cardIds) =>
         hand?.LayDown(seat, cardIds) == true;
 
-    /// <summary>
-    /// The last thing taken back. The clock is not touched: a turn spent
-    /// changing your mind is still your turn being spent.
-    /// </summary>
+    /// <summary>Rules 3.6, 7.4.</summary>
     public bool Undo(int seat) => hand?.Undo(seat) == true;
 
-    /// <summary>
-    /// Whether this seat could end its turn on what it has laid, which is
-    /// the one thing a throw is refused for that the player can do anything
-    /// about.
-    /// </summary>
+    /// <summary>Rule 5.6, which is one of the reasons a throw is refused.</summary>
     public bool CouldEndTheTurn(int seat) => hand?.CanEndTheTurn(seat) != false;
 
     public bool HasPutBackWhatItTook(int seat) => hand?.HasPutBackWhatItTook(seat) != false;
 
     public bool MustStillGoOut(int seat) => hand?.MustStillGoOut(seat) == true;
 
-    /// <summary>
-    /// A card onto a meld already lying there. Like laying one down, this
-    /// happens inside a turn and ends neither half of it, so the clock is
-    /// left alone.
-    /// </summary>
+    /// <summary>Rules 5.7, 5.9, 5.10.</summary>
     public bool AddTo(int seat, int meldAt, int cardId, MeldEnd end) =>
         hand?.AddTo(seat, meldAt, cardId, end) == true;
 
-    /// <summary>
-    /// A joker bought out of a meld. Inside a turn like the rest of them, so
-    /// the clock is left where it is.
-    /// </summary>
+    /// <summary>Rules 5.11, 5.12.</summary>
     public bool SwapForJoker(int seat, int meldAt, int at, int cardId) =>
         hand?.SwapForJoker(seat, meldAt, at, cardId) == true;
 
-    /// <summary>
-    /// A player throws one away, which hands the turn on - and with it the
-    /// clock, which begins again for whoever it reached.
-    /// </summary>
+    /// <summary>Rule 3.2, which hands the turn on and the clock with it.</summary>
     public bool Discard(int seat, int cardId)
     {
         if (hand?.Discard(seat, cardId) != true)
@@ -172,10 +153,7 @@ internal sealed class OpenTable
         return true;
     }
 
-    /// <summary>
-    /// What the table does when nobody does it for themselves, so that one
-    /// player who has walked away cannot hold three others still.
-    /// </summary>
+    /// <summary>Rule 3.6, so one player who walked away cannot hold the rest.</summary>
     public bool ActForWhoeverRanOut()
     {
         if (hand is null || !countdown.HasRunOut)
@@ -216,16 +194,10 @@ internal sealed class OpenTable
         return true;
     }
 
-    /// <summary>
-    /// A turn nobody took. What that means for the cards is the hand's to
-    /// say; all this table knows is that it has stopped waiting.
-    /// </summary>
+    /// <summary>Rule 3.6. What it means for the cards is the hand's to say.</summary>
     private bool PlayTheTurnFor(int seat) => hand?.PlayOutTheTurn(seat) == true;
 
-    /// <summary>
-    /// One player's own cards, which is the one thing here that never goes
-    /// into <see cref="DescribeHand"/>.
-    /// </summary>
+    /// <summary>Rule 11.1: the one thing here that never goes into a <see cref="HandView"/>.</summary>
     public IReadOnlyList<HeldCardView> CardsOf(Guid playerId)
     {
         var seat = SeatOf(playerId);
@@ -240,11 +212,7 @@ internal sealed class OpenTable
         return [.. hand.Hands[seat].Select(card => Held(card, owed.Contains(card.Id)))];
     }
 
-    /// <summary>
-    /// A card as its owner is shown it, with the places it could join what
-    /// is on the table. Those places are nobody else's business: they are
-    /// worked out from a hand only one player may see.
-    /// </summary>
+    /// <summary>Rule 11.1: worked out from a hand only one player may see.</summary>
     private HeldCardView Held(HeldCard card, bool owed) =>
         new(
             card.Id,
@@ -263,7 +231,7 @@ internal sealed class OpenTable
             .Where(place => Melding.CanReplace(meld, place, card))
             .Select(place => new SwapView(at, place)));
 
-    /// <summary>What is on the table, as the rules read it: cards and no more.</summary>
+    /// <summary>As the rules read it: cards and no more.</summary>
     private IEnumerable<IReadOnlyList<Card>> Lying() =>
         (hand?.Board.Melds ?? []).Select(IReadOnlyList<Card> (meld) =>
             [.. meld.Cards.Select(lying => lying.Card)]);
@@ -296,7 +264,7 @@ internal sealed class OpenTable
                 hand.TurnSeat != -1 && hand.CanTakeTheFinishingCard(hand.TurnSeat),
                 countdown.Describe(hand.WaitingSeat));
 
-    /// <summary>Everything on the table is everybody's to read.</summary>
+    /// <summary>Rule 11.3.</summary>
     private static MeldView Laid(Meld meld) =>
         new(meld.Seat, [.. meld.Cards.Select(card => new LaidCardView(card.Id, card.Card.Code))]);
 

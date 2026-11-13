@@ -1,21 +1,17 @@
 /**
- * A card in a hand, and which card it is. The deck is two packs, so a code
- * names a picture and not a card: the id is what tells one seven of hearts
- * from the other, and it is what a hand is rearranged by.
+ * A card in a hand, and which card it is. Rule 1.1 puts two of every card in
+ * the deck, so a code names a picture and not a card: the id is what tells
+ * one seven of hearts from the other, and what a hand is rearranged by.
  */
-/** Which end of a meld a card joins it at. */
 export type MeldEnd = 'front' | 'back';
 
-/** A place a card could join what is already lying on the table. */
+/** Rule 5.9. */
 export interface Fit {
   readonly meld: number;
   readonly end: MeldEnd;
 }
 
-/**
- * A joker lying on the table that a card is standing in for, and so could
- * buy out of the meld it lies in.
- */
+/** Rule 5.11. */
 export interface Swap {
   readonly meld: number;
   readonly at: number;
@@ -26,34 +22,24 @@ export interface HeldCard {
   readonly code: string;
 
   /**
-   * Where this card could join a meld on the table, worked out by the
-   * server because the rule that decides it lives there. Absent on a card
-   * lying on the table, which has nowhere left to go, and on one in a hand
-   * nobody may see.
+   * Worked out by the server, the rule that decides it living there. Absent
+   * on a card already on the table, and on one in a hand nobody may see.
    */
   readonly fits?: readonly Fit[];
 
-  /** The jokers on the table this card is the card for, worked out the same way. */
+  /** The same, for the jokers this card could buy. */
   readonly buys?: readonly Swap[];
 
-  /**
-   * Whether this card was taken off the table this turn and has to be back
-   * on it before the turn ends. Only its owner is told, because only they
-   * are holding it.
-   */
+  /** Rule 3.4, told only to its owner under 11.1. */
   readonly owed?: boolean;
 }
 
-/** Clubs, diamonds, hearts, spades, as the cards name themselves. */
+/** As the cards name themselves. */
 const Suits = 'CDHS';
 
 export const isJoker = (card: HeldCard) => card.code.startsWith('J-');
 
-/**
- * The ace counts fourteen here as everywhere else, because it is worth
- * eleven wherever it is used. A-2-3 is still a run, and whoever asks that
- * question has to ask it of the ace itself.
- */
+/** Rules 1.2 and 4.2: fourteen here, and the ace asked about twice. */
 export const rankOf = (card: HeldCard) => Number(card.code.slice(2));
 
 export const suitOf = (card: HeldCard) => Suits.indexOf(card.code[0]);
