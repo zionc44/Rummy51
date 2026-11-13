@@ -25,13 +25,24 @@ two ways a file can be carrying too much, and asks about either.
 **Too long** — past 250 lines of TypeScript or C#, or 180 of a template, which
 is the size at which everything healthy here sits. Is it still one job?
 
-**Too much prose** — past a fifth of its lines being comment. That one watches
-the writing rather than the code, because prose is cheap to produce and
-expensive to keep true: a comment that restates a rule is a second copy of it,
-and the copy in the code is always the one that goes stale, since it is not the
-one anybody opens when the rule changes. Files with fewer than ten comment
-lines are left alone — one honest trap in a short file is over a fifth and is
-right to be.
+**Too much prose** — past the share of its lines a file that length is allowed
+to spend on comment:
+
+| lines | prose |
+|---|---|
+| up to 50 | 40% |
+| up to 100 | 35% |
+| up to 150 | 30% |
+| up to 200 | 25% |
+| above that | 20% |
+
+That one watches the writing rather than the code, because prose is cheap to
+produce and expensive to keep true: a comment that restates a rule is a second
+copy of it, and the copy in the code is always the one that goes stale, since
+it is not the one anybody opens when the rule changes. A fifth is the line for
+anything of real size, and it slides for the short ones because a percentage
+of a thirty-line file is a percentage of almost nothing — one honest trap in a
+type that small is over a fifth and is right to be.
 
 Neither blocks anything and neither number is a budget to write up to; they
 only make somebody look. Their silence is not a clean bill of health, and the

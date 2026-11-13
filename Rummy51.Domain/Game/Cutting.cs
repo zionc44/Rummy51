@@ -1,9 +1,6 @@
 namespace Rummy51.Domain.Game;
 
-/// <param name="Revealed">
-/// Jokers the cutter turned up. Theirs to keep, face up until play starts,
-/// and each one costs them a card they would otherwise have been dealt.
-/// </param>
+/// <param name="Revealed">Jokers the cutter turned up. Rule 2.3.</param>
 /// <param name="Remaining">The deck as the deal will find it.</param>
 public sealed record Cut(
     IReadOnlyList<Card> Revealed,
@@ -12,11 +9,7 @@ public sealed record Cut(
 
 public static class Cutting
 {
-    /// <summary>
-    /// The cutter picked a card. That card is the finishing card and whatever
-    /// followed it is now in front, which is what cutting a deck does. A joker
-    /// at that spot goes to them instead, and the next card is tried.
-    /// </summary>
+    /// <summary>Rules 2.2, 2.3.</summary>
     public static Cut At(IReadOnlyList<Card> cards, int position)
     {
         var deck = Rotate(cards, position);

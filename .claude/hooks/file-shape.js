@@ -35,18 +35,25 @@ const Skipped = new Set(['node_modules', 'obj', 'bin', 'dist', 'Migrations', '.g
 const Alarm = { '.ts': 250, '.html': 180, '.cs': 250, '.js': 250 };
 
 /**
- * A fifth, and no more, is prose. Above that comments have usually stopped
- * explaining the code and started restating it - or restating a rule that
- * docs/rules.md already states, which is the copy that goes stale, being the
- * one nobody opens when the rule changes.
+ * How much of a file may be prose. A fifth is the line for anything of real
+ * size: above that, comments have usually stopped explaining the code and
+ * started restating it - or restating a rule that docs/rules.md already
+ * states, which is the copy that goes stale, being the one nobody opens when
+ * the rule changes.
+ *
+ * It slides, because a percentage of a short file is a percentage of almost
+ * nothing. A thirty-line type with one honest trap in it is over a fifth and
+ * is right to be, and an alarm that cries at those is an alarm nobody reads.
  */
-const Share = 0.2;
+const Share = [
+  [50, 0.4],
+  [100, 0.35],
+  [150, 0.3],
+  [200, 0.25],
+  [Infinity, 0.2],
+];
 
-/**
- * Below this many comment lines there is nothing to discuss: one honest trap
- * in a short file is over a fifth and is right to be.
- */
-const Fewest = 10;
+const shareFor = (total) => Share.find(([upTo]) => total <= upTo)[1];
 
 /** What a file of each kind should be asked when it has grown. */
 const Ask = {
@@ -124,15 +131,18 @@ function measure(file) {
     total,
     comment,
     alarm: Alarm[extension],
-    budget: Math.floor(total * Share),
+    budget: Math.floor(total * shareFor(total)),
   };
 }
 
 const share = (one) => `${Math.round((100 * one.comment) / one.total)}%`;
 
+/** What it is, against what a file that length is allowed. */
+const against = (one) => `${share(one)}, over ${Math.round(100 * shareFor(one.total))}%`;
+
 const tooLong = (one) => one.total > one.alarm;
 
-const tooMuchProse = (one) => one.comment >= Fewest && one.comment > one.budget;
+const tooMuchProse = (one) => one.comment > one.budget;
 
 // --- after a write, about the one file that was written -------------------
 
@@ -183,7 +193,7 @@ function check() {
 
   if (tooMuchProse(one)) {
     said.push(
-      `${one.comment} of ${name}'s ${one.total} lines are comment, which is over a fifth of it. ${AskProse} Read what is there and say which of it is earning its place.`,
+      `${one.comment} of ${name}'s ${one.total} lines are comment, and a file that length is allowed ${Math.round(100 * shareFor(one.total))}%. ${AskProse} Read what is there and say which of it is earning its place.`,
     );
     shown.push(`${share(one)} comment`);
   }
@@ -241,13 +251,13 @@ function reportProse(measured) {
   for (const one of over) {
     const past = String(one.comment - one.budget).padStart(4);
 
-    console.log(`${past} over   ${named(one)}   ${one.comment} of ${one.total} (${share(one)})`);
+    console.log(`${past} over   ${named(one)}   ${one.comment} of ${one.total} (${against(one)})`);
   }
 
   console.log(
     over.length === 0
-      ? `Nothing over a fifth prose.`
-      : `\n${over.length} of ${measured.length} files are more than a fifth prose. A rule belongs in` +
+      ? `Nothing over its share of prose.`
+      : `\n${over.length} of ${measured.length} files carry more prose than their length allows. A rule belongs in` +
           ` docs/rules.md, named from the code by its number; what stays is what the code cannot say` +
           ` about itself.`,
   );

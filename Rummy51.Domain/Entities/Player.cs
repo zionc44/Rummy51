@@ -8,25 +8,17 @@ namespace Rummy51.Domain.Entities;
 /// </summary>
 public class Player : IdentityUser<Guid>
 {
-    /// <summary>
-    /// The name shown to other players. Unlike <see cref="IdentityUser{TKey}.UserName"/>,
-    /// which doubles as the login identifier, this is free text and need not be unique.
-    /// </summary>
+    /// <summary>Free text, unlike <see cref="IdentityUser{TKey}.UserName"/>.</summary>
     public required string DisplayName { get; set; }
 
-    /// <summary>
-    /// Supplied by whoever signed the player in, when they offer one. Null for
-    /// an account created with a password, until pictures can be chosen.
-    /// </summary>
+    /// <summary>Supplied by whoever signed the player in, when they offer one.</summary>
     public string? AvatarUrl { get; set; }
 
-    /// <summary>Which of the two pictures the player wants shown.</summary>
     public AvatarSource AvatarSource { get; set; }
 
     /// <summary>
-    /// Identifies the contents of the uploaded picture. It rides in that
-    /// picture's address, so the address changes whenever the picture does -
-    /// which is what lets the answer be cached and never asked for again.
+    /// Rides in the picture's address, so the address changes whenever the
+    /// picture does and the answer can be cached for good.
     /// </summary>
     public string? AvatarImageTag { get; set; }
 

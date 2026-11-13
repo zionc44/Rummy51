@@ -8,10 +8,7 @@ public enum Suit
     Spades
 }
 
-/// <summary>
-/// The ace sits at the top because it is worth eleven wherever it is used,
-/// including the low run A-2-3. Nothing here is worth one.
-/// </summary>
+/// <summary>The ace sits at the top. Rule 1.2.</summary>
 public enum Rank
 {
     Two = 2,
@@ -30,17 +27,16 @@ public enum Rank
 }
 
 /// <summary>
-/// A card while somebody is holding it, carrying the one thing that tells it
-/// from its twin in the other pack: a number given when it reached them and
-/// kept until it leaves. Two sevens of hearts are the same card and not the
-/// same thing, and a hand being rearranged has to know the difference.
+/// Rule 1.1 puts two of every card in the deck, so a held card carries a
+/// number given when it reached its holder and kept until it leaves. It is
+/// what a hand is rearranged by.
 /// </summary>
 public readonly record struct HeldCard(int Id, Card Card);
 
 /// <summary>
-/// A card is one of the fifty-two or a joker, and nothing else. Making the
-/// joker a fifth suit, or a fifteenth rank, would be a lie that every run and
-/// every count would then have to work around.
+/// One of the fifty-two or a joker, and nothing else. Making the joker a
+/// fifth suit, or a fifteenth rank, would be a lie that every run and every
+/// count would then have to work around.
 /// </summary>
 public abstract record Card
 {
@@ -48,11 +44,7 @@ public abstract record Card
     {
     }
 
-    /// <summary>
-    /// A short, stable name for the card. It is what crosses the wire, and it
-    /// is also what the client draws the picture from, so one name serves
-    /// both and the two cannot drift apart.
-    /// </summary>
+    /// <summary>What crosses the wire, and what the picture is drawn from.</summary>
     public abstract string Code { get; }
 
     public sealed record Suited(Suit Suit, Rank Rank) : Card
@@ -68,10 +60,7 @@ public abstract record Card
         };
     }
 
-    /// <summary>
-    /// <paramref name="Face"/> says which of the two jokers to draw and
-    /// carries no meaning in play: the two are interchangeable.
-    /// </summary>
+    /// <summary><paramref name="Face"/> picks the picture and means nothing in play.</summary>
     public sealed record Joker(int Face) : Card
     {
         public override string Code => $"J-{Face:00}";

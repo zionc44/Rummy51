@@ -1,17 +1,14 @@
 namespace Rummy51.Domain.Game;
 
 /// <summary>
-/// The deck one hand is played from: shuffled from a seed, and then cut.
-///
-/// It is where everything about the cards is known before anybody holds
-/// one - which pack each came out of, where the jokers are lying, and what
-/// the cut turned up - and it stops mattering the moment the cards are
-/// dealt. A hand keeps it so that the table can still be told how the hand
-/// began.
+/// The deck one hand is played from: shuffled from a seed, and then cut. It
+/// is where everything about the cards is known before anybody holds one,
+/// and it stops mattering the moment they are dealt - a hand keeps it so the
+/// table can still be told how the hand began.
 /// </summary>
 public sealed class Deck
 {
-    /// <summary>Rummy is played with two, always.</summary>
+    /// <summary>Rule 1.1.</summary>
     public const int Packs = 2;
 
     private const int JokerFaces = 2;
@@ -44,37 +41,24 @@ public sealed class Deck
     /// <summary>Kept so a hand that behaved oddly can be dealt again exactly.</summary>
     public int Seed { get; }
 
-    /// <summary>How many cards were face down for the cutter to choose from.</summary>
     public int Size { get; }
 
-    /// <summary>Which pack each card came out of, by position in the deck.</summary>
     public IReadOnlyList<int> Backs { get; }
 
     /// <summary>
     /// The one thing here nobody at the table may know. It reaches a client
-    /// only where a development setting has asked for it, so that a cut onto
-    /// a joker can be worked on without waiting a hundred hands for one.
+    /// only where a development setting has asked for it, a cut onto a joker
+    /// being otherwise one hand in a hundred to work on.
     /// </summary>
     public IReadOnlyList<int> JokerPositions { get; }
 
-    /// <summary>
-    /// Where the cutter chose, counted from the top as the deck lay before
-    /// them. Everyone at the table needs it: without it only the one who
-    /// clicked knows which card turned over.
-    /// </summary>
+    /// <summary>Without it only the one who clicked knows which card turned.</summary>
     public int? CutPosition { get; private set; }
 
-    /// <summary>
-    /// The card the cut stopped on, lying face up beside the deck - and
-    /// null once somebody has taken it to go out with, because then it is
-    /// no longer lying there.
-    /// </summary>
+    /// <summary>Rule 2.2, and null once taken under 7.1.</summary>
     public Card? FinishingCard => finishingTaken ? null : cut?.FinishingCard;
 
-    /// <summary>
-    /// Taken to go out with, which is the only thing it is for. Null when
-    /// it is not there to take.
-    /// </summary>
+    /// <summary>Rule 7.1.</summary>
     public Card? TakeTheFinishingCard()
     {
         if (FinishingCard is not { } card)
@@ -87,12 +71,11 @@ public sealed class Deck
         return card;
     }
 
-    /// <summary>Lying there again, the turn that took it having been taken back.</summary>
+    /// <summary>Rule 7.4.</summary>
     public void GiveTheFinishingCardBack() => finishingTaken = false;
 
     public IReadOnlyList<Card> RevealedAtCut => cut?.Revealed ?? [];
 
-    /// <summary>What the deal will find, which is what the cut left.</summary>
     public IReadOnlyList<Card> Remaining => cards;
 
     /// <summary>Cut once and never again; a second cut is not a cut.</summary>
@@ -108,13 +91,9 @@ public sealed class Deck
         cards = cut.Remaining;
     }
 
-    /// <summary>Fifty-two: four suits of thirteen.</summary>
     private static int PackSize => Enum.GetValues<Suit>().Length * Enum.GetValues<Rank>().Length;
 
-    /// <summary>
-    /// Two full packs and however many jokers the table was opened with, in
-    /// the order a new deck comes in.
-    /// </summary>
+    /// <summary>Rule 1.1, in the order a new deck comes in.</summary>
     private static IReadOnlyList<Card> New(int jokers) =>
     [
         .. Enumerable.Range(0, Packs).SelectMany(_ => Pack()),
@@ -123,10 +102,7 @@ public sealed class Deck
         .. Enumerable.Range(0, jokers).Select(index => new Card.Joker(index % JokerFaces + 1))
     ];
 
-    /// <summary>
-    /// Shuffled by a seed rather than by chance, so a hand that behaved oddly
-    /// can be dealt again exactly as it was.
-    /// </summary>
+    /// <summary>By a seed rather than by chance, so a hand can be dealt again.</summary>
     private static IReadOnlyList<T> Shuffle<T>(IReadOnlyList<T> cards, int seed)
     {
         var shuffled = cards.ToArray();
@@ -144,10 +120,8 @@ public sealed class Deck
     }
 
     /// <summary>
-    /// The back each card in a new deck wears: one pack's, then the other's.
-    /// Two cards that look alike came from different packs, and in a real
-    /// deck they really do have different backs - which is also why the split
-    /// is exactly even rather than a coin tossed for every card.
+    /// One pack's, then the other's: two cards that look alike really do
+    /// have different backs, so the split is even and not a coin toss.
     /// </summary>
     private static IReadOnlyList<int> BacksOf(int jokers) =>
     [

@@ -1,18 +1,14 @@
 namespace Rummy51.Domain.Entities;
 
 /// <summary>
-/// What a table is playing for. Chosen when the table is opened and never
-/// changed, because the scoring that follows from it starts with the first
-/// hand.
+/// Rule 9.2, chosen when a table is opened and never changed: one hand,
+/// hands until somebody crosses a score, or a fixed number of them.
 /// </summary>
 public enum GameMode
 {
-    /// <summary>One hand, scored, done.</summary>
     Single,
 
-    /// <summary>Hands keep coming until a player crosses the agreed score.</summary>
     Survival,
 
-    /// <summary>A fixed number of hands, with the results kept across them.</summary>
     Series
 }

@@ -7,9 +7,7 @@ namespace Rummy51.Domain.Entities;
 /// </summary>
 public enum AvatarSource
 {
-    /// <summary>Whoever signed the player in. Null for an account with only a password.</summary>
     Provider,
 
-    /// <summary>The picture the player uploaded and cropped.</summary>
     Uploaded
 }
