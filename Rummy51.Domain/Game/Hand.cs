@@ -15,6 +15,12 @@ public enum DrawnFrom
 {
     Stock,
 
+    /// <summary>
+    /// The card the cut stopped on. It is not a pile and nobody draws from
+    /// it to play on: taking it is a promise to go out this turn.
+    /// </summary>
+    Finishing,
+
     Discards
 }
 
@@ -32,6 +38,13 @@ public sealed class Hand
     private readonly List<List<HeldCard>> hands;
     private readonly TurnSoFar turn = new();
     private readonly bool[] wentDown;
+
+    /// <summary>
+    /// Turns that have ended, which is how the first round is counted. A
+    /// turn that was taken back and taken again is still one turn: what is
+    /// counted is seats that have had their go, not moves made.
+    /// </summary>
+    private int turnsTaken;
     private int given;
 
     public Hand(int seats, int jokers, int dealerSeat, int seed)
@@ -105,19 +118,67 @@ public sealed class Hand
     /// </summary>
     public bool CanEndTheTurn(int seat) =>
         HasPutBackWhatItTook(seat)
+        && !MustStillGoOut(seat)
         && (wentDown[seat] || turn.Laying.Count == 0 || Melding.IsAShowing(Showing));
 
     /// <summary>
-    /// Whether this seat can put that many cards on the table and still
-    /// have a hand. One card always stays behind, because a turn ends on a
-    /// throw and on nothing else: a hand laid out to the last card could
-    /// not end its own turn.
-    ///
-    /// Which is also what makes going out a throw rather than a lay. Three
-    /// cards left that happen to be a run are not a win - two of them are
-    /// no meld, so the run waits a turn.
+    /// Whether anybody may go out yet. Nobody goes out before every other
+    /// seat has had a turn: a hand that ended sooner would be lost by
+    /// players who were never given the chance to go down. The seat
+    /// completing the round is not one of them - by its turn everybody else
+    /// has had theirs - so the last turn of the first round can win it.
     /// </summary>
-    private bool CanPartWith(int seat, int many) => hands[seat].Count > many;
+    public bool CanFinish => turnsTaken >= Seats - 1;
+
+    /// <summary>
+    /// Whether this seat may take the finishing card. It is for going out
+    /// in one strike and for nothing else, so a player who has already had
+    /// their hand on the table cannot have it - and nobody can while going
+    /// out is still closed, because taking it is going out.
+    /// </summary>
+    public bool CanTakeTheFinishingCard(int seat) =>
+        IsTheirTurn(seat)
+        && !HasDrawn
+        && !wentDown[seat]
+        && CanFinish
+        && Deck.FinishingCard is not null;
+
+    /// <summary>
+    /// Whether this turn took the finishing card, and so has promised the
+    /// table to end the hand before it ends the turn.
+    /// </summary>
+    private bool PromisedToGoOut => turn.TheFinishingCard is not null;
+
+    /// <summary>
+    /// Whether that promise is still owed. The only throw that keeps it is
+    /// the last card in the hand, so a turn that took the card and did not
+    /// lay the rest of itself down cannot end at all - it is taken back
+    /// instead, and the card goes back where it was lying.
+    /// </summary>
+    public bool MustStillGoOut(int seat) => PromisedToGoOut && hands[seat].Count != 1;
+
+    /// <summary>
+    /// How many cards a hand keeps back from the table. One, because a turn
+    /// ends on a throw and on nothing else: a hand laid out to the last card
+    /// could not end its own turn.
+    ///
+    /// Two while nobody may go out, which is what holds the first round
+    /// open. A hand down to one card has no move left but to throw it and
+    /// go out, so the way to forbid that is never to let the hand get
+    /// there - and a player is stopped while they still have a turn to
+    /// play rather than stranded holding a card they may not throw.
+    /// </summary>
+    private int KeepsBack => CanFinish ? 1 : 2;
+
+    /// <summary>
+    /// Whether this seat can put that many cards on the table and still
+    /// have a hand to play.
+    ///
+    /// Which is what makes going out a throw rather than a lay. Three cards
+    /// left that happen to be a run are not a win - two of them are no
+    /// meld, so the run waits a turn.
+    /// </summary>
+    private bool CanPartWith(int seat, int many) => hands[seat].Count - many >= KeepsBack;
 
     /// <summary>
     /// Whether everything this turn took off the table is back on it. The
@@ -155,7 +216,8 @@ public sealed class Hand
     /// player cannot be left having added to a table they never joined.
     /// </summary>
     public bool CanAddToTheTable(int seat) =>
-        wentDown[seat] || (turn.Laying.Count > 0 && Melding.IsAShowing(Showing));
+        !PromisedToGoOut
+        && (wentDown[seat] || (turn.Laying.Count > 0 && Melding.IsAShowing(Showing)));
 
     /// <summary>What this turn has laid, as the rules of going down read it.</summary>
     private IReadOnlyList<IReadOnlyList<Card>> Showing => [.. turn.Laying.Select(Lying)];
@@ -239,7 +301,12 @@ public sealed class Hand
             return false;
         }
 
-        var taken = from == DrawnFrom.Stock ? Board.TakeFromStock() : Board.TakeFromDiscards();
+        var taken = from switch
+        {
+            DrawnFrom.Stock => Board.TakeFromStock(),
+            DrawnFrom.Discards => Board.TakeFromDiscards(),
+            _ => CanTakeTheFinishingCard(seat) ? Deck.TakeTheFinishingCard() : null,
+        };
 
         if (taken is null)
         {
@@ -351,6 +418,7 @@ public sealed class Hand
     /// <summary>The only way a turn ever ends.</summary>
     private void HandItOn()
     {
+        turnsTaken += 1;
         TurnSeat = (TurnSeat + 1) % Seats;
         HasDrawn = false;
         Forget();
@@ -511,7 +579,7 @@ public sealed class Hand
 
         var anything = false;
 
-        while (TakeBackTheLastThing(seat) || PutTheDiscardBack(seat))
+        while (TakeBackTheLastThing(seat) || PutTheDrawnCardBack(seat))
         {
             anything = true;
         }
@@ -554,13 +622,20 @@ public sealed class Hand
     }
 
     /// <summary>
+    /// The draw undone, to whichever of the two places allow it: the top of
+    /// the discard pile, or the finishing card's place beside the deck.
+    /// Both were face up, so nobody learns anything from a card that went
+    /// and came back. The stock is the one that cannot.
+    ///
     /// Found by the number it was given when it was taken, so the one that
     /// goes back is the one that came - and not its twin out of the other
     /// pack, which the player may have been holding all along.
     /// </summary>
-    private bool PutTheDiscardBack(int seat)
+    private bool PutTheDrawnCardBack(int seat)
     {
-        if (turn.TheDiscard is not { } number)
+        var thrown = turn.TheDiscard;
+
+        if ((thrown ?? turn.TheFinishingCard) is not { } number)
         {
             return false;
         }
@@ -572,7 +647,15 @@ public sealed class Hand
             return false;
         }
 
-        Board.Throw(hands[seat][at].Card);
+        if (thrown is not null)
+        {
+            Board.Throw(hands[seat][at].Card);
+        }
+        else
+        {
+            Deck.GiveTheFinishingCardBack();
+        }
+
         hands[seat].RemoveAt(at);
         HasDrawn = false;
         turn.GaveItBack();

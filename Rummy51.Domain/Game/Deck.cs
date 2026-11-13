@@ -18,6 +18,7 @@ public sealed class Deck
 
     private IReadOnlyList<Card> cards;
     private Cut? cut;
+    private bool finishingTaken;
 
     public Deck(int jokers, int seed)
     {
@@ -63,7 +64,31 @@ public sealed class Deck
     /// </summary>
     public int? CutPosition { get; private set; }
 
-    public Card? FinishingCard => cut?.FinishingCard;
+    /// <summary>
+    /// The card the cut stopped on, lying face up beside the deck - and
+    /// null once somebody has taken it to go out with, because then it is
+    /// no longer lying there.
+    /// </summary>
+    public Card? FinishingCard => finishingTaken ? null : cut?.FinishingCard;
+
+    /// <summary>
+    /// Taken to go out with, which is the only thing it is for. Null when
+    /// it is not there to take.
+    /// </summary>
+    public Card? TakeTheFinishingCard()
+    {
+        if (FinishingCard is not { } card)
+        {
+            return null;
+        }
+
+        finishingTaken = true;
+
+        return card;
+    }
+
+    /// <summary>Lying there again, the turn that took it having been taken back.</summary>
+    public void GiveTheFinishingCardBack() => finishingTaken = false;
 
     public IReadOnlyList<Card> RevealedAtCut => cut?.Revealed ?? [];
 

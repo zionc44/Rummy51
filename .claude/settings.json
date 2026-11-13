@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/file-size.js",
+            "command": "node .claude/hooks/file-shape.js",
             "timeout": 10,
             "statusMessage": "Measuring the file"
           }

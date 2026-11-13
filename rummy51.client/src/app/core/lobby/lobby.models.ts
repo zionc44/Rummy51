@@ -126,6 +126,9 @@ export interface HandView {
 
   /** Who took the hand, or -1 while it is still being played. */
   readonly winnerSeat: number;
+
+  /** Whether the seat in turn may take the finishing card. */
+  readonly canTakeFinishing: boolean;
   /**
    * Who has shown a hand, by seat. Public, because their melds are lying on
    * the table for everybody to read.
@@ -151,7 +154,7 @@ export interface HandView {
 }
 
 /** Which of the two piles a player reached for. */
-export type DrawnFrom = 'stock' | 'discards';
+export type DrawnFrom = 'stock' | 'discards' | 'finishing';
 
 export interface CreateTableRequest {
   readonly seats: number;

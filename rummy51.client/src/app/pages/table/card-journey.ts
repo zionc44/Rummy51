@@ -7,10 +7,15 @@ const Travel = 320;
 /** Over the carried card and under the mark that says where it would land. */
 const Above = 45;
 
-/** The two piles on the felt and the hand below them, as a view holds them. */
+/**
+ * The three places a card is drawn from and the hand below them, as a view
+ * holds them. They are named for the draws themselves, so a draw finds
+ * where it set out from without anybody choosing.
+ */
 export interface Piles {
   stock(): HTMLElement | undefined;
   discards(): HTMLElement | undefined;
+  finishing(): HTMLElement | undefined;
   cardAt(id: number): HTMLElement | undefined;
 }
 
@@ -37,9 +42,7 @@ export class CardJourney {
    * reaches the hand the pile may be showing another card, or none.
    */
   leaving(pile: DrawnFrom): void {
-    const from = pile === 'stock' ? this.piles.stock() : this.piles.discards();
-
-    this.leftFrom = from?.getBoundingClientRect() ?? null;
+    this.leftFrom = this.piles[pile]()?.getBoundingClientRect() ?? null;
   }
 
   /** And the card itself, once it is lying where it is going to lie. */

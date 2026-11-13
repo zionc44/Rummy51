@@ -146,6 +146,7 @@ export class Table implements OnDestroy {
   private readonly journey = new CardJourney({
     stock: () => this.pile()?.nativeElement,
     discards: () => this.discardPile()?.nativeElement,
+    finishing: () => this.finishingSlot()?.nativeElement,
     cardAt: (id) => this.nearHand()?.cardAt(id),
   });
 

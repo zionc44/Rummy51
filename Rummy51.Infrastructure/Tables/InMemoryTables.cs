@@ -184,6 +184,11 @@ public sealed class InMemoryTables(
             return "TakenCardStillHeld";
         }
 
+        if (table.MustStillGoOut(seat))
+        {
+            return "FinishingCardMustWin";
+        }
+
         return table.CouldEndTheTurn(seat) ? "CannotDiscard" : "GoingDownIsShort";
     }
 

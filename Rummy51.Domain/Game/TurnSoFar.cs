@@ -46,13 +46,21 @@ internal sealed class TurnSoFar
     /// </summary>
     private (int Card, DrawnFrom From)? drawn;
 
-    public bool Anything => putDown.Count > 0 || TheDiscard is not null;
+    public bool Anything =>
+        putDown.Count > 0 || TheDiscard is not null || TheFinishingCard is not null;
 
     /// <summary>The card taken off the discard pile, which can go back.</summary>
     public int? TheDiscard => From(DrawnFrom.Discards);
 
     /// <summary>The card off the stock, which is the one a turn is spent on.</summary>
     public int? OffTheStock => From(DrawnFrom.Stock);
+
+    /// <summary>
+    /// The finishing card, if this turn took it. It can go back where it
+    /// was lying for the same reason the discard can: it was face up, so
+    /// having held it teaches nobody anything.
+    /// </summary>
+    public int? TheFinishingCard => From(DrawnFrom.Finishing);
 
     public void Took(int card, DrawnFrom from) => drawn = (card, from);
 

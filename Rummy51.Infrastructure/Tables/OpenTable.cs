@@ -139,6 +139,8 @@ internal sealed class OpenTable
 
     public bool HasPutBackWhatItTook(int seat) => hand?.HasPutBackWhatItTook(seat) != false;
 
+    public bool MustStillGoOut(int seat) => hand?.MustStillGoOut(seat) == true;
+
     /// <summary>
     /// A card onto a meld already lying there. Like laying one down, this
     /// happens inside a turn and ends neither half of it, so the clock is
@@ -291,6 +293,7 @@ internal sealed class OpenTable
                 [.. hand.Board.Melds.Select(Laid)],
                 hand.CanUndo,
                 hand.TurnSeat != -1 && hand.CanAddToTheTable(hand.TurnSeat),
+                hand.TurnSeat != -1 && hand.CanTakeTheFinishingCard(hand.TurnSeat),
                 countdown.Describe(hand.WaitingSeat));
 
     /// <summary>Everything on the table is everybody's to read.</summary>

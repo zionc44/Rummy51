@@ -111,6 +111,7 @@
     "dealer": "Dealer",
     "sortHand": "Sort the hand",
     "undo": "Take the turn back",
+    "takeFinishing": "Take the finishing card",
     "drawStock": "Take from the deck",
     "drawDiscard": "Take the discarded card",
     "emptyPile": "No card has been thrown",
@@ -178,6 +179,7 @@
     "CannotAddToMeld": "That card cannot join that meld",
     "CannotBuyThatJoker": "That card does not stand in for that joker",
     "GoingDownIsShort": "What you laid does not come to fifty-one with a clean run",
-    "TakenCardStillHeld": "A card you took off the table has to be back on it before you throw"
+    "TakenCardStillHeld": "A card you took off the table has to be back on it before you throw",
+    "FinishingCardMustWin": "The finishing card is only for going out — lay the rest of your hand, or take it back"
   }
 }

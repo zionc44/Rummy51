@@ -153,9 +153,15 @@
   }
 }
 
-// Turned a quarter and placed so the pile covers exactly half of it.
+// Turned a quarter and placed so the pile covers exactly half of it. It is
+// a button because it can be taken, and the half of it the deck covers is
+// the deck's to be pressed: whichever is on top gets the press, which is
+// what would happen to two cards lying like this on a table.
 .stack__finishing {
   position: absolute;
+  border: 0;
+  background: none;
+  padding: 0;
   inset-block-start: 0;
   inset-inline-start: 50%;
   inline-size: 100%;

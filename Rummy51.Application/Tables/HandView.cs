@@ -34,6 +34,11 @@ namespace Rummy51.Application.Tables;
 /// how many cards went where and never which.
 /// </param>
 /// <param name="TurnSeat">Whose turn it is, or -1 before play has begun.</param>
+/// <param name="CanTakeFinishing">
+/// Whether the seat in turn may take the finishing card. Public like the
+/// rest of what a turn may do: at a real table everybody can see that the
+/// card is still lying there and who has yet to go down.
+/// </param>
 /// <param name="WinnerSeat">
 /// Who took the hand, or -1 while it is still being played. Public, and it
 /// has to be: the hand is over and everybody is owed the reason.
@@ -87,4 +92,5 @@ public sealed record HandView(
     IReadOnlyList<MeldView> Melds,
     bool CanUndo,
     bool CanAdd,
+    bool CanTakeFinishing,
     Waiting? Waiting);

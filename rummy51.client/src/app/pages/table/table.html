@@ -53,13 +53,18 @@
                     <!-- Where the card is going. It waits, invisible, while
                          the one in the deck travels here, so there is never
                          two of it. -->
-                    <div
+                    <button
                       #finishingSlot
+                      type="button"
                       class="stack__finishing"
                       [class.stack__finishing--waiting]="collapsing()"
+                      [class.pile--offered]="turn.canTakeFinishing()"
+                      [disabled]="!turn.canTakeFinishing()"
+                      [attr.aria-label]="'table.takeFinishing' | translate"
+                      (click)="moves.draw('finishing')"
                     >
                       <img class="stack__face" [src]="picture(code)" alt="" />
-                    </div>
+                    </button>
                   }
                   <button
                     #pile

@@ -19,15 +19,26 @@ is worth a word in the commit message.
 Nothing enforces any of this, which is how a seat component came to hold a drag
 engine and a page component a whole animation director: no commit added them,
 each one grew a reasonable piece at a time and nobody saw the total. So one
-alarm counts what the reading cannot. `.claude/hooks/file-size.js` says when a
-hand-written file has passed the size at which everything healthy here sits —
-250 lines of TypeScript or C#, 180 of a template — and asks whether it is still
-one job. It blocks nothing and the number is not a budget to write up to; it
-only makes somebody look. Its silence is not a clean bill of health, and the
-answer to it is sometimes no: `dealing.ts` sits above the line on purpose.
+alarm counts what the reading cannot. `.claude/hooks/file-shape.js` measures
+two ways a file can be carrying too much, and asks about either.
+
+**Too long** — past 250 lines of TypeScript or C#, or 180 of a template, which
+is the size at which everything healthy here sits. Is it still one job?
+
+**Too much prose** — past a fifth of its lines being comment. That one watches
+the writing rather than the code, because prose is cheap to produce and
+expensive to keep true: a comment that restates a rule is a second copy of it,
+and the copy in the code is always the one that goes stale, since it is not the
+one anybody opens when the rule changes. Files with fewer than ten comment
+lines are left alone — one honest trap in a short file is over a fifth and is
+right to be.
+
+Neither blocks anything and neither number is a budget to write up to; they
+only make somebody look. Their silence is not a clean bill of health, and the
+answer is sometimes no: `dealing.ts` sits above the length line on purpose.
 
 ```bash
-node .claude/hooks/file-size.js --all      # every file, not just the one just written
+node .claude/hooks/file-shape.js --all     # every file, not just the one just written
 ```
 
 That second half matters more than it sounds. As a hook it only ever sees what
@@ -66,6 +77,12 @@ reader says whether.
 **Everywhere**
 
 - Names instead of comments. Comment *why*, never *what*.
+- A game rule is stated in `docs/rules.md` and named from the code by its
+  number — `// rules 5.7, 5.9` — never restated. A rule written twice is a rule
+  that will be changed once, and the copy that rots is the one in the code.
+- What a comment is for is the rest: a trap that makes correct code look wrong.
+  If deleting it would not cost anybody an hour, the name should have carried
+  it.
 - Delete rather than comment out. Git remembers.
 - Read the whole file before giving something a second job. A targeted edit
   shows a diff, never a size, and a file is only ever read by whoever opens it.
@@ -256,10 +273,18 @@ forms.
 ## The game
 
 The rules live in [`docs/rules.md`](docs/rules.md) — the deck, the deal, a
-turn, runs and sets, going down, scoring, and what is still unsettled. Read
-it before touching anything under `Rummy51.Domain/Game`, and settle a rule
-there in the same change that enforces it, or the two drift apart and the
-written one is the one everybody trusts.
+turn, runs and sets, going down, finishing, scoring, and what is still
+unsettled. Read it before touching anything under `Rummy51.Domain/Game`, and
+settle a rule there in the same change that enforces it, or the two drift
+apart and the written one is the one everybody trusts.
+
+Every rule has a number of its own, and the numbers never move: a new rule
+goes at the end of its chapter even where it reads better in the middle, and
+a deleted one leaves its number empty rather than passing it on. Code that
+enforces a rule names the number and says nothing else about it, so `grep`
+on a number finds every place it is held to — in the client as well as the
+server, which is what makes the deliberate twins (`Melding.cs` beside
+`melds.ts`, `Worth.cs` beside `worth.ts`) checkable rather than a promise.
 
 ## State of play
 

@@ -35,6 +35,16 @@ export class Turn {
    */
   readonly toDraw = computed(() => this.mine() && !this.hand()?.hasDrawn && !this.animating());
 
+  /**
+   * Whether the finishing card may be taken. It is a draw in shape and
+   * nothing like one in meaning, so the server answers it: whether this
+   * player has gone down, and whether the first round is over, are both
+   * its business and neither is worth a second copy here.
+   */
+  readonly canTakeFinishing = computed(
+    () => this.toDraw() && (this.hand()?.canTakeFinishing ?? false),
+  );
+
   /** The pile is only something to take from while a card lies on it. */
   readonly canTakeDiscard = computed(() => this.toDraw() && this.hand()?.discardTop != null);
 
