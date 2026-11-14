@@ -1,0 +1,92 @@
+// Nothing of its own: every one of these is laid against the board, which
+// is its parent and not this.
+:host {
+  display: contents;
+}
+
+// Beside each other at the foot of the board: one takes a move back and the
+// other only tidies a hand, which is why that one is there whosever turn it
+// is and this one comes and goes.
+.board__undo,
+.board__sort {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  padding: 0.125rem 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--felt-500);
+    color: var(--felt-500);
+  }
+}
+
+// The sort sits inside the undo's place, so the two never collide whether
+// or not there is anything to take back.
+.board__sort {
+  display: grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  padding: 0;
+}
+
+.board__undo {
+  inset-inline-start: 1.875rem;
+}
+
+.board__redeal {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  z-index: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  padding: 0.125rem 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--felt-500);
+    color: var(--felt-500);
+  }
+}
+
+// Under the board rather than over it: the cards are what matters and this
+// is only the sentence that says whose move it is.
+.board__prompt {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  // It spans the whole width so that its text can be centred on the board,
+  // and it is drawn after the button beside it - so without this it takes
+  // the presses meant for that button. It is a sentence; there is nothing
+  // in it to press.
+  pointer-events: none;
+  margin: 0;
+  color: var(--felt-500);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+// The same place as the prompt, because the two never show at once: a hand
+// being played is waiting for somebody, and a hand that is over is not. It
+// is said louder, being the last thing the board has to say.
+.board__won {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  pointer-events: none;
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+}

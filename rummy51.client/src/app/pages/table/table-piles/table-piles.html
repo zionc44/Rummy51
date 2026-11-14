@@ -1,0 +1,57 @@
+<!-- The finishing card first, so the deck drawn after it covers the half
+     that is meant to be hidden. -->
+<div class="stack">
+  @if (finishing(); as code) {
+    <!-- Where the card is going. It waits, invisible, while the one in the
+         deck travels here, so there is never two of it. -->
+    <button
+      #slot
+      type="button"
+      class="stack__finishing"
+      [class.stack__finishing--waiting]="collapsing()"
+      [class.pile--offered]="turn().canTakeFinishing()"
+      [disabled]="!turn().canTakeFinishing()"
+      [attr.aria-label]="'table.takeFinishing' | translate"
+      (click)="drew.emit('finishing')"
+    >
+      <img class="stack__face" [src]="picture(code)" alt="" />
+    </button>
+  }
+  <button
+    #deck
+    type="button"
+    class="stack__pile"
+    [class.stack__pile--bare]="!stock()"
+    [class.pile--offered]="turn().canTakeStock()"
+    [disabled]="!turn().canTakeStock()"
+    [attr.aria-label]="'table.drawStock' | translate"
+    (click)="drew.emit('stock')"
+  >
+    <img [src]="picture('1B')" alt="" />
+    <img [src]="picture('2B')" alt="" />
+    <img [src]="picture('1B')" alt="" />
+  </button>
+</div>
+
+<!-- What the player before threw, which is the only card of the pile under
+     it that anybody may take - and the place a card is thrown to, which is
+     the same place. -->
+<button
+  #pile
+  type="button"
+  class="discard"
+  [class.pile--offered]="turn().canTakeDiscard() || turn().canThrow()"
+  [disabled]="!turn().canTakeDiscard() && !turn().canThrow()"
+  [attr.aria-label]="(turn().toThrow() ? 'table.throwHere' : 'table.drawDiscard') | translate"
+  (click)="pressed.emit()"
+>
+  @if (discardTop(); as code) {
+    @if (discardCount() > 1) {
+      <img class="discard__under" [src]="picture('2B')" alt="" />
+      <img class="discard__under" [src]="picture('1B')" alt="" />
+    }
+    <img class="stack__face discard__top" [src]="picture(code)" alt="" />
+  } @else {
+    <span class="discard__empty">{{ 'table.emptyPile' | translate }}</span>
+  }
+</button>

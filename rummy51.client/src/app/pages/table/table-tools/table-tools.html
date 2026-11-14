@@ -1,0 +1,34 @@
+@if (arrangeable()) {
+  <button
+    type="button"
+    class="board__sort"
+    [attr.aria-label]="'table.sortHand' | translate"
+    (click)="sorted.emit()"
+  >
+    <app-icon-sort />
+  </button>
+}
+
+@if (turn().canOfferRedeal()) {
+  <button type="button" class="board__redeal" (click)="offeredRedeal.emit()">
+    {{ 'table.redeal' | translate }}
+  </button>
+}
+
+@if (turn().canUndo()) {
+  <button type="button" class="board__undo" (click)="undid.emit()">
+    {{ 'table.undo' | translate }}
+  </button>
+}
+
+@if (turn().prompt(); as line) {
+  <p class="board__prompt">{{ line | translate }}</p>
+}
+
+<!-- Said to the whole table, because the hand is over for everybody at it
+     and not only for whoever took it. -->
+@if (winner(); as won) {
+  <p class="board__won">
+    {{ (won.mine ? 'table.youWon' : 'table.theyWon') | translate: { '0': won.name } }}
+  </p>
+}

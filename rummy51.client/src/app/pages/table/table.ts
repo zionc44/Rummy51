@@ -7,7 +7,6 @@ import { ArrangedHand } from '../../core/cards/arranged-hand';
 import { Fit, Swap } from '../../core/cards/card';
 import { GoingDown, hasCleanRun, showingWorth } from '../../core/cards/melds';
 import { NeverWentDown, worthOfHand } from '../../core/cards/worth';
-import { pictureOf } from '../../core/cards/deck';
 import { HandPhase, HandView } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
 import { Asking } from './asking';
@@ -24,11 +23,12 @@ import { Dealing, Spots } from './dealing';
 import { CardMove, CardRelease } from './player-hand/hand-drag';
 import { PlayerHand } from './player-hand/player-hand';
 import { TableCut } from './table-cut/table-cut';
-import { IconSort } from '../../shared/icons/icon-sort/icon-sort';
 import { TableSeat } from './table-seat/table-seat';
 import { TableMelds } from './table-melds/table-melds';
 import { TableTally } from './table-tally/table-tally';
+import { TablePiles } from './table-piles/table-piles';
 import { TableTerms } from './table-terms/table-terms';
+import { TableTools } from './table-tools/table-tools';
 import { KeepThree } from './keep-three/keep-three';
 import { RedealVote } from './redeal-vote/redeal-vote';
 
@@ -50,11 +50,12 @@ const CardOwed = 'TakenCardStillHeld';
     PlayerHand,
     ProfileMenu,
     TableCut,
-    IconSort,
     TableMelds,
     TableTally,
     TableSeat,
     TableTerms,
+    TablePiles,
+    TableTools,
     RedealVote,
     KeepThree,
   ],
@@ -72,8 +73,6 @@ export class Table implements OnDestroy {
   private readonly injector = inject(Injector);
   private readonly element: ElementRef<HTMLElement> = inject(ElementRef);
 
-  protected readonly picture = pictureOf;
-
   protected readonly hand = this.lobby.hand;
 
   protected readonly myCards = this.lobby.myCards;
@@ -90,11 +89,9 @@ export class Table implements OnDestroy {
   }
 
   private readonly theCut = viewChild<TableCut>('theCut');
-  private readonly pile = viewChild<ElementRef<HTMLElement>>('pile');
-  private readonly discardPile = viewChild<ElementRef<HTMLElement>>('discardPile');
+  private readonly piles = viewChild<TablePiles>(TablePiles);
   private readonly nearHand = viewChild<PlayerHand>('nearHand');
   private readonly otherSpots = viewChildren<TableSeat>('seatSpot');
-  private readonly finishingSlot = viewChild<ElementRef<HTMLElement>>('finishingSlot');
   private seenPhase: HandPhase | null = null;
   private readonly ticking = signal(Date.now());
   private readonly beat: number;
@@ -104,8 +101,8 @@ export class Table implements OnDestroy {
   private spots(): Spots {
     return {
       fanCards: () => this.theCut()?.cards() ?? [],
-      pile: () => this.pile()?.nativeElement,
-      finishingSlot: () => this.finishingSlot()?.nativeElement,
+      pile: () => this.piles()?.stockSpot(),
+      finishingSlot: () => this.piles()?.finishingSpot(),
       faceUp: (seat, step) => this.faceUpSpot(seat, step),
       dealt: (seat, step) =>
         this.seating.mine(seat)
@@ -151,9 +148,9 @@ export class Table implements OnDestroy {
 
   /** One card's journey between a pile and the hand, drawn or thrown. */
   private readonly journey = new CardJourney({
-    stock: () => this.pile()?.nativeElement,
-    discards: () => this.discardPile()?.nativeElement,
-    finishing: () => this.finishingSlot()?.nativeElement,
+    stock: () => this.piles()?.stockSpot(),
+    discards: () => this.piles()?.discardSpot(),
+    finishing: () => this.piles()?.finishingSpot(),
     cardAt: (id) => this.nearHand()?.cardAt(id),
   });
 
@@ -465,7 +462,7 @@ export class Table implements OnDestroy {
    * and one card at a time can be thrown onto it.
    */
   protected cardReleased(release: CardRelease): void {
-    const pile = this.discardPile()?.nativeElement.getBoundingClientRect();
+    const pile = this.piles()?.discardSpot()?.getBoundingClientRect();
 
     if (!this.turn.toThrow() || release.ids.length !== 1 || pile === undefined) {
       return;
