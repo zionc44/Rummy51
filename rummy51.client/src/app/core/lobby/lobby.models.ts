@@ -134,6 +134,12 @@ export interface HandView {
   /** Rule 12.1, or -1 when nothing is on the table to answer. */
   readonly offeredBy: number;
 
+  /** Rule 12.9: the offer on the table cannot simply be refused. */
+  readonly forced: boolean;
+
+  /** Rule 12.11, and empty until the table may see them. */
+  readonly forcedWith: readonly string[];
+
   /** Rule 11.3. */
   readonly wentDown: readonly boolean[];
 
@@ -161,4 +167,18 @@ export interface CreateTableRequest {
   readonly mode: GameMode;
   /** Points that end a survival game, or hands in a series. Null for one hand. */
   readonly limit: number | null;
+}
+
+/**
+ * Chapter 12 as one player may see it, which is the half of it that is not
+ * the whole table's. The pairs here are this player's own and say that they
+ * may force a redeal with them; everyone else's arrive, if ever, in the
+ * hand's own `forcing`.
+ */
+export interface Redeal {
+  /** Rule 12.4, masked by the server: a null is a seat this player may not see. */
+  readonly answers: readonly (boolean | null)[];
+
+  /** Rule 12.9, empty where there is no right to force. */
+  readonly pairs: readonly string[];
 }

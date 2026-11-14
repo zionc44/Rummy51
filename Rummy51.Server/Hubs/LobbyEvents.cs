@@ -13,13 +13,13 @@ public static class LobbyEvents
     /// <summary>Sent only to the connections watching that one table.</summary>
     public const string HandChanged = "HandChanged";
 
+    /// <summary>Chapter 12, as one player may see it.</summary>
+    public const string AboutARedeal = "AboutARedeal";
+
     /// <summary>
     /// Sent to one player, carrying that player's own cards and nobody
     /// else's. It is the only message at a table that is not a broadcast.
     /// </summary>
-    /// <summary>Rule 12.4: the answers as one player may see them.</summary>
-    public const string OfferAnswers = "OfferAnswers";
-
     public const string CardsDealt = "CardsDealt";
 
     /// <summary>Sent to a connection that a newer one has just replaced.</summary>

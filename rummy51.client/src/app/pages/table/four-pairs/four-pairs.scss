@@ -1,0 +1,29 @@
+// Two to a row rather than however many happen to fit, because a line that
+// wraps leaves the last card standing alone and looking like a fifth pair.
+//
+// Left to right whatever the language is, as the hand and the melds are: a
+// card is known by the index in its top left corner, so a card may be
+// covered on its right and never on its left.
+.pairs {
+  direction: ltr;
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  justify-content: center;
+  gap: 0.5rem 1rem;
+}
+
+// The gap inside a pair is closed and the gap between pairs is not, so the
+// shape says what it is without a caption.
+.pairs__pair {
+  display: flex;
+}
+
+.pairs__card {
+  inline-size: 2.75rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+
+  &:first-child {
+    margin-inline-end: -1rem;
+  }
+}

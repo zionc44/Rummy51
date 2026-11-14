@@ -7,15 +7,8 @@ const PerRow = 8;
 
 /**
  * A hand as its owner has chosen to hold it, which is the one thing about a
- * hand that the server never learns: it sends the cards and is never told an
+ * hand the server never learns: it sends the cards and is never told an
  * order. Sorting, moving and picking a card out all land here.
- *
- * It is held against what the server sends rather than instead of it. A hand
- * changes under its owner all game - they draw, they throw - and what they
- * decided about the cards in between has to survive that. Which is why the
- * two things that could drift are worked out from the cards rather than
- * simply remembered: where the hand wraps, and which card is standing out
- * of it.
  */
 export class ArrangedHand {
   /** Null until the hand has been sorted or a card moved by hand. */
@@ -29,17 +22,11 @@ export class ArrangedHand {
   readonly cards = computed(() => arrangedLike(this.held(), this.laid()));
 
   /**
-   * How many cards lie on the first line. A card never crosses between the
-   * lines on its own, whatever happens to the hand: one thrown from the
-   * first line takes its place with it rather than pulling a card up from
-   * the line below, and one drawn joins the end. Only the player carrying a
-   * card across moves the break, and that goes through `move`.
-   *
-   * Which is why a hand that was handed several cards at once starts over.
-   * The break only ever moves up as cards leave, so a redeal - where the
-   * hand is on the screen the whole time and down to three cards in the
-   * middle of it - would carry a break of one into the hand that follows
-   * and drop every card of it onto the second line.
+   * How many cards lie on the first line. Only the player carrying a card
+   * across moves the break, so it travels one way on its own: up, as cards
+   * leave. A redeal is on the screen throughout and passes through three
+   * cards, so a break kept across one would be a break of one, and every
+   * card of the hand that follows would land on the second line.
    */
   readonly firstLine = linkedSignal<readonly HeldCard[], number>({
     source: this.cards,
@@ -49,11 +36,7 @@ export class ArrangedHand {
         : Math.max(previous.value - gone(previous.source.slice(0, previous.value), cards), 0),
   });
 
-  /**
-   * The card standing clear of the rest, or null when none is. A card just
-   * drawn arrives standing out, because it is the one its owner is thinking
-   * about; one that leaves the hand stops standing out of it.
-   */
+  /** The card standing clear of the rest, or null when none is. */
   readonly picked = linkedSignal<readonly HeldCard[], number | null>({
     source: this.cards,
     computation: (cards, previous) => {
@@ -63,8 +46,8 @@ export class ArrangedHand {
 
       const arrived = newcomers(previous.source, cards);
 
-      // A hand that was already there and has gained exactly one card has
-      // just drawn it. A hand gains fourteen at the deal and none of them.
+      // One card into a hand that was already there is a card drawn, and
+      // the deal is fourteen into a hand that was not.
       if (arrived.length === 1 && previous.source.length > 0) {
         return arrived[0].id;
       }
@@ -73,30 +56,22 @@ export class ArrangedHand {
     },
   });
 
-  /**
-   * Two presses and two orders, rule 4.1 naming two shapes: by rank the sets
-   * line up, by suit the runs do. Either takes over from an arrangement made
-   * by hand, which is what asking to have it sorted means.
-   */
+  /** Rule 4.1 names two shapes and no order shows both. */
   sort(): void {
     this.sortedBy = this.sortedBy === 'byRank' ? 'bySuit' : 'byRank';
 
-    // Everything, including what is lying on the table: a card laid down is
-    // still one of this hand's, and sorting puts it where it belongs so
-    // that it is already there if it comes back.
+    // What is lying on the table is sorted with the rest, so that a card
+    // bought back or taken back arrives where it belongs.
     this.laid.set(inOrder(this.everything(), this.sortedBy));
     this.firstLine.set(Math.min(PerRow, this.held().length));
   }
 
   /** One card, or a whole run, put down somewhere else in the hand. */
   move(ids: readonly number[], to: number, firstLine: number | null): void {
-    // The place counts over the cards lying in the hand, so the move is made
-    // in those terms and then folded back into the whole of the
-    // arrangement, places kept and all.
+    // The place counts over the cards in the hand, so the move is made in
+    // those terms and folded back into the arrangement afterwards.
     this.laid.set(keepingTheirPlaces(moved(this.cards(), ids, to), this.laid() ?? []));
 
-    // Putting a card down somewhere drops the mark on it. The player has
-    // said what they wanted with that card, and it was not "this one".
     this.picked.set(null);
 
     if (firstLine !== null) {
@@ -104,20 +79,12 @@ export class ArrangedHand {
     }
   }
 
-  /**
-   * A tap on a card stands it out of the hand. The same card again puts it
-   * back, and a different one takes its place: there is only ever one.
-   */
+  /** The same card again puts it back; there is only ever one standing out. */
   pick(id: number): void {
     this.picked.update((standing) => (standing === id ? null : id));
   }
 
-  /**
-   * This card and no other, whatever was standing out before. A tap
-   * toggles because a tap on a card already out means putting it back;
-   * this is the table pointing at a card, and pointing twice points at the
-   * same card.
-   */
+  /** Pointing at a card rather than tapping it, so pointing twice is not a toggle. */
   singleOut(id: number): void {
     this.picked.set(id);
   }
@@ -138,16 +105,15 @@ export class ArrangedHand {
   }
 }
 
-/** How many of those are no longer in the hand. */
 /**
- * More cards at once than a turn can bring, which is a hand being dealt and
- * not played into. A turn taken back brings several at once as well and is
- * read the same way: both of them leave behind a break that was decided
- * about a hand which no longer exists.
+ * More at once than a turn can bring, so the hand was dealt rather than
+ * played into - a turn taken back counts too. Either way the break left
+ * behind was decided about a hand that is gone.
  */
 const handedSeveral = (were: readonly HeldCard[], cards: readonly HeldCard[]) =>
   cards.length > were.length + 1;
 
+/** How many of those are no longer in the hand. */
 function gone(were: readonly HeldCard[], cards: readonly HeldCard[]): number {
   const held = new Set(cards.map((card) => card.id));
 

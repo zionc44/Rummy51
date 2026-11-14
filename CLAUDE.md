@@ -185,7 +185,10 @@ hand. The section is bound only when the host is running in development, so
 writing it into a deployed configuration switches nothing on. `MarkJokers`
 tells every client where the jokers are lying in the deck, which is the only
 practical way to work on a cut that finds one twice in a hundred hands — and
-plainly a cheat once that deck becomes the stock.
+plainly a cheat once that deck becomes the stock. `FourPairs` shuffles the
+first deal over until somebody can force a redeal under 12.9, which is one
+deal in about a hundred and twenty and so is the same problem; it costs a
+few milliseconds and the deal it settles on is a shuffle like any other.
 
 ## Database
 

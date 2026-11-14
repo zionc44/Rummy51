@@ -131,14 +131,14 @@ public sealed class Deck
         return shuffled;
     }
 
-    /// <summary>
-    /// One pack's, then the other's: two cards that look alike really do
-    /// have different backs, so the split is even and not a coin toss.
-    /// </summary>
     /// <summary>Half of one pack's and half of the other's, whatever is left.</summary>
     private static IReadOnlyList<int> BacksFor(int count) =>
         [.. Enumerable.Range(0, count).Select(at => at < count / 2 ? 1 : 2)];
 
+    /// <summary>
+    /// One pack's, then the other's: two cards that look alike really do
+    /// have different backs, so the split is even and not a coin toss.
+    /// </summary>
     private static IReadOnlyList<int> BacksOf(int jokers) =>
     [
         .. Enumerable.Range(0, Packs).SelectMany(pack => Enumerable.Repeat(pack + 1, PackSize)),

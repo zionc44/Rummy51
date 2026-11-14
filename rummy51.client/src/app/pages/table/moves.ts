@@ -71,6 +71,11 @@ export class Moves {
     this.send(this.tables.offerARedeal(this.tableId()));
   }
 
+  /** Rules 12.9, 12.10. */
+  forceARedeal(atOnce: boolean): void {
+    this.send(this.tables.forceARedeal(this.tableId(), atOnce));
+  }
+
   /** Rule 12.3. */
   answer(agreed: boolean): void {
     this.send(this.tables.answer(this.tableId(), agreed));

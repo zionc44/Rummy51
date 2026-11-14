@@ -14,4 +14,10 @@ public sealed class TestingSettings
     /// meet by playing. Plainly a cheat, which is why it is here.
     /// </summary>
     public bool MarkJokers { get; init; }
+
+    /// <summary>
+    /// Deals the first hand over until somebody holds rule 12.9's four
+    /// pairs, which is otherwise about one hand in a hundred and twenty.
+    /// </summary>
+    public bool FourPairs { get; init; }
 }

@@ -1,0 +1,9 @@
+<div class="pairs">
+  @for (pair of pairs(); track $index) {
+    <div class="pairs__pair">
+      @for (code of pair; track $index) {
+        <img class="pairs__card" [src]="picture(code)" alt="" draggable="false" />
+      }
+    </div>
+  }
+</div>

@@ -26,7 +26,12 @@ export class TableTools {
 
   readonly sorted = output<void>();
 
+  /** Rule 12.9, which is nobody else's business and so is not on the hand. */
+  readonly canForce = input(false);
+
   readonly offeredRedeal = output<void>();
+
+  readonly forced = output<void>();
 
   readonly undid = output<void>();
 }

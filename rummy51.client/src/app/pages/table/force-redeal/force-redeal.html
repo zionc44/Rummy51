@@ -1,0 +1,19 @@
+<div class="force">
+  <div class="force__panel" role="alertdialog" aria-modal="true">
+    <p class="force__asked">{{ 'table.forceAsked' | translate }}</p>
+
+    <app-four-pairs [cards]="pairs()" />
+
+    <div class="force__buttons">
+      <button type="button" class="btn-primary" (click)="forced.emit(false)">
+        {{ 'table.forceAsk' | translate }}
+      </button>
+      <button type="button" class="btn-primary force__end" (click)="forced.emit(true)">
+        {{ 'table.forceAtOnce' | translate }}
+      </button>
+      <button type="button" class="btn-ghost" (click)="cancelled.emit()">
+        {{ 'common.cancel' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -124,6 +124,13 @@ public class TablesController(
     public Task<IActionResult> OfferARedeal(Guid tableId) =>
         MoveAsync(tableId, playerId => tables.OfferARedeal(tableId, playerId));
 
+    /// <summary>Rules 12.9 and 12.10.</summary>
+    [HttpPost("{tableId:guid}/redeal/force")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> ForceARedeal(Guid tableId, ForceRequest request) =>
+        MoveAsync(tableId, playerId => tables.ForceARedeal(tableId, playerId, request.AtOnce));
+
     /// <summary>Rule 12.3.</summary>
     [HttpPost("{tableId:guid}/redeal/answer")]
     [ProducesResponseType<HandView>(StatusCodes.Status200OK)]

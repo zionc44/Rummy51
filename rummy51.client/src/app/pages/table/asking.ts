@@ -1,5 +1,5 @@
 import { Signal, computed, signal } from '@angular/core';
-import { HandPhase, HandView, TableSeat } from '../../core/lobby/lobby.models';
+import { HandPhase, HandView, Redeal, TableSeat } from '../../core/lobby/lobby.models';
 import { VoteRow } from './redeal-vote/redeal-vote';
 
 /**
@@ -16,7 +16,7 @@ export class Asking {
     private readonly hand: Signal<HandView | null>,
     private readonly seats: Signal<readonly TableSeat[]>,
     private readonly ownSeat: Signal<number>,
-    private readonly answers: Signal<readonly (boolean | null)[]>,
+    private readonly redeal: Signal<Redeal>,
     private readonly ticking: Signal<number>,
   ) {}
 
@@ -32,14 +32,30 @@ export class Asking {
    * may not be shown.
    */
   readonly rows = computed<readonly VoteRow[]>(() => {
-    const answers = this.answers();
+    const answers = this.redeal().answers;
 
     return this.seats()
       .map((seat, at) => ({ name: seat.displayName ?? '', answer: answers[at] ?? null }));
   });
 
   /** Still to answer, which is what keeps the other seats hidden. */
-  readonly toAnswer = computed(() => (this.answers()[this.ownSeat()] ?? null) === null);
+  readonly toAnswer = computed(() => (this.redeal().answers[this.ownSeat()] ?? null) === null);
+
+  /** Rule 12.9: this player's own four pairs, and empty is no right to force. */
+  readonly pairs = computed(() => this.redeal().pairs);
+
+  /** Rule 12.9: what is on the table is a forced redeal and not an offer. */
+  readonly forced = computed(() => this.hand()?.forced ?? false);
+
+  /** Rule 12.11: the pairs it was forced with, once the table may see them. */
+  readonly forcedWith = computed(() => this.hand()?.forcedWith ?? []);
+
+  /**
+   * Rule 12.11, worked out from the answers rather than asked for: one seat
+   * choosing to end it is the one thing that changes what anybody keeps.
+   * Forcing at once is every answer refused, so it lands here as well.
+   */
+  readonly ended = computed(() => this.rows().some((row) => row.answer === false));
 
   /** However long the table is being given, counted down rather than asked for again. */
   readonly secondsLeft = computed(() => {
@@ -58,6 +74,9 @@ export class Asking {
 
   readonly chosen = signal(false);
 
+  /** Rule 12.10 being put to whoever may force, before anything is sent. */
+  readonly choosing = signal(false);
+
   /** A window answered once is open again the moment the table asks anew. */
   settle(phase: HandPhase | null): void {
     if (phase !== 'answered') {
@@ -66,6 +85,10 @@ export class Asking {
 
     if (phase !== 'keeping') {
       this.chosen.set(false);
+    }
+
+    if (phase !== 'playing') {
+      this.choosing.set(false);
     }
   }
 

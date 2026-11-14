@@ -86,6 +86,9 @@ public sealed class LobbyHub(
         if (PlayerId() is { } playerId)
         {
             await Clients.Caller.SendAsync(LobbyEvents.CardsDealt, tables.CardsOf(tableId, playerId));
+            await Clients.Caller.SendAsync(
+                LobbyEvents.AboutARedeal,
+                tables.RedealAsSeenBy(tableId, playerId));
         }
 
         return tables.Hand(tableId);

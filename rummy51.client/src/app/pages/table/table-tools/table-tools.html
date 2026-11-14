@@ -15,6 +15,12 @@
   </button>
 }
 
+@if (canForce()) {
+  <button type="button" class="board__force" (click)="forced.emit()">
+    {{ 'table.force' | translate }}
+  </button>
+}
+
 @if (turn().canUndo()) {
   <button type="button" class="board__undo" (click)="undid.emit()">
     {{ 'table.undo' | translate }}

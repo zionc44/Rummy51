@@ -293,6 +293,29 @@ every hand is the size it was: fifteen and fourteen, three of them old.
 **12.8** The deal does not move on under 2.1. It is the same hand, dealt
 again.
 
+**12.9** A player dealt four pairs - the same card twice, four times over,
+the same rank and the same suit each time - may force a redeal on the table
+and does not wait for their turn to do it. The right lasts until they have
+finished their own first turn, and it is theirs whether or not they have
+already offered one under 12.1.
+
+**12.10** They say which of two it is: put to the table, or the deal ended
+there and then.
+
+**12.11** Put to the table, everybody else chooses between the redeal and
+the deal ended. Everybody has to choose the redeal; one choosing to end it
+ends it, and silence is a redeal as it is under 12.4. Either way the hand is
+dealt again - what is being chosen is only what anybody keeps of it, which
+is what makes it worth forcing.
+
+**12.12** A deal ended is one nobody keeps anything from. Every card goes
+back, and 2.4 deals fifteen and fourteen afresh rather than the twelve and
+eleven of 12.7.
+
+**12.13** A turn caught in flight is taken back first, under 3.6. Nothing of
+anybody's is in anybody else's hand by the time 12.5 goes looking for who
+owns what.
+
 ## Unsettled
 
 Questions, not rules, so they have no numbers of their own. A rule written

@@ -30,6 +30,7 @@ import { TablePiles } from './table-piles/table-piles';
 import { TableTerms } from './table-terms/table-terms';
 import { TableTools } from './table-tools/table-tools';
 import { KeepThree } from './keep-three/keep-three';
+import { ForceRedeal } from './force-redeal/force-redeal';
 import { RedealVote } from './redeal-vote/redeal-vote';
 
 /** The refusal that says a card taken off the table is still in the hand. */
@@ -57,6 +58,7 @@ const CardOwed = 'TakenCardStillHeld';
     TablePiles,
     TableTools,
     RedealVote,
+    ForceRedeal,
     KeepThree,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -122,7 +124,6 @@ export class Table implements OnDestroy {
       : this.otherSeatAt(seat)?.landingSpot(step);
   }
 
-  /** The place across the table at that seat, if it is one of them. */
   /**
    * Where the cards of a hand nobody may see are drawn, which is a pile of
    * backs beside that player. The near seat shows no pile - its cards are
@@ -133,6 +134,7 @@ export class Table implements OnDestroy {
     return this.otherSeatAt(seat)?.backSpot();
   }
 
+  /** The place across the table at that seat, if it is one of them. */
   private otherSeatAt(seat: number): TableSeat | undefined {
     const among = this.seating.others().findIndex((place) => place.at === seat);
 
@@ -201,7 +203,7 @@ export class Table implements OnDestroy {
     this.hand,
     this.seating.seats,
     this.seating.ownSeat,
-    this.lobby.offerAnswers,
+    this.lobby.aboutARedeal,
     this.ticking,
   );
 
@@ -438,6 +440,17 @@ export class Table implements OnDestroy {
   /** Rules 12.1, 12.2. */
   protected offerARedeal(): void {
     this.moves.offerARedeal();
+  }
+
+  /** Rule 12.9, which only opens the choice of what to force. */
+  protected chooseHowToForce(): void {
+    this.asking.choosing.set(true);
+  }
+
+  /** Rule 12.10. */
+  protected forceARedeal(atOnce: boolean): void {
+    this.asking.choosing.set(false);
+    this.moves.forceARedeal(atOnce);
   }
 
   /** Rule 12.3. */

@@ -40,6 +40,7 @@
   inset-inline-start: 1.875rem;
 }
 
+.board__force,
 .board__redeal {
   position: absolute;
   inset-block-end: 0;
@@ -56,6 +57,19 @@
   &:hover {
     border-color: var(--felt-500);
     color: var(--felt-500);
+  }
+}
+
+// Above the offer rather than beside it, because a player may be holding
+// four pairs on the turn they could have offered a redeal anyway.
+.board__force {
+  inset-block-end: 1.625rem;
+  border-color: var(--danger);
+  color: var(--danger);
+
+  &:hover {
+    border-color: var(--danger);
+    color: var(--text);
   }
 }
 

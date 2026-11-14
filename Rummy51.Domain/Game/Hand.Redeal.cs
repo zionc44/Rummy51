@@ -11,7 +11,7 @@ public sealed partial class Hand
     private readonly bool[] hasOffered;
     private readonly int[]?[] keeping;
     private Offer? offer;
-    private bool dealingAgain;
+    private int nextDeal = Dealing.FirstDeal;
 
     /// <summary>How many of their own a player keeps through a redeal. Rule 12.6.</summary>
     public const int Kept = 3;
@@ -116,10 +116,13 @@ public sealed partial class Hand
     private void Settle()
     {
         var agreed = offer?.Agreed == true;
+        var forced = offer?.Forced == true;
 
         offer = null;
 
-        if (!agreed)
+        // Rule 12.3: an offer nobody was made to take leaves the table as it
+        // found it. Rule 12.11: a forced one deals again either way.
+        if (!agreed && !forced)
         {
             Phase = HandPhase.Playing;
 
@@ -131,7 +134,16 @@ public sealed partial class Hand
             hands[card.Owner].Add(card);
         }
 
-        Phase = HandPhase.Keeping;
+        if (agreed)
+        {
+            Phase = HandPhase.Keeping;
+
+            return;
+        }
+
+        // Rule 12.12: ended, so nobody keeps anything and nobody is asked.
+        Array.Fill(keeping, []);
+        DealAgain();
     }
 
     /// <summary>Rule 12.6: exactly three, and their own.</summary>
@@ -197,6 +209,7 @@ public sealed partial class Hand
     /// </summary>
     private void DealAgain()
     {
+        var kept = keeping.Sum(three => three!.Length);
         var loose = new List<Card>(Board.Stock);
 
         loose.AddRange(Board.Discards);
@@ -215,17 +228,21 @@ public sealed partial class Hand
             keeping[seat] = null;
         }
 
+        // Rule 12.7 deals twelve and eleven on top of three kept; rule
+        // 12.12 keeps none, so the hand is dealt from nothing as it was.
+        nextDeal = kept == 0 ? Dealing.FirstDeal : Dealing.Redeal;
+
         Deck = new Deck(loose, Deck.Seed);
         Board = new Board();
         Passes = [];
 
         Array.Fill(wentDown, false);
         Array.Fill(hasOffered, false);
+        Array.Fill(hasPlayed, false);
 
         turnsTaken = 0;
         TurnSeat = -1;
         HasDrawn = false;
-        dealingAgain = true;
         Phase = HandPhase.Cutting;
 
         Forget();

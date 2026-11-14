@@ -1,35 +1,54 @@
 <div class="vote">
   <div class="vote__panel" role="alertdialog" aria-modal="true">
-    <p class="vote__asked">{{ 'table.redealAsked' | translate: { '0': by() } }}</p>
+    @if (forced()) {
+      <p class="vote__asked">{{ 'table.forcedBy' | translate: { '0': by() } }}</p>
 
-    <ul class="vote__rows">
-      @for (row of rows(); track row.name) {
-        <li class="vote__row">
-          <span class="vote__name">{{ row.name }}</span>
-
-          @if (row.answer === true) {
-            <span class="vote__yes">✓</span>
-          } @else if (row.answer === false) {
-            <span class="vote__no">✗</span>
-          } @else if (waiting()) {
-            <span class="vote__hidden">?</span>
-          } @else {
-            <span class="vote__spinner"></span>
-          }
-        </li>
+      @if (pairs().length) {
+        <app-four-pairs [cards]="pairs()" />
       }
-    </ul>
+    } @else {
+      <p class="vote__asked">{{ 'table.redealAsked' | translate: { '0': by() } }}</p>
+    }
+
+    <!-- Rule 12.11: a forced deal is dealt again however it was answered, so
+         naming who chose what would be naming them for nothing. Rule 12.3 is
+         the one where a single refusal decides it. -->
+    @if (!forced() || !settled()) {
+      <ul class="vote__rows">
+        @for (row of rows(); track row.name) {
+          <li class="vote__row">
+            <span class="vote__name">{{ row.name }}</span>
+
+            @if (row.answer === true) {
+              <span class="vote__yes">✓</span>
+            } @else if (row.answer === false) {
+              <span class="vote__no">✗</span>
+            } @else if (waiting()) {
+              <span class="vote__hidden">?</span>
+            } @else {
+              <span class="vote__spinner"></span>
+            }
+          </li>
+        }
+      </ul>
+    }
 
     @if (waiting()) {
       <div class="vote__buttons">
         <button type="button" class="btn-primary" (click)="answered.emit(true)">
-          {{ 'table.redealAgree' | translate }}
+          {{ (forced() ? 'table.forceAgree' : 'table.redealAgree') | translate }}
         </button>
         <button type="button" class="btn-ghost" (click)="answered.emit(false)">
-          {{ 'table.redealRefuse' | translate }}
+          {{ (forced() ? 'table.forceEnd' : 'table.redealRefuse') | translate }}
         </button>
       </div>
     } @else if (settled()) {
+      @if (forced()) {
+        <p class="vote__outcome">
+          {{ (ended() ? 'table.forceEnded' : 'table.forceRedeal') | translate }}
+        </p>
+      }
+
       <button type="button" class="btn-primary vote__ok" (click)="closed.emit()">
         {{ 'common.ok' | translate }}
       </button>

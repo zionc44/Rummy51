@@ -2,7 +2,10 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { AuthService } from '../auth/auth-service';
 import { HeldCard } from '../cards/card';
-import { HandView, LobbyPlayer, LobbyTable } from './lobby.models';
+import { HandView, LobbyPlayer, LobbyTable, Redeal } from './lobby.models';
+
+/** No redeal in the air and no right to force one. */
+const Nothing: Redeal = { answers: [], pairs: [] };
 
 const HUB_URL = '/hubs/lobby';
 
@@ -12,7 +15,7 @@ const enum LobbyEvent {
   TablesChanged = 'TablesChanged',
   HandChanged = 'HandChanged',
   CardsDealt = 'CardsDealt',
-  OfferAnswers = 'OfferAnswers',
+  AboutARedeal = 'AboutARedeal',
   SignedInElsewhere = 'SignedInElsewhere',
 }
 
@@ -33,11 +36,10 @@ export class LobbyConnection {
   private readonly mine = signal<readonly HeldCard[]>([]);
 
   /**
-   * Rule 12.4: the answers as this player may see them, which is nothing
-   * but the offerer's until they have answered. The masking is the
-   * server's, so what never arrives here is what may not be shown.
+   * Chapter 12 as this player may see it. The masking is the server's, so
+   * what never arrives here is what may not be shown.
    */
-  private readonly answers = signal<readonly (boolean | null)[]>([]);
+  private readonly redeal = signal<Redeal>(Nothing);
 
   readonly onlinePlayers = this.players.asReadonly();
   readonly tables = this.open.asReadonly();
@@ -52,7 +54,7 @@ export class LobbyConnection {
    */
   readonly myCards = this.mine.asReadonly();
 
-  readonly offerAnswers = this.answers.asReadonly();
+  readonly aboutARedeal = this.redeal.asReadonly();
 
   /**
    * True once the hub has answered. Until then an empty list of tables means
@@ -108,6 +110,7 @@ export class LobbyConnection {
     this.open.set([]);
     this.playing.set(null);
     this.mine.set([]);
+    this.redeal.set(Nothing);
     await connection?.stop();
   }
 
@@ -125,6 +128,7 @@ export class LobbyConnection {
   async unwatch(tableId: string): Promise<void> {
     this.playing.set(null);
     this.mine.set([]);
+    this.redeal.set(Nothing);
     await this.connection?.invoke('Unwatch', tableId);
   }
 
@@ -147,9 +151,7 @@ export class LobbyConnection {
 
     connection.on(LobbyEvent.CardsDealt, (cards: HeldCard[]) => this.mine.set(cards));
 
-    connection.on(LobbyEvent.OfferAnswers, (answers: (boolean | null)[]) =>
-      this.answers.set(answers),
-    );
+    connection.on(LobbyEvent.AboutARedeal, (redeal: Redeal) => this.redeal.set(redeal));
 
     connection.on(LobbyEvent.SignedInElsewhere, () => {
       this.replaced.set(true);

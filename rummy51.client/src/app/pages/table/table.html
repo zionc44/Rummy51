@@ -69,7 +69,9 @@
                 [arrangeable]="seating.seated() && myCards().length > 0"
                 [winner]="seating.winner()"
                 (sorted)="sortHand()"
+                [canForce]="asking.pairs().length > 0"
                 (offeredRedeal)="offerARedeal()"
+                (forced)="chooseHowToForce()"
                 (undid)="undo()"
               />
             </div>
@@ -142,8 +144,19 @@
           [waiting]="hand.phase === 'offering' && asking.toAnswer()"
           [settled]="hand.phase === 'answered'"
           [left]="asking.secondsLeft()"
+          [forced]="asking.forced()"
+          [pairs]="asking.forcedWith()"
+          [ended]="asking.ended()"
           (answered)="answer($event)"
           (closed)="readTheResult()"
+        />
+      }
+
+      @if (hand.phase === 'playing' && asking.choosing()) {
+        <app-force-redeal
+          [pairs]="asking.pairs()"
+          (forced)="forceARedeal($event)"
+          (cancelled)="asking.choosing.set(false)"
         />
       }
 

@@ -13,15 +13,35 @@ internal sealed class Offer
     private readonly bool?[] answers;
     private readonly bool[] read;
 
-    public Offer(int by, int seats)
+    /// <param name="forced">
+    /// Rule 12.11: a forced offer deals the hand again whichever way it is
+    /// answered, so what the answers decide is only what anybody keeps.
+    /// </param>
+    /// <param name="atOnce">
+    /// Rule 12.10: ended there and then, which is an offer with nothing left
+    /// to ask. It is made answered so that the table reads it and no more.
+    /// </param>
+    public Offer(int by, int seats, bool forced = false, bool atOnce = false)
     {
         By = by;
+        Forced = forced;
         answers = new bool?[seats];
         read = new bool[seats];
-        answers[by] = true;
+
+        if (atOnce)
+        {
+            Array.Fill(answers, false);
+        }
+        else
+        {
+            answers[by] = true;
+        }
     }
 
     public int By { get; }
+
+    /// <summary>Rule 12.9.</summary>
+    public bool Forced { get; }
 
     public IReadOnlyList<bool?> Answers => answers;
 

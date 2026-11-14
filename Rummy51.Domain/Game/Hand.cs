@@ -58,6 +58,7 @@ public sealed partial class Hand
         hands = [.. Enumerable.Range(0, seats).Select(_ => new List<HeldCard>())];
         wentDown = new bool[seats];
         hasOffered = new bool[seats];
+        hasPlayed = new bool[seats];
         keeping = new int[seats][];
         DealerSeat = dealerSeat;
         CutterSeat = (dealerSeat + seats - 1) % seats;
@@ -211,7 +212,7 @@ public sealed partial class Hand
             Seats,
             DealerSeat,
             Deck.RevealedAtCut.Count,
-            dealingAgain ? Dealing.Redeal : Dealing.FirstDeal);
+            nextDeal);
 
         for (var seat = 0; seat < Seats; seat++)
         {
@@ -226,7 +227,7 @@ public sealed partial class Hand
 
         Board.StockWith(dealt.Stock);
         Passes = dealt.Passes;
-        dealingAgain = false;
+        nextDeal = Dealing.FirstDeal;
 
         return true;
     }
@@ -346,6 +347,7 @@ public sealed partial class Hand
     /// <summary>The only way a turn ever ends.</summary>
     private void HandItOn()
     {
+        hasPlayed[TurnSeat] = true;
         turnsTaken += 1;
         TurnSeat = (TurnSeat + 1) % Seats;
         HasDrawn = false;

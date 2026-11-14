@@ -77,6 +77,13 @@ export class TableService {
     return this.http.post<HandView>(`${API}/${tableId}/redeal`, {}).pipe(failWithApiErrors());
   }
 
+  /** Rules 12.9, 12.10. */
+  forceARedeal(tableId: string, atOnce: boolean): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/redeal/force`, { atOnce })
+      .pipe(failWithApiErrors());
+  }
+
   /** Rule 12.3. */
   answer(tableId: string, agreed: boolean): Observable<HandView> {
     return this.http

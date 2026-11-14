@@ -45,6 +45,9 @@ public interface ITables
     /// <summary>Rules 12.1, 12.2.</summary>
     Result<HandView> OfferARedeal(Guid tableId, Guid playerId);
 
+    /// <summary>Rules 12.9 and 12.10.</summary>
+    Result<HandView> ForceARedeal(Guid tableId, Guid playerId, bool atOnce);
+
     /// <summary>Rule 12.3.</summary>
     Result<HandView> Answer(Guid tableId, Guid playerId, bool agreed);
 
@@ -72,7 +75,7 @@ public interface ITables
     /// but the offerer's until they have answered themselves. Empty when
     /// there is no offer on the table.
     /// </summary>
-    IReadOnlyList<bool?> OfferAsSeenBy(Guid tableId, Guid playerId);
+    RedealView RedealAsSeenBy(Guid tableId, Guid playerId);
 
     /// <summary>
     /// Rule 3.6, and the tables that changed because of it. Called by the

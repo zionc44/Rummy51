@@ -39,7 +39,7 @@ public sealed class TableNews(ITables tables, IHubContext<LobbyHub> lobby, ILogg
             var who = lobby.Clients.User(playerId.ToString());
 
             await TellAsync(who, LobbyEvents.CardsDealt, tables.CardsOf(tableId, playerId));
-            await TellAsync(who, LobbyEvents.OfferAnswers, tables.OfferAsSeenBy(tableId, playerId));
+            await TellAsync(who, LobbyEvents.AboutARedeal, tables.RedealAsSeenBy(tableId, playerId));
         }
     }
 

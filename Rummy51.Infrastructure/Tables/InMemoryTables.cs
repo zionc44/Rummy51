@@ -17,7 +17,7 @@ public sealed class InMemoryTables(
     IOptions<TurnSettings> turns,
     TimeProvider clock) : ITables
 {
-    private readonly bool markJokers = testing.Value.MarkJokers;
+    private readonly TestingSettings testing = testing.Value;
 
     // Two views of the same fact under one lock. The second answers the rule
     // that runs through everything here - a player sits at one table - without
@@ -51,7 +51,7 @@ public sealed class InMemoryTables(
                 return Refused("AlreadyAtATable", FailureKind.Conflict);
             }
 
-            var table = new OpenTable(request, markJokers, turns.Value, clock);
+            var table = new OpenTable(request, testing, turns.Value, clock);
             table.Seat(player);
 
             tables[table.Id] = table;
@@ -225,6 +225,13 @@ public sealed class InMemoryTables(
             (table, seat) => table.OfferARedeal(seat),
             Refused("CannotOfferARedeal"));
 
+    public Result<HandView> ForceARedeal(Guid tableId, Guid playerId, bool atOnce) =>
+        Move(
+            tableId,
+            playerId,
+            (table, seat) => table.ForceARedeal(seat, atOnce),
+            Refused("CannotForceARedeal"));
+
     public Result<HandView> Answer(Guid tableId, Guid playerId, bool agreed) =>
         Move(tableId, playerId, (table, seat) => table.Answer(seat, agreed), Refused("CannotAnswer"));
 
@@ -234,11 +241,13 @@ public sealed class InMemoryTables(
     public Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
         Move(tableId, playerId, (table, seat) => table.Keep(seat, cardIds), Refused("CannotKeep"));
 
-    public IReadOnlyList<bool?> OfferAsSeenBy(Guid tableId, Guid playerId)
+    public RedealView RedealAsSeenBy(Guid tableId, Guid playerId)
     {
         lock (gate)
         {
-            return tables.TryGetValue(tableId, out var table) ? table.OfferAsSeenBy(playerId) : [];
+            return tables.TryGetValue(tableId, out var table)
+                ? table.RedealAsSeenBy(playerId)
+                : new RedealView([], []);
         }
     }
 

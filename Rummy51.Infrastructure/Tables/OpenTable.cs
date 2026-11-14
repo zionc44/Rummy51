@@ -19,18 +19,19 @@ namespace Rummy51.Infrastructure.Tables;
 internal sealed class OpenTable
 {
     private readonly PlayerSummary?[] seats;
-    private readonly bool markJokers;
+    private readonly TestingSettings testing;
     private readonly TurnSettings turns;
     private readonly Countdown countdown;
     private Hand? hand;
+    private bool dealtOnce;
 
     public OpenTable(
         CreateTableRequest request,
-        bool markJokers,
+        TestingSettings testing,
         TurnSettings turns,
         TimeProvider clock)
     {
-        this.markJokers = markJokers;
+        this.testing = testing;
         this.turns = turns;
         countdown = new Countdown(clock);
 
@@ -101,7 +102,19 @@ internal sealed class OpenTable
     /// </summary>
     public bool CutAt(int position)
     {
-        if (hand?.CutAt(position) != true)
+        if (hand is null)
+        {
+            return false;
+        }
+
+        if (testing.FourPairs && !dealtOnce)
+        {
+            hand = TestingDeals.ShuffledUntilFourPairs(hand, seats.Length, Jokers, position);
+        }
+
+        dealtOnce = true;
+
+        if (!hand.CutAt(position))
         {
             return false;
         }
@@ -149,6 +162,10 @@ internal sealed class OpenTable
 
     /// <summary>Rule 12.1. The turn's clock gives way to the offer's.</summary>
     public bool OfferARedeal(int seat) => Moved(() => hand?.OfferARedeal(seat) == true);
+
+    /// <summary>Rules 12.9 and 12.10, which do not wait for a turn.</summary>
+    public bool ForceARedeal(int seat, bool atOnce) =>
+        Moved(() => hand?.ForceARedeal(seat, atOnce) == true);
 
     /// <summary>Rule 12.3.</summary>
     public bool Answer(int seat, bool agreed) => Moved(() => hand?.Answer(seat, agreed) == true);
@@ -278,9 +295,15 @@ internal sealed class OpenTable
         return [.. hand.Hands[seat].Select(card => Held(card, owed.Contains(card.Id)))];
     }
 
-    /// <summary>Rule 12.4: what this seat may be shown of the answers.</summary>
-    public IReadOnlyList<bool?> OfferAsSeenBy(Guid playerId) =>
-        hand?.OfferAsSeenBy(SeatOf(playerId)) ?? [];
+    /// <summary>Rules 12.4 and 12.9: the half of a redeal that is one seat's own.</summary>
+    public RedealView RedealAsSeenBy(Guid playerId)
+    {
+        var seat = SeatOf(playerId);
+
+        return new RedealView(
+            hand?.OfferAsSeenBy(seat) ?? [],
+            hand?.CanForceARedeal(seat) == true ? hand.FourPairsOf(seat) : []);
+    }
 
     /// <summary>Rule 11.1: worked out from a hand only one player may see.</summary>
     private HeldCardView Held(HeldCard card, bool owed) =>
@@ -316,7 +339,7 @@ internal sealed class OpenTable
                 hand.Deck.Size,
                 hand.Deck.CutPosition,
                 [.. hand.Deck.Backs.Select(back => $"{back}B")],
-                markJokers ? hand.Deck.JokerPositions : [],
+                testing.MarkJokers ? hand.Deck.JokerPositions : [],
                 [.. hand.Deck.RevealedAtCut.Select(card => card.Code)],
                 hand.Deck.FinishingCard?.Code,
                 [.. hand.Hands.Select(cards => cards.Count)],
@@ -334,6 +357,8 @@ internal sealed class OpenTable
                 hand.TurnSeat != -1 && hand.CanTakeTheFinishingCard(hand.TurnSeat),
                 hand.TurnSeat != -1 && hand.CanOfferARedeal(hand.TurnSeat),
                 hand.OfferedBy,
+                hand.Forced,
+                hand.ForcedWith,
                 countdown.Describe(hand.WaitingSeat));
 
     /// <summary>Rule 11.3.</summary>

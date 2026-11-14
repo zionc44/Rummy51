@@ -1,0 +1,40 @@
+.force {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(2 44 34 / 0.85);
+  padding: var(--page-gutter);
+}
+
+.force__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  inline-size: 100%;
+  max-inline-size: 20rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--felt-900);
+  padding: 1rem;
+  text-align: center;
+}
+
+.force__asked {
+  margin: 0;
+  font-weight: 700;
+}
+
+// Stacked rather than in a row: each of the three is a sentence, and three
+// sentences side by side on a phone are three words a line.
+.force__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.force__end {
+  background: var(--danger);
+}
