@@ -36,10 +36,10 @@ public sealed class TableNews(ITables tables, IHubContext<LobbyHub> lobby, ILogg
 
         foreach (var playerId in Seated(tableId))
         {
-            await TellAsync(
-                lobby.Clients.User(playerId.ToString()),
-                LobbyEvents.CardsDealt,
-                tables.CardsOf(tableId, playerId));
+            var who = lobby.Clients.User(playerId.ToString());
+
+            await TellAsync(who, LobbyEvents.CardsDealt, tables.CardsOf(tableId, playerId));
+            await TellAsync(who, LobbyEvents.OfferAnswers, tables.OfferAsSeenBy(tableId, playerId));
         }
     }
 

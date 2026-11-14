@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LobbyTable } from '../../../../core/lobby/lobby.models';
+import { IconJoin } from '../../../../shared/icons/icon-join/icon-join';
 import { PlayerAvatar } from '../../../../shared/player-avatar/player-avatar';
 
 /**
@@ -10,7 +11,7 @@ import { PlayerAvatar } from '../../../../shared/player-avatar/player-avatar';
  */
 @Component({
   selector: 'app-table-row',
-  imports: [TranslatePipe, PlayerAvatar],
+  imports: [TranslatePipe, PlayerAvatar, IconJoin],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-row.html',
   styleUrl: './table-row.scss',

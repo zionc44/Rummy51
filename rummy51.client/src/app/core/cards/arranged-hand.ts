@@ -34,11 +34,17 @@ export class ArrangedHand {
    * first line takes its place with it rather than pulling a card up from
    * the line below, and one drawn joins the end. Only the player carrying a
    * card across moves the break, and that goes through `move`.
+   *
+   * Which is why a hand that was handed several cards at once starts over.
+   * The break only ever moves up as cards leave, so a redeal - where the
+   * hand is on the screen the whole time and down to three cards in the
+   * middle of it - would carry a break of one into the hand that follows
+   * and drop every card of it onto the second line.
    */
   readonly firstLine = linkedSignal<readonly HeldCard[], number>({
     source: this.cards,
     computation: (cards, previous) =>
-      previous === undefined || previous.source.length === 0
+      previous === undefined || handedSeveral(previous.source, cards)
         ? Math.min(PerRow, cards.length)
         : Math.max(previous.value - gone(previous.source.slice(0, previous.value), cards), 0),
   });
@@ -127,12 +133,21 @@ export class ArrangedHand {
   /** A new hand. Whatever was decided about the last one goes with it. */
   forget(): void {
     this.laid.set(null);
-    this.firstLine.set(0);
+    this.firstLine.set(PerRow);
     this.picked.set(null);
   }
 }
 
 /** How many of those are no longer in the hand. */
+/**
+ * More cards at once than a turn can bring, which is a hand being dealt and
+ * not played into. A turn taken back brings several at once as well and is
+ * read the same way: both of them leave behind a break that was decided
+ * about a hand which no longer exists.
+ */
+const handedSeveral = (were: readonly HeldCard[], cards: readonly HeldCard[]) =>
+  cards.length > were.length + 1;
+
 function gone(were: readonly HeldCard[], cards: readonly HeldCard[]): number {
   const held = new Set(cards.map((card) => card.id));
 

@@ -88,6 +88,16 @@ public sealed class Board
         melds[at] = meld with { Cards = [.. meld.Cards.Where(card => card.Id != cardId)] };
     }
 
+    /// <summary>Rule 12.5: everything picked up, and the table bare.</summary>
+    public IReadOnlyList<Meld> ClearTheTable()
+    {
+        var lying = melds.ToList();
+
+        melds.Clear();
+
+        return lying;
+    }
+
     /// <summary>
     /// Melds are only ever put at the end of the table and only ever taken
     /// back in the turn that laid them, so the last one laid is the last one

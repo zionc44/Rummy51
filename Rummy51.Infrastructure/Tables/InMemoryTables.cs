@@ -193,10 +193,54 @@ public sealed class InMemoryTables(
     }
 
     public Result<HandView> LayDown(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
-        Move(tableId, playerId, (table, seat) => table.LayDown(seat, cardIds), Refused("CannotLayDown"));
+        Move(
+            tableId,
+            playerId,
+            (table, seat) => table.LayDown(seat, cardIds),
+            (table, seat) => WhyNotLay(table, seat, cardIds.Count));
+
+    /// <summary>
+    /// Why cards would not go down. One of the reasons is the player's to do
+    /// something about and the screen cannot see it coming: rules 6.2 and 6.5
+    /// keep cards back in the hand, and nothing the client knows says how
+    /// many. The rest are races.
+    /// </summary>
+    private static string WhyNotLay(OpenTable table, int seat, int many)
+    {
+        if (table.CouldPartWith(seat, many))
+        {
+            return "CannotLayDown";
+        }
+
+        return table.GoingOutIsOpen ? "KeepACardToThrow" : "KeepTwoInTheFirstRound";
+    }
 
     public Result<HandView> Undo(Guid tableId, Guid playerId) =>
         Move(tableId, playerId, (table, seat) => table.Undo(seat), Refused("NothingToUndo"));
+
+    public Result<HandView> OfferARedeal(Guid tableId, Guid playerId) =>
+        Move(
+            tableId,
+            playerId,
+            (table, seat) => table.OfferARedeal(seat),
+            Refused("CannotOfferARedeal"));
+
+    public Result<HandView> Answer(Guid tableId, Guid playerId, bool agreed) =>
+        Move(tableId, playerId, (table, seat) => table.Answer(seat, agreed), Refused("CannotAnswer"));
+
+    public Result<HandView> ReadTheResult(Guid tableId, Guid playerId) =>
+        Move(tableId, playerId, (table, seat) => table.ReadTheResult(seat), Refused("CannotAnswer"));
+
+    public Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
+        Move(tableId, playerId, (table, seat) => table.Keep(seat, cardIds), Refused("CannotKeep"));
+
+    public IReadOnlyList<bool?> OfferAsSeenBy(Guid tableId, Guid playerId)
+    {
+        lock (gate)
+        {
+            return tables.TryGetValue(tableId, out var table) ? table.OfferAsSeenBy(playerId) : [];
+        }
+    }
 
     /// <summary>
     /// A player's move, which always asks the same three questions before the

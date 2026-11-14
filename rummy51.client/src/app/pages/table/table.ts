@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Injector, OnDestroy, afterNextRender, afterRenderEffect, computed, effect, inject, input, untracked, viewChild, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Injector, OnDestroy, afterNextRender, afterRenderEffect, computed, effect, inject, input, signal, untracked, viewChild, viewChildren } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
@@ -10,6 +10,7 @@ import { NeverWentDown, worthOfHand } from '../../core/cards/worth';
 import { pictureOf } from '../../core/cards/deck';
 import { HandPhase, HandView } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
+import { Asking } from './asking';
 import { Turn } from './turn';
 import { Notice } from '../../shared/notice/notice';
 import { PageShell } from '../../shared/page-shell/page-shell';
@@ -28,6 +29,8 @@ import { TableSeat } from './table-seat/table-seat';
 import { TableMelds } from './table-melds/table-melds';
 import { TableTally } from './table-tally/table-tally';
 import { TableTerms } from './table-terms/table-terms';
+import { KeepThree } from './keep-three/keep-three';
+import { RedealVote } from './redeal-vote/redeal-vote';
 
 /** The refusal that says a card taken off the table is still in the hand. */
 const CardOwed = 'TakenCardStillHeld';
@@ -52,6 +55,8 @@ const CardOwed = 'TakenCardStillHeld';
     TableTally,
     TableSeat,
     TableTerms,
+    RedealVote,
+    KeepThree,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table.html',
@@ -91,6 +96,8 @@ export class Table implements OnDestroy {
   private readonly otherSpots = viewChildren<TableSeat>('seatSpot');
   private readonly finishingSlot = viewChild<ElementRef<HTMLElement>>('finishingSlot');
   private seenPhase: HandPhase | null = null;
+  private readonly ticking = signal(Date.now());
+  private readonly beat: number;
   private seen: HandView | null = null;
 
   /** Everything the cut and the deal have to aim at, found in this view. */
@@ -192,6 +199,15 @@ export class Table implements OnDestroy {
     return hand?.phase === 'cutting' && this.seating.ownSeat() === hand.cutterSeat;
   });
 
+  /** What the table is asking this player, which is chapter 12. */
+  protected readonly asking = new Asking(
+    this.hand,
+    this.seating.seats,
+    this.seating.ownSeat,
+    this.lobby.offerAnswers,
+    this.ticking,
+  );
+
   /** What this player may do in the hand as it stands, for the screen to read. */
   protected readonly turn = new Turn(
     this.hand,
@@ -201,6 +217,10 @@ export class Table implements OnDestroy {
   );
 
   constructor() {
+    // Every quarter second, which is finer than the number it draws so that
+    // the number never appears to stick.
+    this.beat = window.setInterval(() => this.ticking.set(Date.now()), 250);
+
     effect(() => {
       const table = this.tableId();
 
@@ -221,6 +241,8 @@ export class Table implements OnDestroy {
         this.show.forget();
         this.arranged.forget();
       }
+
+      this.asking.settle(phase);
 
       const hand = this.hand();
 
@@ -313,6 +335,7 @@ export class Table implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    window.clearInterval(this.beat);
     this.show.stop();
     this.journey.land();
     this.crossing.land();
@@ -413,6 +436,28 @@ export class Table implements OnDestroy {
   /** The last thing this turn did, taken back. */
   protected undo(): void {
     this.moves.undo();
+  }
+
+  /** Rules 12.1, 12.2. */
+  protected offerARedeal(): void {
+    this.moves.offerARedeal();
+  }
+
+  /** Rule 12.3. */
+  protected answer(agreed: boolean): void {
+    this.moves.answer(agreed);
+  }
+
+  /** Rule 12.4. */
+  protected readTheResult(): void {
+    this.asking.read.set(true);
+    this.moves.readTheResult();
+  }
+
+  /** Rule 12.6. */
+  protected keep(cardIds: readonly number[]): void {
+    this.asking.chosen.set(true);
+    this.moves.keep(cardIds);
   }
 
   /**

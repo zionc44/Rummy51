@@ -40,9 +40,11 @@
       type="button"
       class="row__join"
       [disabled]="!canJoin()"
+      [attr.aria-label]="'lobby.join' | translate"
+      [attr.title]="'lobby.join' | translate"
       (click)="joined.emit(table().tableId)"
     >
-      {{ 'lobby.join' | translate }}
+      <app-icon-join />
     </button>
   }
 </div>

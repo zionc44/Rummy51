@@ -32,14 +32,18 @@ internal sealed class Countdown(TimeProvider clock)
     public bool HasRunOut => dueAt is { } due && clock.GetUtcNow() >= due;
 
     /// <summary>
-    /// The wait as the table should be told it, or null when nobody is being
-    /// waited for. What is left is worked out now rather than when the wait
-    /// began, so whoever is told has the same deadline as everybody else
-    /// however late they arrived.
+    /// The wait as the table should be told it, or null when nothing is being
+    /// waited for at all. A seat of -1 is the table waiting rather than one
+    /// player: the deal, and the three stages of a redeal, where no ring is
+    /// drawn on anybody and the window shows the clock instead.
+    ///
+    /// What is left is worked out now rather than when the wait began, so
+    /// whoever is told has the same deadline as everybody else however late
+    /// they arrived.
     /// </summary>
     public Waiting? Describe(int seat)
     {
-        if (dueAt is not { } due || seat == -1)
+        if (dueAt is not { } due)
         {
             return null;
         }

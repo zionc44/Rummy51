@@ -18,11 +18,23 @@ public sealed class Deck
     private bool finishingTaken;
 
     public Deck(int jokers, int seed)
+        : this(New(jokers), BacksOf(jokers), seed)
+    {
+    }
+
+    /// <summary>
+    /// Rule 12.6: made from whatever the table was not keeping. The backs are
+    /// given out afresh, nothing having carried one across - and nothing can
+    /// tell, a back being seen only face down over a card nobody was shown.
+    /// </summary>
+    public Deck(IReadOnlyList<Card> cards, int seed)
+        : this(cards, BacksFor(cards.Count), seed)
+    {
+    }
+
+    private Deck(IReadOnlyList<Card> fresh, IReadOnlyList<int> backs, int seed)
     {
         Seed = seed;
-
-        var fresh = New(jokers);
-        var backs = BacksOf(jokers);
 
         // One shuffle, applied to both, so every card keeps the back of the
         // pack it came from. Shuffling the backs separately would be a lie
@@ -123,6 +135,10 @@ public sealed class Deck
     /// One pack's, then the other's: two cards that look alike really do
     /// have different backs, so the split is even and not a coin toss.
     /// </summary>
+    /// <summary>Half of one pack's and half of the other's, whatever is left.</summary>
+    private static IReadOnlyList<int> BacksFor(int count) =>
+        [.. Enumerable.Range(0, count).Select(at => at < count / 2 ? 1 : 2)];
+
     private static IReadOnlyList<int> BacksOf(int jokers) =>
     [
         .. Enumerable.Range(0, Packs).SelectMany(pack => Enumerable.Repeat(pack + 1, PackSize)),

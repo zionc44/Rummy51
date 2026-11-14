@@ -93,10 +93,26 @@
   block-size: var(--seat-size);
 }
 
-// Drained by an animation rather than by a timer of its own. It is given
-// the whole wait as its duration and a negative delay for the part already
-// gone, so the browser works out where the arc should be and a page opened
-// late is right without being told anything else.
+.seat__counting {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 50%;
+  background: var(--felt-950);
+  color: var(--text);
+  font-size: calc(var(--seat-size) * 0.5);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.seat__counting--urgent {
+  color: var(--clock-urgent);
+}
+
+// Stepped once a second and smoothed over the same second, so a figure
+// that changes once reads as an arc that moves steadily.
 .seat__clock {
   position: absolute;
   // Outside the picture, so it rings it rather than covering it.
@@ -107,52 +123,22 @@
 
   circle {
     fill: none;
+    stroke: var(--clock-calm);
     stroke-width: 7;
     stroke-linecap: round;
-    // Once round a circle of radius forty-six.
-    stroke-dasharray: 289.03;
-    // Two: the ring draining and changing colour on the wait's own clock,
-    // and the flashing that only begins once a quarter of it is left. The
-    // second is delayed to that point and runs on, since the ring is taken
-    // away by the move it was waiting for.
-    animation-name: seat-countdown, seat-urgent;
-    animation-duration: var(--wait), 0.7s;
-    animation-delay: var(--elapsed), var(--flash);
-    animation-timing-function: linear, ease-in-out;
-    animation-iteration-count: 1, infinite;
-    animation-fill-mode: forwards, none;
+    transition: stroke-dashoffset 1s linear;
   }
 }
 
-// The offset runs negative, which empties the ring from where it starts
-// and so the way a clock goes. Positive would eat it from the far end,
-// which is the same arc disappearing backwards.
-//
 // The colours step rather than blend: half the time left and a quarter of
 // it are two things worth noticing, and a gradient is noticed by nobody.
-@keyframes seat-countdown {
-  0%,
-  50% {
-    stroke: var(--clock-calm);
-  }
+.seat__clock--pressing circle {
+  stroke: var(--clock-pressing);
+}
 
-  50.01%,
-  75% {
-    stroke: var(--clock-pressing);
-  }
-
-  75.01%,
-  100% {
-    stroke: var(--clock-urgent);
-  }
-
-  from {
-    stroke-dashoffset: 0;
-  }
-
-  to {
-    stroke-dashoffset: -289.03;
-  }
+.seat__clock--urgent circle {
+  stroke: var(--clock-urgent);
+  animation: seat-urgent 0.7s ease-in-out infinite;
 }
 
 @keyframes seat-urgent {

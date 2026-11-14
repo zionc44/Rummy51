@@ -1,0 +1,108 @@
+// Over everything, like the notice: the table cannot move until this is
+// answered, so nothing behind it is worth reaching for.
+.vote {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(2 44 34 / 0.85);
+  padding: var(--page-gutter);
+}
+
+.vote__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  inline-size: 100%;
+  max-inline-size: 20rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--felt-900);
+  padding: 1rem;
+  text-align: center;
+}
+
+.vote__asked {
+  margin: 0;
+  font-weight: 700;
+}
+
+.vote__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  border-block: 1px solid var(--border);
+  padding: 0.5rem 0;
+  list-style: none;
+}
+
+.vote__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.vote__name {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.vote__yes {
+  color: var(--felt-500);
+  font-weight: 700;
+}
+
+.vote__no {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.vote__hidden {
+  color: var(--text-ghost);
+}
+
+.vote__spinner {
+  display: inline-block;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border: 2px solid var(--border-strong);
+  border-block-start-color: var(--felt-500);
+  border-radius: 50%;
+  animation: vote-turning 900ms linear infinite;
+}
+
+@keyframes vote-turning {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.vote__buttons {
+  display: flex;
+  gap: 0.5rem;
+
+  > * {
+    flex: 1;
+  }
+}
+
+.vote__ok {
+  align-self: center;
+  min-inline-size: 6rem;
+}
+
+.vote__left {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.vote__left--urgent {
+  color: var(--clock-urgent);
+}

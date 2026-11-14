@@ -14,6 +14,14 @@ import { pictureOf } from '../../../core/cards/deck';
 import { TableSeat as Seat } from '../../../core/lobby/lobby.models';
 import { PlayerAvatar } from '../../../shared/player-avatar/player-avatar';
 
+/** Once round a circle of radius forty-six, which is the one the ring draws. */
+const Round = 2 * Math.PI * 46;
+
+/** Half the wait and a quarter of it, which are the two worth noticing. */
+const Half = 0.5;
+
+const Quarter = 0.25;
+
 /**
  * One place at the table, taken or not: who is sitting there, whether they
  * are dealing, what they are holding that the table may see, and what they
@@ -71,11 +79,16 @@ export class TableSeat {
    */
   readonly clock = input<{ readonly left: number; readonly of: number } | null>(null);
 
+  /** Counted down by the page rather than measured here. */
+  readonly left = input(0);
+
+  protected readonly round = Round;
+
   /**
-   * The wait as the ring draws it: how long it runs for, and how far into
-   * it to start. The second is negative, which is what lets a page opened
-   * halfway through a wait show the arc that is actually left rather than
-   * a full one.
+   * Drawn from the number, not animated. Setting an animation's delay again
+   * while it runs does not start it over - the browser adds the new delay
+   * to what has already run - so every message during a turn pushed the arc
+   * on until it had emptied with the wait still going.
    */
   protected readonly ring = computed(() => {
     const clock = this.clock();
@@ -84,12 +97,15 @@ export class TableSeat {
       return null;
     }
 
+    const left = clock.of === 0 ? 0 : Math.max(0, Math.min(1, this.left() / clock.of));
+
     return {
-      wait: `${clock.of.toFixed(2)}s`,
-      elapsed: `${(clock.left - clock.of).toFixed(2)}s`,
-      // When the last quarter begins, counted from now. Negative once it
-      // already has, which is what makes a page opened late flash at once.
-      flash: `${(clock.left - clock.of * 0.25).toFixed(2)}s`,
+      // Negative, which empties the ring from where it starts and so the
+      // way a clock goes. Positive eats it from the far end, which is the
+      // same arc disappearing backwards.
+      gone: -(Round * (1 - left)),
+      pressing: left <= Half,
+      urgent: left <= Quarter,
     };
   });
 

@@ -257,6 +257,42 @@ no secret, a deck of one colour looking only like a printer's mistake.
 **11.6** The deal is shown pass by pass: how many cards went where, and never
 which.
 
+## 12. A redeal
+
+**12.1** A player may offer the table a redeal, on their turn, after taking
+their card and before putting anything on the table. That window is also what
+keeps the offer simple: nothing of anybody's is in flight when it is made.
+
+**12.2** Once in a hand. An offer that is refused is not made again by that
+player in that hand, though anybody else may still make theirs. An offer that
+is taken deals the hand again, and the right comes back with it.
+
+**12.3** Everybody has to agree. One refusal and nothing happens at all: the
+turn goes on from where it was left.
+
+**12.4** A player who does not answer in time has agreed. The question stops
+the table until it is answered, so silence is somebody who has walked away
+from the screen, and that is their own doing. Who agreed and who refused is
+shown to a player only once they have answered themselves, so that no answer
+is given knowing another.
+
+**12.5** Every card on the table goes back to the player who put it there,
+and that includes a joker however many times it has been bought and laid
+again since. What a card is worth and which run it was lying in are the
+table's; whose it is stays its own from the moment it was laid.
+
+**12.6** Each player then keeps exactly three of their cards and the rest are
+shuffled - the whole deck less three for each player. The one who offered the
+redeal chooses their three out of fifteen, having taken their card already;
+everybody else chooses out of fourteen.
+
+**12.7** The same player cuts again under 2.2, and the deal that follows gives
+twelve to the player after the dealer and eleven to everyone else, so that
+every hand is the size it was: fifteen and fourteen, three of them old.
+
+**12.8** The deal does not move on under 2.1. It is the same hand, dealt
+again.
+
 ## Unsettled
 
 Questions, not rules, so they have no numbers of their own. A rule written

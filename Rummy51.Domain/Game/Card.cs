@@ -31,7 +31,11 @@ public enum Rank
 /// number given when it reached its holder and kept until it leaves. It is
 /// what a hand is rearranged by.
 /// </summary>
-public readonly record struct HeldCard(int Id, Card Card);
+public readonly record struct HeldCard(int Id, Card Card, int Owner = -1)
+{
+    /// <summary>Never laid, so rule 12.5 has not fixed whose it is.</summary>
+    public const int Nobody = -1;
+}
 
 /// <summary>
 /// One of the fifty-two or a joker, and nothing else. Making the joker a

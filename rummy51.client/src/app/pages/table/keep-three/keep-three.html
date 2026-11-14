@@ -1,0 +1,32 @@
+<div class="keep">
+  <div class="keep__panel" role="alertdialog" aria-modal="true">
+    <p class="keep__asked">{{ 'table.keepAsked' | translate }}</p>
+
+    <div class="keep__cards">
+      @for (card of laid(); track card.id; let at = $index) {
+        <button
+          type="button"
+          class="keep__card"
+          [class.keep__card--chosen]="chose(card.id)"
+          [class.keep__card--joker]="joker(card)"
+          [style.--band]="band(at)"
+          [style.--at]="at"
+          (click)="pick(card.id)"
+        >
+          <img [src]="picture(card.code)" alt="" draggable="false" />
+        </button>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="btn-primary keep__ok"
+      [disabled]="!enough()"
+      (click)="kept.emit(picked())"
+    >
+      {{ enough() ? ('common.ok' | translate) : ('table.keepMore' | translate: { '0': room() }) }}
+    </button>
+
+    <p class="keep__left" [class.keep__left--urgent]="left() <= 5">{{ left() }}</p>
+  </div>
+</div>

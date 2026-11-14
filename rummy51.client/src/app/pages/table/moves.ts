@@ -66,6 +66,26 @@ export class Moves {
     this.send(this.tables.undo(this.tableId()));
   }
 
+  /** Rules 12.1, 12.2. */
+  offerARedeal(): void {
+    this.send(this.tables.offerARedeal(this.tableId()));
+  }
+
+  /** Rule 12.3. */
+  answer(agreed: boolean): void {
+    this.send(this.tables.answer(this.tableId(), agreed));
+  }
+
+  /** Rule 12.4. */
+  readTheResult(): void {
+    this.send(this.tables.readTheResult(this.tableId()));
+  }
+
+  /** Rule 12.6. */
+  keep(cardIds: readonly number[]): void {
+    this.send(this.tables.keep(this.tableId(), cardIds));
+  }
+
   /**
    * Giving up the seat, which is the one move whose answer matters here:
    * nobody is left at the table to be told about it.

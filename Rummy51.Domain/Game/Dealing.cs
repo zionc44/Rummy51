@@ -11,7 +11,12 @@ public sealed record HandDeal(
 
 public static class Dealing
 {
-    private const int Rounds = 5;
+    /// <summary>Rule 2.4: fifteen and fourteen.</summary>
+    public const int FirstDeal = 5;
+
+    /// <summary>Rule 12.7: one round fewer, which is twelve and eleven.</summary>
+    public const int Redeal = 4;
+
     private const int PerPass = 3;
 
     /// <summary>What everyone but the first player gets in the last pass.</summary>
@@ -22,11 +27,13 @@ public static class Dealing
     /// Cards the cutter is already holding from the cut. Each one is a card
     /// they are not dealt, so everybody ends the deal holding the same number.
     /// </param>
+    /// <param name="rounds"><see cref="FirstDeal"/> or <see cref="Redeal"/>.</param>
     public static HandDeal Deal(
         IReadOnlyList<Card> cards,
         int seats,
         int dealerSeat,
-        int alreadyHeld)
+        int alreadyHeld,
+        int rounds)
     {
         if (seats is < 2 or > 4)
         {
@@ -41,11 +48,11 @@ public static class Dealing
         var drawn = 0;
         var owed = alreadyHeld;
 
-        foreach (var round in Enumerable.Range(0, Rounds))
+        foreach (var round in Enumerable.Range(0, rounds))
         {
             foreach (var seat in Clockwise(first, seats))
             {
-                var count = round == Rounds - 1 && seat != first ? FewerInTheLast : PerPass;
+                var count = round == rounds - 1 && seat != first ? FewerInTheLast : PerPass;
 
                 if (seat == cutter && owed > 0)
                 {

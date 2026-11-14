@@ -8,6 +8,12 @@ public enum HandPhase
 
     Playing,
 
+    Offering,
+
+    Answered,
+
+    Keeping,
+
     Finished
 }
 
@@ -28,8 +34,12 @@ public enum DrawnFrom
 /// It knows nothing of the table's mode (rule 9.2): a single hand, one of a
 /// survival run and the third of a series are the same hand played the same
 /// way, and what follows it is somebody else's question.
+///
+/// Chapter 12 is in Hand.Redeal.cs, where the fields it alone uses are
+/// declared as well. A hand being dealt again is a stage of a hand and not
+/// a thing of its own, which is why it is the same class and not another.
 /// </summary>
-public sealed class Hand
+public sealed partial class Hand
 {
     private readonly List<List<HeldCard>> hands;
     private readonly TurnSoFar turn = new();
@@ -47,6 +57,8 @@ public sealed class Hand
         Seats = seats;
         hands = [.. Enumerable.Range(0, seats).Select(_ => new List<HeldCard>())];
         wentDown = new bool[seats];
+        hasOffered = new bool[seats];
+        keeping = new int[seats][];
         DealerSeat = dealerSeat;
         CutterSeat = (dealerSeat + seats - 1) % seats;
         Deck = new Deck(jokers, seed);
@@ -57,7 +69,7 @@ public sealed class Hand
     public int CutterSeat { get; }
 
     /// <summary>A hand says when it may be cut; what is in it is its own.</summary>
-    public Deck Deck { get; }
+    public Deck Deck { get; private set; }
 
     public HandPhase Phase { get; private set; } = HandPhase.Cutting;
 
@@ -84,7 +96,7 @@ public sealed class Hand
     public IReadOnlyList<IReadOnlyList<HeldCard>> Hands => hands;
 
     /// <summary>A hand says who may reach for it; what is there is its own.</summary>
-    public Board Board { get; } = new();
+    public Board Board { get; private set; } = new();
 
     /// <summary>Public: their melds are lying there for everybody to read.</summary>
     public IReadOnlyList<bool> WentDown => wentDown;
@@ -124,7 +136,7 @@ public sealed class Hand
     private int KeepsBack => CanFinish ? 1 : 2;
 
     /// <summary>Rule 6.2, which is what makes going out a throw and not a lay.</summary>
-    private bool CanPartWith(int seat, int many) => hands[seat].Count - many >= KeepsBack;
+    public bool CanPartWith(int seat, int many) => hands[seat].Count - many >= KeepsBack;
 
     /// <summary>
     /// Rule 3.4. The card about to be thrown is still in the hand when this
@@ -194,7 +206,12 @@ public sealed class Hand
             return false;
         }
 
-        var dealt = Dealing.Deal(Deck.Remaining, Seats, DealerSeat, Deck.RevealedAtCut.Count);
+        var dealt = Dealing.Deal(
+            Deck.Remaining,
+            Seats,
+            DealerSeat,
+            Deck.RevealedAtCut.Count,
+            dealingAgain ? Dealing.Redeal : Dealing.FirstDeal);
 
         for (var seat = 0; seat < Seats; seat++)
         {
@@ -209,6 +226,7 @@ public sealed class Hand
 
         Board.StockWith(dealt.Stock);
         Passes = dealt.Passes;
+        dealingAgain = false;
 
         return true;
     }
@@ -364,7 +382,7 @@ public sealed class Hand
             return false;
         }
 
-        var meld = new Meld(seat, [.. places.Select(at => held[at])]);
+        var meld = new Meld(seat, [.. places.Select(at => Owned(held[at], seat))]);
 
         if (!Melding.IsMeld([.. meld.Cards.Select(lying => lying.Card)]))
         {
@@ -412,7 +430,7 @@ public sealed class Hand
             return false;
         }
 
-        Board.Grow(meldAt, end, card);
+        Board.Grow(meldAt, end, Owned(card, seat));
         hands[seat].RemoveAt(held);
         turn.Joined(meldAt, card);
 
@@ -451,7 +469,7 @@ public sealed class Hand
             return false;
         }
 
-        var joker = Board.Swap(meldAt, at, card);
+        var joker = Board.Swap(meldAt, at, Owned(card, seat));
 
         hands[seat].RemoveAt(held);
         hands[seat].Add(joker);
@@ -558,6 +576,19 @@ public sealed class Hand
     private void Forget() => turn.Forget();
 
     private bool IsTheirTurn(int seat) => Phase == HandPhase.Playing && seat == TurnSeat;
+
+    /// <summary>
+    /// Whose a card is once it is on the table. Rule 12.5 fixes it the first
+    /// time it is laid and not again, so a joker bought out of a meld and
+    /// laid somewhere else is still the card of whoever first put it there.
+    ///
+    /// Nothing ever has to put it back to nobody. A card thrown away loses
+    /// it anyway - the pile holds cards and not held cards - and the only
+    /// card that reaches a hand already owned is a joker bought out of a
+    /// meld, which rule 3.4 will not let its buyer keep.
+    /// </summary>
+    private static HeldCard Owned(HeldCard card, int seat) =>
+        card.Owner == HeldCard.Nobody ? card with { Owner = seat } : card;
 
     private IReadOnlyList<Card> Lying(int at) =>
         [.. Board.Melds[at].Cards.Select(card => card.Card)];

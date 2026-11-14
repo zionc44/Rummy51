@@ -1,0 +1,40 @@
+<div class="vote">
+  <div class="vote__panel" role="alertdialog" aria-modal="true">
+    <p class="vote__asked">{{ 'table.redealAsked' | translate: { '0': by() } }}</p>
+
+    <ul class="vote__rows">
+      @for (row of rows(); track row.name) {
+        <li class="vote__row">
+          <span class="vote__name">{{ row.name }}</span>
+
+          @if (row.answer === true) {
+            <span class="vote__yes">✓</span>
+          } @else if (row.answer === false) {
+            <span class="vote__no">✗</span>
+          } @else if (waiting()) {
+            <span class="vote__hidden">?</span>
+          } @else {
+            <span class="vote__spinner"></span>
+          }
+        </li>
+      }
+    </ul>
+
+    @if (waiting()) {
+      <div class="vote__buttons">
+        <button type="button" class="btn-primary" (click)="answered.emit(true)">
+          {{ 'table.redealAgree' | translate }}
+        </button>
+        <button type="button" class="btn-ghost" (click)="answered.emit(false)">
+          {{ 'table.redealRefuse' | translate }}
+        </button>
+      </div>
+    } @else if (settled()) {
+      <button type="button" class="btn-primary vote__ok" (click)="closed.emit()">
+        {{ 'common.ok' | translate }}
+      </button>
+    }
+
+    <p class="vote__left" [class.vote__left--urgent]="left() <= 5">{{ left() }}</p>
+  </div>
+</div>

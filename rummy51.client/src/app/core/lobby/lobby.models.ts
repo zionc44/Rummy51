@@ -60,7 +60,14 @@ export interface LobbyTable {
 }
 
 /** Mirrors HandPhase on the server, which sends the name rather than the ordinal. */
-export type HandPhase = 'cutting' | 'dealing' | 'playing' | 'finished';
+export type HandPhase =
+  | 'cutting'
+  | 'dealing'
+  | 'playing'
+  | 'offering'
+  | 'answered'
+  | 'keeping'
+  | 'finished';
 
 /** One pass of the deal: how many cards landed at which seat. */
 export interface DealPass {
@@ -120,6 +127,12 @@ export interface HandView {
 
   /** Rules 7.1, 11.4. */
   readonly canTakeFinishing: boolean;
+
+  /** Rules 12.1, 12.2. */
+  readonly canOfferRedeal: boolean;
+
+  /** Rule 12.1, or -1 when nothing is on the table to answer. */
+  readonly offeredBy: number;
 
   /** Rule 11.3. */
   readonly wentDown: readonly boolean[];

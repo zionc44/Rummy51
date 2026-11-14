@@ -1,0 +1,88 @@
+.keep {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(2 44 34 / 0.85);
+  padding: var(--page-gutter);
+}
+
+.keep__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--felt-900);
+  padding: 1rem 0.75rem;
+  text-align: center;
+}
+
+.keep__asked {
+  margin: 0;
+  font-weight: 700;
+}
+
+.keep__cards {
+  display: flex;
+  justify-content: center;
+  padding-block-start: 0.5rem;
+  direction: ltr;
+}
+
+.keep__card {
+  position: relative;
+  z-index: var(--at);
+  flex: 0 0 auto;
+  border: 0;
+  // The band that says which run a card is lying in, under it where the
+  // next card cannot cover it.
+  border-block-end: 3px solid var(--band);
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform var(--transition);
+
+  > img {
+    display: block;
+    inline-size: 3.25rem;
+    border-radius: 0.1875rem;
+  }
+
+  // All but the first lie over the one before, leaving the corner that
+  // names a card showing - which is the whole of what has to be read.
+  + .keep__card {
+    margin-inline-start: -2.25rem;
+  }
+}
+
+// Lifted and no more: bringing it forward would hide the cards under it.
+.keep__card--chosen {
+  transform: translateY(-0.875rem);
+}
+
+.keep__card--joker > img {
+  outline: 2px solid var(--clock-pressing);
+  outline-offset: -2px;
+}
+
+.keep__ok {
+  align-self: center;
+  min-inline-size: 8rem;
+}
+
+.keep__left {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.keep__left--urgent {
+  color: var(--clock-urgent);
+}

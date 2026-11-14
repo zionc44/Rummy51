@@ -132,6 +132,10 @@ internal sealed class OpenTable
 
     public bool MustStillGoOut(int seat) => hand?.MustStillGoOut(seat) == true;
 
+    public bool CouldPartWith(int seat, int many) => hand?.CanPartWith(seat, many) != false;
+
+    public bool GoingOutIsOpen => hand?.CanFinish != false;
+
     /// <summary>Rules 5.7, 5.9, 5.10.</summary>
     public bool AddTo(int seat, int meldAt, int cardId, MeldEnd end) =>
         hand?.AddTo(seat, meldAt, cardId, end) == true;
@@ -139,6 +143,58 @@ internal sealed class OpenTable
     /// <summary>Rules 5.11, 5.12.</summary>
     public bool SwapForJoker(int seat, int meldAt, int at, int cardId) =>
         hand?.SwapForJoker(seat, meldAt, at, cardId) == true;
+
+    /// <summary>Rules 12.1, 12.2.</summary>
+    public bool CanOfferARedeal(int seat) => hand?.CanOfferARedeal(seat) == true;
+
+    /// <summary>Rule 12.1. The turn's clock gives way to the offer's.</summary>
+    public bool OfferARedeal(int seat) => Moved(() => hand?.OfferARedeal(seat) == true);
+
+    /// <summary>Rule 12.3.</summary>
+    public bool Answer(int seat, bool agreed) => Moved(() => hand?.Answer(seat, agreed) == true);
+
+    /// <summary>Rule 12.4.</summary>
+    public bool ReadTheResult(int seat) => Moved(() => hand?.Read(seat) == true);
+
+    /// <summary>Rule 12.6.</summary>
+    public bool Keep(int seat, IReadOnlyList<int> cardIds) =>
+        Moved(() => hand?.Keep(seat, cardIds) == true);
+
+    /// <summary>
+    /// A move of a redeal, which is the one kind that moves the hand from
+    /// one stage to another - so unlike the moves inside a turn, each one
+    /// hands the clock to whatever the hand has become.
+    /// </summary>
+    private bool Moved(Func<bool> move)
+    {
+        var was = hand?.Phase;
+
+        if (!move())
+        {
+            return false;
+        }
+
+        // Only where the stage itself changed. An answer among three is a
+        // move inside the asking, and a table that began its twenty seconds
+        // again at every one of them would never run out of them.
+        if (hand?.Phase != was)
+        {
+            WaitForTheHand();
+        }
+
+        return true;
+    }
+
+    private void WaitForTheHand() =>
+        countdown.Restart(TimeSpan.FromSeconds(hand?.Phase switch
+        {
+            HandPhase.Cutting => turns.CutSeconds,
+            HandPhase.Dealing => turns.DealSeconds,
+            HandPhase.Offering => turns.OfferSeconds,
+            HandPhase.Answered => turns.ResultSeconds,
+            HandPhase.Keeping => turns.KeepSeconds,
+            _ => turns.TurnSeconds,
+        }));
 
     /// <summary>Rule 3.2, which hands the turn on and the clock with it.</summary>
     public bool Discard(int seat, int cardId)
@@ -170,6 +226,16 @@ internal sealed class OpenTable
         if (hand.Phase == HandPhase.Dealing)
         {
             return BeginPlay();
+        }
+
+        if (hand.Phase is HandPhase.Offering or HandPhase.Answered or HandPhase.Keeping)
+        {
+            return Moved(() => hand.Phase switch
+            {
+                HandPhase.Offering => hand.TakeSilenceAsAgreement(),
+                HandPhase.Answered => hand.StopShowingTheResult(),
+                _ => hand.KeepForWhoeverHasNot(),
+            });
         }
 
         PlayTheTurnFor(hand.TurnSeat);
@@ -211,6 +277,10 @@ internal sealed class OpenTable
 
         return [.. hand.Hands[seat].Select(card => Held(card, owed.Contains(card.Id)))];
     }
+
+    /// <summary>Rule 12.4: what this seat may be shown of the answers.</summary>
+    public IReadOnlyList<bool?> OfferAsSeenBy(Guid playerId) =>
+        hand?.OfferAsSeenBy(SeatOf(playerId)) ?? [];
 
     /// <summary>Rule 11.1: worked out from a hand only one player may see.</summary>
     private HeldCardView Held(HeldCard card, bool owed) =>
@@ -262,6 +332,8 @@ internal sealed class OpenTable
                 hand.CanUndo,
                 hand.TurnSeat != -1 && hand.CanAddToTheTable(hand.TurnSeat),
                 hand.TurnSeat != -1 && hand.CanTakeTheFinishingCard(hand.TurnSeat),
+                hand.TurnSeat != -1 && hand.CanOfferARedeal(hand.TurnSeat),
+                hand.OfferedBy,
                 countdown.Describe(hand.WaitingSeat));
 
     /// <summary>Rule 11.3.</summary>

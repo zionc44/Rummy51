@@ -42,6 +42,18 @@ public interface ITables
     /// <summary>Rules 3.6, 7.4.</summary>
     Result<HandView> Undo(Guid tableId, Guid playerId);
 
+    /// <summary>Rules 12.1, 12.2.</summary>
+    Result<HandView> OfferARedeal(Guid tableId, Guid playerId);
+
+    /// <summary>Rule 12.3.</summary>
+    Result<HandView> Answer(Guid tableId, Guid playerId, bool agreed);
+
+    /// <summary>Rule 12.4.</summary>
+    Result<HandView> ReadTheResult(Guid tableId, Guid playerId);
+
+    /// <summary>Rule 12.6.</summary>
+    Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds);
+
     /// <summary>Rules 5.7, 5.9, 5.10.</summary>
     Result<HandView> AddToMeld(Guid tableId, Guid playerId, AddRequest join);
 
@@ -54,6 +66,13 @@ public interface ITables
     /// never to a group. Empty before the deal and for anybody not seated.
     /// </summary>
     IReadOnlyList<HeldCardView> CardsOf(Guid tableId, Guid playerId);
+
+    /// <summary>
+    /// Rule 12.4: the answers as this player may see them, which is nothing
+    /// but the offerer's until they have answered themselves. Empty when
+    /// there is no offer on the table.
+    /// </summary>
+    IReadOnlyList<bool?> OfferAsSeenBy(Guid tableId, Guid playerId);
 
     /// <summary>
     /// Rule 3.6, and the tables that changed because of it. Called by the

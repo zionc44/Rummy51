@@ -117,6 +117,34 @@ public class TablesController(
     public Task<IActionResult> Meld(Guid tableId, MeldRequest request) =>
         MoveAsync(tableId, playerId => tables.LayDown(tableId, playerId, request.CardIds));
 
+    /// <summary>Rules 12.1, 12.2.</summary>
+    [HttpPost("{tableId:guid}/redeal")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> OfferARedeal(Guid tableId) =>
+        MoveAsync(tableId, playerId => tables.OfferARedeal(tableId, playerId));
+
+    /// <summary>Rule 12.3.</summary>
+    [HttpPost("{tableId:guid}/redeal/answer")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> Answer(Guid tableId, AnswerRequest request) =>
+        MoveAsync(tableId, playerId => tables.Answer(tableId, playerId, request.Agreed));
+
+    /// <summary>Rule 12.4.</summary>
+    [HttpPost("{tableId:guid}/redeal/read")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> ReadTheResult(Guid tableId) =>
+        MoveAsync(tableId, playerId => tables.ReadTheResult(tableId, playerId));
+
+    /// <summary>Rule 12.6.</summary>
+    [HttpPost("{tableId:guid}/redeal/keep")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> Keep(Guid tableId, MeldRequest request) =>
+        MoveAsync(tableId, playerId => tables.Keep(tableId, playerId, request.CardIds));
+
     /// <summary>The last thing this turn did, taken back.</summary>
     [HttpPost("{tableId:guid}/undo")]
     [ProducesResponseType<HandView>(StatusCodes.Status200OK)]

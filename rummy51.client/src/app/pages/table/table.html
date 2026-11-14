@@ -20,6 +20,7 @@
             [held]="seating.heldAt(place.at)"
             [holding]="seating.holdingAt(place.at)"
             [clock]="seating.clockFor(place.at)"
+            [left]="asking.secondsLeft()"
           />
         }
       </div>
@@ -70,8 +71,9 @@
                     #pile
                     type="button"
                     class="stack__pile"
-                    [class.pile--offered]="turn.toDraw()"
-                    [disabled]="!turn.toDraw()"
+                    [class.stack__pile--bare]="!hand.stockSize"
+                    [class.pile--offered]="turn.canTakeStock()"
+                    [disabled]="!turn.canTakeStock()"
                     [attr.aria-label]="'table.drawStock' | translate"
                     (click)="moves.draw('stock')"
                   >
@@ -126,6 +128,12 @@
                   (click)="sortHand()"
                 >
                   <app-icon-sort />
+                </button>
+              }
+
+              @if (turn.canOfferRedeal()) {
+                <button type="button" class="board__redeal" (click)="offerARedeal()">
+                  {{ 'table.redeal' | translate }}
                 </button>
               }
 
@@ -186,6 +194,7 @@
               [dealer]="seating.nearSeat() === seating.dealerSeat()"
               [holding]="seating.holdingAt(seating.nearSeat())"
               [clock]="seating.clockFor(seating.nearSeat())"
+              [left]="asking.secondsLeft()"
               [compact]="true"
             />
             @if (seating.seated() && myCards().length > 0) {
@@ -207,6 +216,24 @@
           {{ 'table.backToLobby' | translate }}
         </button>
       </div>
+    }
+
+    @if (hand(); as hand) {
+      @if (hand.phase === 'offering' || (hand.phase === 'answered' && !asking.read())) {
+        <app-redeal-vote
+          [by]="asking.by()"
+          [rows]="asking.rows()"
+          [waiting]="hand.phase === 'offering' && asking.toAnswer()"
+          [settled]="hand.phase === 'answered'"
+          [left]="asking.secondsLeft()"
+          (answered)="answer($event)"
+          (closed)="readTheResult()"
+        />
+      }
+
+      @if (hand.phase === 'keeping' && seating.seated() && !asking.chosen()) {
+        <app-keep-three [cards]="myCards()" [left]="asking.secondsLeft()" (kept)="keep($event)" />
+      }
     }
 
     <!-- A move the table refused, in the middle of the screen. Under the

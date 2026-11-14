@@ -181,6 +181,11 @@
   border-radius: 0.1875rem;
 }
 
+.stack__pile--bare {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
 .discard {
   position: relative;
   display: block;
@@ -277,6 +282,25 @@
 
 .board__undo {
   inset-inline-start: 1.875rem;
+}
+
+.board__redeal {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  z-index: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  padding: 0.125rem 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--felt-500);
+    color: var(--felt-500);
+  }
 }
 
 // Under the board rather than over it: the cards are what matters and this

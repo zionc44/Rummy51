@@ -12,6 +12,7 @@ const enum LobbyEvent {
   TablesChanged = 'TablesChanged',
   HandChanged = 'HandChanged',
   CardsDealt = 'CardsDealt',
+  OfferAnswers = 'OfferAnswers',
   SignedInElsewhere = 'SignedInElsewhere',
 }
 
@@ -31,6 +32,13 @@ export class LobbyConnection {
   private readonly playing = signal<HandView | null>(null);
   private readonly mine = signal<readonly HeldCard[]>([]);
 
+  /**
+   * Rule 12.4: the answers as this player may see them, which is nothing
+   * but the offerer's until they have answered. The masking is the
+   * server's, so what never arrives here is what may not be shown.
+   */
+  private readonly answers = signal<readonly (boolean | null)[]>([]);
+
   readonly onlinePlayers = this.players.asReadonly();
   readonly tables = this.open.asReadonly();
 
@@ -43,6 +51,8 @@ export class LobbyConnection {
    * watching the table and these go to one connection.
    */
   readonly myCards = this.mine.asReadonly();
+
+  readonly offerAnswers = this.answers.asReadonly();
 
   /**
    * True once the hub has answered. Until then an empty list of tables means
@@ -136,6 +146,10 @@ export class LobbyConnection {
     connection.on(LobbyEvent.HandChanged, (hand: HandView | null) => this.playing.set(hand));
 
     connection.on(LobbyEvent.CardsDealt, (cards: HeldCard[]) => this.mine.set(cards));
+
+    connection.on(LobbyEvent.OfferAnswers, (answers: (boolean | null)[]) =>
+      this.answers.set(answers),
+    );
 
     connection.on(LobbyEvent.SignedInElsewhere, () => {
       this.replaced.set(true);

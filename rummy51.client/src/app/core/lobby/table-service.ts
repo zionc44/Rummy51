@@ -72,6 +72,30 @@ export class TableService {
     return this.http.post<HandView>(`${API}/${tableId}/undo`, {}).pipe(failWithApiErrors());
   }
 
+  /** Rules 12.1, 12.2. */
+  offerARedeal(tableId: string): Observable<HandView> {
+    return this.http.post<HandView>(`${API}/${tableId}/redeal`, {}).pipe(failWithApiErrors());
+  }
+
+  /** Rule 12.3. */
+  answer(tableId: string, agreed: boolean): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/redeal/answer`, { agreed })
+      .pipe(failWithApiErrors());
+  }
+
+  /** Rule 12.4. */
+  readTheResult(tableId: string): Observable<HandView> {
+    return this.http.post<HandView>(`${API}/${tableId}/redeal/read`, {}).pipe(failWithApiErrors());
+  }
+
+  /** Rule 12.6. */
+  keep(tableId: string, cardIds: readonly number[]): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/redeal/keep`, { cardIds })
+      .pipe(failWithApiErrors());
+  }
+
   /**
    * A card added to a meld already lying on the table. The meld is named by
    * its place there, which is the same place for everybody watching.

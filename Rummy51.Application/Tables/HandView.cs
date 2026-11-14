@@ -13,6 +13,11 @@ namespace Rummy51.Application.Tables;
 /// nobody - a turn before play begins, a winner before one is taken - are
 /// -1 rather than null, so the client counts seats and never asks twice.
 /// </summary>
+/// <param name="OfferedBy">
+/// Who has put a redeal to the table under rule 12.1, or -1 when nobody
+/// has. What each seat may see of the answers is not here: rule 12.4 shows
+/// a different thing to each of them, so it goes where the cards go.
+/// </param>
 /// <param name="JokerPositions">
 /// Rule 11.5 says nobody may know this. It reaches a client only where a
 /// development setting has asked for it, and knowing it is a cheat.
@@ -49,4 +54,6 @@ public sealed record HandView(
     bool CanUndo,
     bool CanAdd,
     bool CanTakeFinishing,
+    bool CanOfferRedeal,
+    int OfferedBy,
     Waiting? Waiting);

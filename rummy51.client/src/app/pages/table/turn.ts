@@ -33,8 +33,20 @@ export class Turn {
     () => this.toDraw() && (this.hand()?.canTakeFinishing ?? false),
   );
 
+  /** Rules 12.1, 12.2, which the server answers for the same reason. */
+  readonly canOfferRedeal = computed(
+    () => this.mine() && (this.hand()?.canOfferRedeal ?? false),
+  );
+
   /** Rule 3.3: only while a card lies on it. */
   readonly canTakeDiscard = computed(() => this.toDraw() && this.hand()?.discardTop != null);
+
+  /**
+   * And the deck only while there is one. A pile that lights up and then
+   * refuses the press is a pile that lied, and the count is on the table
+   * for exactly this.
+   */
+  readonly canTakeStock = computed(() => this.toDraw() && (this.hand()?.stockSize ?? 0) > 0);
 
   /** Their card taken, so all that is left of the turn is to throw one. */
   readonly toThrow = computed(() => this.mine() && (this.hand()?.hasDrawn ?? false));
