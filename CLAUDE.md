@@ -190,6 +190,11 @@ first deal over until somebody can force a redeal under 12.9, which is one
 deal in about a hundred and twenty and so is the same problem; it costs a
 few milliseconds and the deal it settles on is a shuffle like any other.
 
+Running it anywhere other than this machine is
+[`docs/hosting.md`](docs/hosting.md) — what the in-memory tables decide
+about where it can live, what that costs, and the five things that have to
+be true before a first deployment.
+
 ## Database
 
 PostgreSQL. Connection string in `appsettings.Development.json` (local machine,
