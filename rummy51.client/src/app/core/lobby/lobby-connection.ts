@@ -64,14 +64,14 @@ export class LobbyConnection {
   readonly connected = this.live.asReadonly();
 
   /**
-   * The table the player is sitting at, which is at most one. It survives
-   * walking away to the lobby: only leaving on purpose, or going offline,
-   * gives up a seat.
+   * Every table holding a seat for this player, which rule 10.5 allows to
+   * be several. Worked out from the list the lobby already sends, so there
+   * is nothing extra to keep in step.
    */
-  readonly myTable = computed(() => {
+  readonly myTables = computed(() => {
     const me = this.auth.currentPlayer()?.playerId ?? null;
 
-    return this.open().find((table) => table.seats.some((seat) => seat.playerId === me)) ?? null;
+    return this.open().filter((table) => table.seats.some((seat) => seat.playerId === me));
   });
 
   /** True once a newer connection elsewhere has taken this player's place. */

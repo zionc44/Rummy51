@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { LanguageService } from './core/i18n/language-service';
+import { SignedInElsewhere } from './shared/signed-in-elsewhere/signed-in-elsewhere';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, SignedInElsewhere],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

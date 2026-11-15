@@ -15,6 +15,7 @@ namespace Rummy51.Server.Hubs;
 public sealed class LobbyHub(
     IPlayerConnections connections,
     ITables tables,
+    TableNews news,
     IPlayerAccountService accounts) : Hub
 {
     public const string Route = "/hubs/lobby";
@@ -52,9 +53,10 @@ public sealed class LobbyHub(
         // A seat is given up only when the player has actually gone. A second
         // tab displacing the first returns null here, and displaces nobody
         // from their chair.
-        if (departed is not null && tables.Leave(departed.PlayerId))
+        // Rules 10.2, 10.3.
+        if (departed is not null && tables.WentAwayFromEverything(departed.PlayerId))
         {
-            await BroadcastTables();
+            await TellEverybodyAsync();
         }
 
         await BroadcastOnline();
@@ -85,6 +87,13 @@ public sealed class LobbyHub(
         // the client has one way of learning them and not two.
         if (PlayerId() is { } playerId)
         {
+            // Chapter 10: arriving here is leaving wherever they were, so
+            // more than this table may have changed.
+            if (tables.Watching(playerId, tableId))
+            {
+                await TellEverybodyAsync();
+            }
+
             await Clients.Caller.SendAsync(LobbyEvents.CardsDealt, tables.CardsOf(tableId, playerId));
             await Clients.Caller.SendAsync(
                 LobbyEvents.AboutARedeal,
@@ -94,8 +103,35 @@ public sealed class LobbyHub(
         return tables.Hand(tableId);
     }
 
-    public Task Unwatch(Guid tableId) =>
-        Groups.RemoveFromGroupAsync(Context.ConnectionId, tableId.ToString());
+    /// <summary>
+    /// Rule 10.2: leaving the page is leaving the table, and there is no
+    /// other way to get up from a chair.
+    /// </summary>
+    public async Task Unwatch(Guid tableId)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableId.ToString());
+
+        if (PlayerId() is { } playerId && tables.WentAway(playerId, tableId))
+        {
+            await TellEverybodyAsync();
+        }
+    }
+
+    /// <summary>
+    /// Chapter 10 again: who is watching what shows in two places, the rows
+    /// in the lobby and the seats at a table, and a player moving between
+    /// tables changes it at more than one of them. Telling every table is
+    /// cheaper than working out which, and happens only when somebody moves.
+    /// </summary>
+    private async Task TellEverybodyAsync()
+    {
+        await news.AboutTheTablesAsync();
+
+        foreach (var table in tables.All())
+        {
+            await news.AboutTheHandAsync(table.TableId);
+        }
+    }
 
     private Task BroadcastTables() =>
         Clients.All.SendAsync(LobbyEvents.TablesChanged, tables.All());

@@ -43,6 +43,9 @@ export interface TableSeat {
   readonly playerId: string | null;
   readonly displayName: string | null;
   readonly avatarUrl: string | null;
+
+  /** Rule 10.1: holding the seat without watching the table. */
+  readonly away: boolean;
 }
 
 /**
@@ -142,6 +145,9 @@ export interface HandView {
 
   /** Rule 11.3. */
   readonly wentDown: readonly boolean[];
+
+  /** Chapter 10: holding a chair without watching it. */
+  readonly away: readonly boolean[];
 
   /** Rule 11.4. */
   readonly hasDrawn: boolean;

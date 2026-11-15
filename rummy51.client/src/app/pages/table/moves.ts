@@ -92,18 +92,9 @@ export class Moves {
   }
 
   /**
-   * Giving up the seat, which is the one move whose answer matters here:
-   * nobody is left at the table to be told about it.
+   * Rule 10.1: there is nothing to ask the server. Leaving the page is
+   * leaving the table, and the hub hears it when the page goes.
    */
-  leave(): void {
-    this.errors.set([]);
-
-    this.tables.leave().subscribe({
-      next: () => void this.router.navigate(['/lobby']),
-      error: (errors: ApiError[]) => this.errors.set(errors),
-    });
-  }
-
   backToLobby(): void {
     void this.router.navigate(['/lobby']);
   }

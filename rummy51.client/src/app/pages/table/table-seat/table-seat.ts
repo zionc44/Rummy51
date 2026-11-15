@@ -49,6 +49,9 @@ export class TableSeat {
   /** Whose turn it is to deal. It moves on by one with every hand. */
   readonly dealer = input(false);
 
+  /** Chapter 10: holding the chair without watching the table. */
+  readonly away = input(false);
+
   /**
    * Drawn small and without its name. The near place has the width of the
    * table, and on a phone that line is worth more to the cards beside it

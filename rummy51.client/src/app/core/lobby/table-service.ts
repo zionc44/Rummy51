@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Fit, Swap } from '../cards/card';
 import { failWithApiErrors } from '../errors/api-error';
 import { CreateTableRequest, DrawnFrom, HandView, LobbyTable } from './lobby.models';
@@ -121,13 +121,5 @@ export class TableService {
     return this.http
       .post<HandView>(`${API}/${tableId}/swap`, { cardId, meld: swap.meld, at: swap.at })
       .pipe(failWithApiErrors());
-  }
-
-  /** Leaves whichever table the player is at, which is at most one. */
-  leave(): Observable<void> {
-    return this.http.post<void>(`${API}/leave`, {}).pipe(
-      map(() => undefined),
-      failWithApiErrors(),
-    );
   }
 }

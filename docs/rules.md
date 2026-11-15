@@ -234,6 +234,35 @@ games with running results.
 **10.1** A player who walks away from a game in progress has their hand
 played out for them to the end, and the loss is recorded against them.
 
+**10.2** Walking away is not watching the table, and nothing distinguishes
+the ways of doing it: closing the page, going to the lobby and losing the
+connection are one thing. The seat is still theirs and they may walk back
+into it at any time, but 3.6 has been playing their turns while they were
+gone and will not have played them well.
+
+**10.3** A seat at a hand that has not been dealt is given up the moment
+its player stops watching, because nothing has been played out yet and the
+chair is one three other people are waiting on. For the same reason a
+player may hold only one such seat.
+
+**10.4** A hand ends and everybody who was not there for it leaves the
+table, their seats falling empty. Whoever was watching stays.
+
+**10.5** So a player may hold seats at any number of tables, so long as a
+hand is running at each: they are the hands they walked out of. Only one of
+them is being watched, and 3.6 is playing the rest.
+
+**10.6** A seat that lets a wait run out is not being watched, whether or
+not a page is still open on it. The table decides that for itself, and
+whoever is sitting there comes back the way anybody does - by being there
+and saying so.
+
+**10.7** A table nobody is watching closes at once. Whatever hand was
+running in it was nobody's to finish, and the seats held in it were held
+for people who had all gone. A table that 10.6 has doubted all of is not
+one of these: everybody there is being asked a question, and closing it
+would be answering for them.
+
 ## 11. What may be seen
 
 **11.1** A player's hand is theirs alone. Nobody else is ever told what is in
@@ -321,4 +350,5 @@ owns what.
 Questions, not rules, so they have no numbers of their own. A rule written
 here before it is settled is a rule somebody will enforce by mistake.
 
-- How a leaver's loss is recorded, which 10.1 leaves open.
+- What a leaver's loss comes to, which waits on chapter 8 being enforced.
+  That they take one is 10.1 and is settled.

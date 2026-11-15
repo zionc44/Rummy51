@@ -283,3 +283,15 @@
   font-size: 0.625rem;
   font-weight: 700;
 }
+
+// Rule 10.1: the seat is still theirs, so it keeps its place and its name
+// and only stops looking present. Hiding them would say they had gone.
+.seat__portrait--away {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
+.seat__name--away {
+  color: var(--text-ghost);
+  font-style: italic;
+}

@@ -41,9 +41,16 @@ internal sealed class TurnClock(
 
     private async Task ActForTheOverdueAsync()
     {
-        foreach (var tableId in tables.ActForTheOverdue())
+        var swept = tables.ActForTheOverdue();
+
+        foreach (var tableId in swept.Acted)
         {
             await news.AboutTheHandAsync(tableId);
+        }
+
+        if (swept.Closed)
+        {
+            await news.AboutTheTablesAsync();
         }
     }
 }

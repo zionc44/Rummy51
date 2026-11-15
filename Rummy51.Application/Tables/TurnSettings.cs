@@ -41,4 +41,12 @@ public sealed class TurnSettings
     public int FirstTurnSeconds { get; init; } = 30;
 
     public int TurnSeconds { get; init; } = 15;
+
+    /// <summary>
+    /// What a wait is cut to when the seat it waits for is not being watched.
+    /// Rule 3.6 is going to act for them either way, and three players should
+    /// not spend a whole turn watching a chair nobody is in.
+    /// </summary>
+    public int AwaySeconds { get; init; } = 5;
+
 }

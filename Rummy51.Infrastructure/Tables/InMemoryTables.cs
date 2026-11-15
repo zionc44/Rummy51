@@ -12,7 +12,7 @@ namespace Rummy51.Infrastructure.Tables;
 /// dealt a card holds nothing worth restoring. A series carrying scores across
 /// several hands will be a different question, and this is where it gets asked.
 /// </summary>
-public sealed class InMemoryTables(
+public sealed partial class InMemoryTables(
     IOptions<TestingSettings> testing,
     IOptions<TurnSettings> turns,
     TimeProvider clock) : ITables
@@ -24,96 +24,6 @@ public sealed class InMemoryTables(
     // walking every table to find out.
     private readonly Lock gate = new();
     private readonly Dictionary<Guid, OpenTable> tables = [];
-    private readonly Dictionary<Guid, Guid> tableByPlayer = [];
-
-    public Result<LobbyTable> Open(CreateTableRequest request, PlayerSummary player)
-    {
-        if (!TableOptions.Seats.Contains(request.Seats))
-        {
-            return Refused("TableSeatsInvalid", FailureKind.Validation);
-        }
-
-        if (!TableOptions.Jokers.Contains(request.Jokers))
-        {
-            return Refused("TableJokersInvalid", FailureKind.Validation);
-        }
-
-        // The form offers only what fits, but the form is not what decides.
-        if (!TableOptions.Allows(request.Mode, request.Seats, request.Limit))
-        {
-            return Refused("TableLimitInvalid", FailureKind.Validation);
-        }
-
-        lock (gate)
-        {
-            if (tableByPlayer.ContainsKey(player.PlayerId))
-            {
-                return Refused("AlreadyAtATable", FailureKind.Conflict);
-            }
-
-            var table = new OpenTable(request, testing, turns.Value, clock);
-            table.Seat(player);
-
-            tables[table.Id] = table;
-            tableByPlayer[player.PlayerId] = table.Id;
-
-            return Result<LobbyTable>.Success(table.Describe());
-        }
-    }
-
-    public Result<LobbyTable> Join(Guid tableId, PlayerSummary player)
-    {
-        lock (gate)
-        {
-            if (tableByPlayer.TryGetValue(player.PlayerId, out var seated))
-            {
-                // Arriving at the table they already sit at is how reopening
-                // the page looks from here, and it is not a failure.
-                return seated == tableId
-                    ? Result<LobbyTable>.Success(tables[tableId].Describe())
-                    : Refused("AlreadyAtATable", FailureKind.Conflict);
-            }
-
-            if (!tables.TryGetValue(tableId, out var table))
-            {
-                return Refused("TableNotFound", FailureKind.Validation);
-            }
-
-            if (table.Started)
-            {
-                return Refused("TableStarted", FailureKind.Conflict);
-            }
-
-            table.Seat(player);
-            tableByPlayer[player.PlayerId] = tableId;
-
-            return Result<LobbyTable>.Success(table.Describe());
-        }
-    }
-
-    public bool Leave(Guid playerId)
-    {
-        lock (gate)
-        {
-            if (!tableByPlayer.Remove(playerId, out var tableId))
-            {
-                return false;
-            }
-
-            if (tables.TryGetValue(tableId, out var table))
-            {
-                table.Unseat(playerId);
-
-                // Nobody left to come back to, so there is no table.
-                if (table.IsEmpty)
-                {
-                    tables.Remove(tableId);
-                }
-            }
-
-            return true;
-        }
-    }
 
     public IReadOnlyList<LobbyTable> All()
     {
@@ -311,7 +221,7 @@ public sealed class InMemoryTables(
         }
     }
 
-    public IReadOnlyList<Guid> ActForTheOverdue()
+    public Swept ActForTheOverdue()
     {
         lock (gate)
         {
@@ -319,16 +229,30 @@ public sealed class InMemoryTables(
             // one more thing that changes a table and must not meet a move
             // halfway through.
             var acted = new List<Guid>();
+            var closed = false;
 
-            foreach (var table in tables.Values)
+            foreach (var table in tables.Values.ToList())
             {
                 if (table.ActForWhoeverRanOut())
                 {
                     acted.Add(table.Id);
                 }
+
+                foreach (var playerId in table.LetGo())
+                {
+                    Stood(playerId, table.Id);
+                }
+
+                // Rule 10.4 can have emptied the last seat, which leaves a
+                // table nobody is at.
+                if (table.Deserted)
+                {
+                    Forget(table);
+                    closed = true;
+                }
             }
 
-            return acted;
+            return new Swept(acted, closed);
         }
     }
 
@@ -345,4 +269,5 @@ public sealed class InMemoryTables(
 
     private static Result<LobbyTable> Refused(string code, FailureKind kind) =>
         Result<LobbyTable>.Fail(kind, new Error(code));
+
 }

@@ -1,0 +1,11 @@
+@if (elsewhere()) {
+  <div class="elsewhere">
+    <div class="elsewhere__panel" role="alertdialog" aria-modal="true">
+      <h1 class="elsewhere__title">{{ 'lobby.replacedTitle' | translate }}</h1>
+      <p class="elsewhere__body">{{ 'lobby.replacedBody' | translate }}</p>
+      <button type="button" class="btn-primary" (click)="reconnect()">
+        {{ 'lobby.reconnect' | translate }}
+      </button>
+    </div>
+  </div>
+}

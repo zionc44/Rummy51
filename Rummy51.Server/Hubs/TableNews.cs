@@ -27,6 +27,14 @@ public sealed class TableNews(ITables tables, IHubContext<LobbyHub> lobby, ILogg
     /// </summary>
     private static readonly TimeSpan Patience = TimeSpan.FromSeconds(2);
 
+    /// <summary>
+    /// The list, to everybody. A table closing is the one change nobody at
+    /// that table can be told about, because there is no longer a group to
+    /// tell: whoever was watching learns it from the list not holding it.
+    /// </summary>
+    public Task AboutTheTablesAsync() =>
+        lobby.Clients.All.SendAsync(LobbyEvents.TablesChanged, tables.All());
+
     public async Task AboutTheHandAsync(Guid tableId)
     {
         await TellAsync(

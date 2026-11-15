@@ -5,7 +5,7 @@
     <button
       type="button"
       class="btn-primary tables__create"
-      [disabled]="seatedAt() !== null"
+      [disabled]="waiting()"
       (click)="creating.set(true)"
     >
       {{ 'lobby.newTable' | translate }}
@@ -40,7 +40,9 @@
         [mode]="mode"
         [tables]="byMode()[mode]"
         [seatedAt]="seatedAt()"
+        [waiting]="waiting()"
         (joined)="join($event)"
+        (returned)="returnTo($event)"
       />
     }
   </div>

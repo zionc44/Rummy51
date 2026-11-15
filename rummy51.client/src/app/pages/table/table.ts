@@ -31,6 +31,7 @@ import { TableTerms } from './table-terms/table-terms';
 import { TableTools } from './table-tools/table-tools';
 import { KeepThree } from './keep-three/keep-three';
 import { ForceRedeal } from './force-redeal/force-redeal';
+import { StillThere } from './still-there/still-there';
 import { RedealVote } from './redeal-vote/redeal-vote';
 
 /** The refusal that says a card taken off the table is still in the hand. */
@@ -60,6 +61,7 @@ const CardOwed = 'TakenCardStillHeld';
     RedealVote,
     ForceRedeal,
     KeepThree,
+    StillThere,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table.html',
@@ -440,6 +442,11 @@ export class Table implements OnDestroy {
   /** Rules 12.1, 12.2. */
   protected offerARedeal(): void {
     this.moves.offerARedeal();
+  }
+
+  /** Rule 10.6: the same saying-so the page makes when it opens. */
+  protected stillHere(): void {
+    void this.lobby.watch(this.tableId());
   }
 
   /** Rule 12.9, which only opens the choice of what to force. */

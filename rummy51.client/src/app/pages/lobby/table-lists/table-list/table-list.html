@@ -11,8 +11,10 @@
         <li>
           <app-table-row
             [table]="table"
-            [seatedAt]="seatedAt()"
+            [mine]="seatedAt().has(table.tableId)"
+            [waiting]="waiting()"
             (joined)="joined.emit($event)"
+            (returned)="returned.emit($event)"
           />
         </li>
       }

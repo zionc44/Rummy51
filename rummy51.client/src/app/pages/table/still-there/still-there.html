@@ -1,0 +1,10 @@
+<div class="still">
+  <div class="still__panel" role="alertdialog" aria-modal="true">
+    <p class="still__asked">{{ 'table.stillThere' | translate }}</p>
+    <p class="still__body">{{ 'table.stillThereWhy' | translate }}</p>
+
+    <button type="button" class="btn-primary" (click)="answered.emit()">
+      {{ 'table.imBack' | translate }}
+    </button>
+  </div>
+</div>

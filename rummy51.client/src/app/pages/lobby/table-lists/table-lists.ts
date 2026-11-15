@@ -37,9 +37,19 @@ export class TableLists {
   protected readonly creating = signal(false);
   protected readonly errors = signal<readonly ApiError[]>([]);
 
-  /** The table they are at, or null. A player holds one seat, so while they
-      hold it there is nothing for any row to offer them. */
-  protected readonly seatedAt = computed(() => this.lobby.myTable()?.tableId ?? null);
+  /**
+   * Rule 10.1: every table holding a chair for them. A row asks whether it
+   * is one of these, and a table still waiting to deal is the one kind they
+   * can hold only one of.
+   */
+  protected readonly seatedAt = computed(
+    () => new Set(this.lobby.myTables().map((table) => table.tableId)),
+  );
+
+  /** Waiting somewhere is what stops them opening or joining another. */
+  protected readonly waiting = computed(() =>
+    this.lobby.myTables().some((table) => !table.started),
+  );
 
   protected readonly byMode = computed(() => {
     const grouped: Record<GameMode, LobbyTable[]> = { single: [], survival: [], series: [] };
@@ -68,6 +78,11 @@ export class TableLists {
 
   protected join(tableId: string): void {
     this.enter(this.tables.join(tableId));
+  }
+
+  /** Rule 10.1: the chair is already theirs, so there is nothing to ask for. */
+  protected returnTo(tableId: string): void {
+    void this.router.navigate(['/table', tableId]);
   }
 
   /** Opening and joining differ only in the request; both end at the table. */

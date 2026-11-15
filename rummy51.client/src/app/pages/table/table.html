@@ -1,6 +1,6 @@
 <app-page-shell [fits]="true">
   @if (table()) {
-    <button shell-actions type="button" class="table__leave" (click)="moves.leave()">
+    <button shell-actions type="button" class="table__leave" (click)="moves.backToLobby()">
       {{ 'table.leave' | translate }}
     </button>
   }
@@ -16,6 +16,7 @@
             #seatSpot
             class="table__other"
             [seat]="place.seat"
+            [away]="seating.awayAt(place.at)"
             [dealer]="place.at === seating.dealerSeat()"
             [held]="seating.heldAt(place.at)"
             [holding]="seating.holdingAt(place.at)"
@@ -108,6 +109,7 @@
           <div class="table__me">
             <app-table-seat
               [seat]="mySeat"
+              [away]="seating.awayAt(seating.nearSeat())"
               [mine]="seating.seated()"
               [dealer]="seating.nearSeat() === seating.dealerSeat()"
               [holding]="seating.holdingAt(seating.nearSeat())"
@@ -169,5 +171,9 @@
          board it was a line below the fold, which is no use to somebody
          looking at their cards. -->
     <app-notice [errors]="moves.errors()" (closed)="moves.understood()" />
+
+    @if (seating.doubted()) {
+      <app-still-there (answered)="stillHere()" />
+    }
   </main>
 </app-page-shell>

@@ -15,13 +15,6 @@ public interface ITables
 
     Result<LobbyTable> Join(Guid tableId, PlayerSummary player);
 
-    /// <summary>
-    /// Empties whichever seat the player holds. The table closes behind them
-    /// when it was the last one taken.
-    /// </summary>
-    /// <returns>True when a seat was actually given up.</returns>
-    bool Leave(Guid playerId);
-
     IReadOnlyList<LobbyTable> All();
 
     /// <summary>Null while it has not begun.</summary>
@@ -81,7 +74,15 @@ public interface ITables
     /// Rule 3.6, and the tables that changed because of it. Called by the
     /// clock and by nobody else: the one move here that nobody asked for.
     /// </summary>
-    IReadOnlyList<Guid> ActForTheOverdue();
+    /// <summary>Rule 10.1: not watching this table, however that came about.</summary>
+    bool WentAway(Guid playerId, Guid tableId);
+
+    bool WentAwayFromEverything(Guid playerId);
+
+    /// <summary>Where they are, which is nowhere else.</summary>
+    bool Watching(Guid playerId, Guid tableId);
+
+    Swept ActForTheOverdue();
 
     LobbyTable? Find(Guid tableId);
 }

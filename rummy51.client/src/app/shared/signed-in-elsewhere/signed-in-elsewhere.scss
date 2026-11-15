@@ -1,0 +1,36 @@
+// Over everything, because nothing behind it is being kept up to date.
+.elsewhere {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(2 44 34 / 0.92);
+  padding: var(--page-gutter);
+}
+
+.elsewhere__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  inline-size: 100%;
+  max-inline-size: 24rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--felt-900);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.elsewhere__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.elsewhere__body {
+  margin: 0;
+  color: var(--text-muted);
+}

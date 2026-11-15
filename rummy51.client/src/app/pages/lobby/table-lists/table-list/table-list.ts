@@ -16,9 +16,12 @@ export class TableList {
   readonly mode = input.required<GameMode>();
   readonly tables = input.required<readonly LobbyTable[]>();
 
-  /** Passed along: a row needs it to know whether it is theirs. */
-  readonly seatedAt = input<string | null>(null);
+  /** Passed along: a row needs both to know what it may offer. */
+  readonly seatedAt = input<ReadonlySet<string>>(new Set());
+  readonly waiting = input(false);
+
   readonly joined = output<string>();
+  readonly returned = output<string>();
 
   /**
    * A table in play keeps its place in the list but sinks below the ones that

@@ -4,6 +4,7 @@
       @if (seat.playerId) {
         <app-player-avatar
           class="row__seat"
+          [class.row__seat--away]="seat.away"
           [displayName]="seat.displayName ?? ''"
           [avatarUrl]="seat.avatarUrl"
         />
@@ -30,9 +31,16 @@
     </span>
   }
 
-  <!-- Their own table is answered by the notice above the list, not here. -->
   @if (mine()) {
-    <span class="row__state row__state--mine">{{ 'lobby.yourTable' | translate }}</span>
+    <button
+      type="button"
+      class="row__return"
+      [attr.aria-label]="'lobby.backToTable' | translate"
+      [attr.title]="'lobby.backToTable' | translate"
+      (click)="returned.emit(table().tableId)"
+    >
+      <app-icon-return />
+    </button>
   } @else if (table().started) {
     <span class="row__state">{{ 'lobby.inPlay' | translate }}</span>
   } @else {

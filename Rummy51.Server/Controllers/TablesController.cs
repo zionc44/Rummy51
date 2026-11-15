@@ -214,27 +214,6 @@ public class TablesController(
         return Ok(result.Value);
     }
 
-    /// <summary>
-    /// Leaves whichever table the player is at, which is at most one, so it
-    /// needs no id. Leaving a table they are not at is not a failure.
-    /// </summary>
-    [HttpPost("leave")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> Leave()
-    {
-        if (await accounts.GetCurrentPlayerAsync() is not { } player)
-        {
-            return Unauthorized();
-        }
-
-        if (tables.Leave(player.PlayerId))
-        {
-            await AnnounceAsync();
-        }
-
-        return NoContent();
-    }
-
     private Task AnnounceAsync() =>
         lobby.Clients.All.SendAsync(LobbyEvents.TablesChanged, tables.All());
 

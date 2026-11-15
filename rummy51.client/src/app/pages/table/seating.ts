@@ -41,6 +41,20 @@ export class Seating {
 
   readonly seated = computed(() => this.ownSeat() !== -1);
 
+  /**
+   * Rule 10.6: the table says this chair is not being watched, and here is
+   * somebody looking at it. Only the table can decide that, so the page
+   * does not argue - it asks.
+   */
+  readonly doubted = computed(() => this.away()[this.ownSeat()] ?? false);
+
+  readonly away = computed(() => this.hand()?.away ?? []);
+
+  /** Chapter 10, read from the hand because that is what arrives on a change. */
+  awayAt(seat: number): boolean {
+    return this.away()[seat] ?? false;
+  }
+
   readonly nearSeat = computed(() => Math.max(0, this.ownSeat()));
 
   readonly near = computed(() => this.seats()[this.nearSeat()] ?? null);

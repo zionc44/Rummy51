@@ -27,6 +27,12 @@ public sealed record Waiting(int Seat, double SecondsLeft, double Seconds);
 /// has. What each seat may see of the answers is not here: rule 12.4 shows
 /// a different thing to each of them, so it goes where the cards go.
 /// </param>
+/// <param name="Away">
+/// Chapter 10: which seats are holding a chair without watching it. It is
+/// here as well as on the lobby's list because this is the message a table
+/// is drawn from, and a seat that greyed out a minute ago on one screen and
+/// not on another is two tables and not one.
+/// </param>
 /// <param name="ForcedWith">
 /// Rule 12.11: the four pairs a redeal was forced with, and empty until the
 /// table may see them. Who *could* force is not here and never is - that is
@@ -52,6 +58,7 @@ public sealed record HandView(
     int TurnSeat,
     int WinnerSeat,
     IReadOnlyList<bool> WentDown,
+    IReadOnlyList<bool> Away,
     bool HasDrawn,
     string? DiscardTop,
     int DiscardCount,

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { TranslatePipe } from '@ngx-translate/core';
 import { LobbyTable } from '../../../../core/lobby/lobby.models';
 import { IconJoin } from '../../../../shared/icons/icon-join/icon-join';
+import { IconReturn } from '../../../../shared/icons/icon-return/icon-return';
 import { PlayerAvatar } from '../../../../shared/player-avatar/player-avatar';
 
 /**
@@ -11,7 +12,7 @@ import { PlayerAvatar } from '../../../../shared/player-avatar/player-avatar';
  */
 @Component({
   selector: 'app-table-row',
-  imports: [TranslatePipe, PlayerAvatar, IconJoin],
+  imports: [TranslatePipe, PlayerAvatar, IconJoin, IconReturn],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-row.html',
   styleUrl: './table-row.scss',
@@ -19,18 +20,16 @@ import { PlayerAvatar } from '../../../../shared/player-avatar/player-avatar';
 export class TableRow {
   readonly table = input.required<LobbyTable>();
 
-  /**
-   * Which table the player is sitting at, if any. One answer settles both
-   * questions a row has to ask: whether this is theirs, and whether there is
-   * anything left to offer them.
-   */
-  readonly seatedAt = input<string | null>(null);
+  /** Rule 10.1: a chair here is already theirs, so the way in is back in. */
+  readonly mine = input(false);
+
+  /** Waiting at a table somewhere, which is the one seat they get only one of. */
+  readonly waiting = input(false);
 
   readonly joined = output<string>();
+  readonly returned = output<string>();
 
-  protected readonly mine = computed(() => this.seatedAt() === this.table().tableId);
-
-  protected readonly canJoin = computed(() => this.seatedAt() === null);
+  protected readonly canJoin = computed(() => !this.waiting());
 
   /** What the mode asks for, which a single hand does not ask at all. */
   protected readonly detail = computed(() => {

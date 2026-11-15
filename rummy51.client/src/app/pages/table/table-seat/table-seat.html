@@ -1,6 +1,6 @@
 @if (seat().playerId) {
   <span class="seat__who">
-    <span class="seat__portrait">
+    <span class="seat__portrait" [class.seat__portrait--away]="away()">
       @if (ring()) {
         <span class="seat__counting" [class.seat__counting--urgent]="left() <= 5">
           {{ left() }}
@@ -33,7 +33,12 @@
     @if (dealer()) {
       <span class="seat__dealer">{{ 'table.dealer' | translate }}</span>
     }
-    <span class="seat__name" [class.seat__name--mine]="mine()">{{ seat().displayName }}</span>
+    <span
+      class="seat__name"
+      [class.seat__name--mine]="mine()"
+      [class.seat__name--away]="away()"
+      >{{ seat().displayName }}</span
+    >
     @if (compact() && holding() !== null) {
       <!-- Under the picture, in the place the name gave up: your own hand
            is a number you want without stopping to count it. -->

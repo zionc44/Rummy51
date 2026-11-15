@@ -16,11 +16,12 @@ namespace Rummy51.Infrastructure.Tables;
 /// because only a throw hands the turn on. The moves below say nothing about
 /// the clock for that reason; where one does, it is the exception.
 /// </summary>
-internal sealed class OpenTable
+internal sealed partial class OpenTable
 {
-    private readonly PlayerSummary?[] seats;
+
     private readonly TestingSettings testing;
     private readonly TurnSettings turns;
+    private readonly TimeProvider clock;
     private readonly Countdown countdown;
     private Hand? hand;
     private bool dealtOnce;
@@ -33,6 +34,7 @@ internal sealed class OpenTable
     {
         this.testing = testing;
         this.turns = turns;
+        this.clock = clock;
         countdown = new Countdown(clock);
 
         // Version 7 is time-ordered, so listing tables by id lists them in the
@@ -42,6 +44,8 @@ internal sealed class OpenTable
         Limit = request.Limit;
         Jokers = request.Jokers;
         seats = new PlayerSummary?[request.Seats];
+        gone = new DateTimeOffset?[request.Seats];
+        here = new bool[request.Seats];
     }
 
     public Guid Id { get; }
@@ -49,52 +53,10 @@ internal sealed class OpenTable
     public int? Limit { get; }
     public int Jokers { get; }
 
-    /// <summary>
-    /// Set the moment the last seat is taken, and never unset: a game that has
-    /// begun is not waiting again because somebody walked away from it.
-    /// </summary>
-    public bool Started { get; private set; }
-
-    public bool IsEmpty => seats.All(seat => seat is null);
-
-    public void Seat(PlayerSummary player)
-    {
-        var free = Array.IndexOf(seats, null);
-
-        if (free == -1)
-        {
-            return;
-        }
-
-        seats[free] = player;
-        Started = seats.All(seat => seat is not null);
-
-        if (Started)
-        {
-            // Filling the table is what starts the hand. There is no button
-            // and nobody waits for anybody.
-            hand = new Hand(seats.Length, Jokers, Random.Shared.Next(seats.Length), Random.Shared.Next());
-            countdown.Restart(TimeSpan.FromSeconds(turns.CutSeconds));
-        }
-    }
-
-    public void Unseat(Guid playerId)
-    {
-        var held = Array.FindIndex(seats, seat => seat?.PlayerId == playerId);
-
-        if (held != -1)
-        {
-            seats[held] = null;
-        }
-    }
-
     /// <summary>Null until the table has filled and a hand has begun.</summary>
     public int? CutterSeat => hand?.CutterSeat;
 
     public bool AwaitingCut => hand?.Phase == HandPhase.Cutting;
-
-    public int SeatOf(Guid playerId) =>
-        Array.FindIndex(seats, seat => seat?.PlayerId == playerId);
 
     /// <summary>
     /// The cut, and the deal that follows it. Nobody decides anything in
@@ -123,7 +85,7 @@ internal sealed class OpenTable
 
         // Not a wait for anybody: the cards are going out, and the screen
         // takes a few seconds over what the server did at once.
-        countdown.Restart(TimeSpan.FromSeconds(turns.DealSeconds));
+        Wait(turns.DealSeconds);
 
         return true;
     }
@@ -202,8 +164,23 @@ internal sealed class OpenTable
         return true;
     }
 
+    /// <summary>
+    /// The one place a wait is set, so that the shortening below cannot be
+    /// forgotten at one of the six moves that start one.
+    /// </summary>
+    private void Wait(int seconds) =>
+        countdown.Restart(TimeSpan.FromSeconds(Watched ? seconds : Math.Min(seconds, turns.AwaySeconds)));
+
+    /// <summary>
+    /// Whether somebody is actually looking at the seat being waited for.
+    /// A wait on nobody in particular - a vote, the keeping - is everybody's
+    /// and is not cut short because one of them dropped.
+    /// </summary>
+    private bool Watched =>
+        hand?.WaitingSeat is not { } seat || seat == -1 || gone[seat] is null;
+
     private void WaitForTheHand() =>
-        countdown.Restart(TimeSpan.FromSeconds(hand?.Phase switch
+        Wait(hand?.Phase switch
         {
             HandPhase.Cutting => turns.CutSeconds,
             HandPhase.Dealing => turns.DealSeconds,
@@ -211,7 +188,19 @@ internal sealed class OpenTable
             HandPhase.Answered => turns.ResultSeconds,
             HandPhase.Keeping => turns.KeepSeconds,
             _ => turns.TurnSeconds,
-        }));
+        });
+
+    /// <summary>
+    /// Only the wait this seat was holding up. Any other and a second device
+    /// dropping would hand the player in turn a fresh clock.
+    /// </summary>
+    private void WaitAgainFor(int seat)
+    {
+        if (hand?.WaitingSeat == seat)
+        {
+            WaitForTheHand();
+        }
+    }
 
     /// <summary>Rule 3.2, which hands the turn on and the clock with it.</summary>
     public bool Discard(int seat, int cardId)
@@ -221,7 +210,7 @@ internal sealed class OpenTable
             return false;
         }
 
-        countdown.Restart(TimeSpan.FromSeconds(turns.TurnSeconds));
+        Wait(turns.TurnSeconds);
 
         return true;
     }
@@ -233,6 +222,10 @@ internal sealed class OpenTable
         {
             return false;
         }
+
+        // Read before anything below moves the hand on, because what the
+        // table was waiting for is the whole of what this says.
+        StoppedWatching(hand.WaitingSeat);
 
         if (hand.Phase == HandPhase.Cutting)
         {
@@ -260,7 +253,7 @@ internal sealed class OpenTable
         // However that went, the table is no longer waiting for the move it
         // was waiting for. A wait left standing is asked again every tick,
         // for ever.
-        countdown.Restart(TimeSpan.FromSeconds(turns.TurnSeconds));
+        Wait(turns.TurnSeconds);
 
         return true;
     }
@@ -272,7 +265,7 @@ internal sealed class OpenTable
             return false;
         }
 
-        countdown.Restart(TimeSpan.FromSeconds(turns.FirstTurnSeconds));
+        Wait(turns.FirstTurnSeconds);
 
         return true;
     }
@@ -280,96 +273,4 @@ internal sealed class OpenTable
     /// <summary>Rule 3.6. What it means for the cards is the hand's to say.</summary>
     private bool PlayTheTurnFor(int seat) => hand?.PlayOutTheTurn(seat) == true;
 
-    /// <summary>Rule 11.1: the one thing here that never goes into a <see cref="HandView"/>.</summary>
-    public IReadOnlyList<HeldCardView> CardsOf(Guid playerId)
-    {
-        var seat = SeatOf(playerId);
-
-        if (hand is null || seat == -1)
-        {
-            return [];
-        }
-
-        var owed = hand.StillOwed(seat).ToHashSet();
-
-        return [.. hand.Hands[seat].Select(card => Held(card, owed.Contains(card.Id)))];
-    }
-
-    /// <summary>Rules 12.4 and 12.9: the half of a redeal that is one seat's own.</summary>
-    public RedealView RedealAsSeenBy(Guid playerId)
-    {
-        var seat = SeatOf(playerId);
-
-        return new RedealView(
-            hand?.OfferAsSeenBy(seat) ?? [],
-            hand?.CanForceARedeal(seat) == true ? hand.FourPairsOf(seat) : []);
-    }
-
-    /// <summary>Rule 11.1: worked out from a hand only one player may see.</summary>
-    private HeldCardView Held(HeldCard card, bool owed) =>
-        new(
-            card.Id,
-            card.Card.Code,
-            [.. WhereItFits(card.Card)],
-            [.. WhatItBuys(card.Card)],
-            owed);
-
-    private IEnumerable<FitView> WhereItFits(Card card) =>
-        Lying().SelectMany((meld, at) =>
-            Melding.WhereItFits(meld, card).Select(end => new FitView(at, end)));
-
-    private IEnumerable<SwapView> WhatItBuys(Card card) =>
-        Lying().SelectMany((meld, at) => Enumerable
-            .Range(0, meld.Count)
-            .Where(place => Melding.CanReplace(meld, place, card))
-            .Select(place => new SwapView(at, place)));
-
-    /// <summary>As the rules read it: cards and no more.</summary>
-    private IEnumerable<IReadOnlyList<Card>> Lying() =>
-        (hand?.Board.Melds ?? []).Select(IReadOnlyList<Card> (meld) =>
-            [.. meld.Cards.Select(lying => lying.Card)]);
-
-    public HandView? DescribeHand() =>
-        hand is null
-            ? null
-            : new HandView(
-                hand.Phase,
-                hand.DealerSeat,
-                hand.CutterSeat,
-                hand.Deck.Size,
-                hand.Deck.CutPosition,
-                [.. hand.Deck.Backs.Select(back => $"{back}B")],
-                testing.MarkJokers ? hand.Deck.JokerPositions : [],
-                [.. hand.Deck.RevealedAtCut.Select(card => card.Code)],
-                hand.Deck.FinishingCard?.Code,
-                [.. hand.Hands.Select(cards => cards.Count)],
-                hand.Passes,
-                hand.Board.Stock.Count,
-                hand.TurnSeat,
-                hand.WinnerSeat,
-                hand.WentDown,
-                hand.HasDrawn,
-                hand.Board.TopOfDiscards?.Code,
-                hand.Board.Discards.Count,
-                [.. hand.Board.Melds.Select(Laid)],
-                hand.CanUndo,
-                hand.TurnSeat != -1 && hand.CanAddToTheTable(hand.TurnSeat),
-                hand.TurnSeat != -1 && hand.CanTakeTheFinishingCard(hand.TurnSeat),
-                hand.TurnSeat != -1 && hand.CanOfferARedeal(hand.TurnSeat),
-                hand.OfferedBy,
-                hand.Forced,
-                hand.ForcedWith,
-                countdown.Describe(hand.WaitingSeat));
-
-    /// <summary>Rule 11.3.</summary>
-    private static MeldView Laid(Meld meld) =>
-        new(meld.Seat, [.. meld.Cards.Select(card => new LaidCardView(card.Id, card.Card.Code))]);
-
-    public LobbyTable Describe() =>
-        new(Id, Mode, Limit, Jokers, [.. seats.Select(Occupant)], Started);
-
-    private static TableSeat Occupant(PlayerSummary? player) =>
-        player is null
-            ? new TableSeat(null, null, null)
-            : new TableSeat(player.PlayerId, player.DisplayName, player.AvatarUrl);
 }
