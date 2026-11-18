@@ -45,6 +45,11 @@ public sealed class Deck
         Backs = [.. order.Select(index => backs[index])];
         Size = cards.Count;
 
+        // Taken now, because the cut rearranges the deck and dealing eats
+        // it. Nothing in the game reads this; it is what a hand is written
+        // down as, and the one record of it that outlives the hand.
+        Order = cards;
+
         // Taken now, because the cut rearranges the deck and would move them.
         JokerPositions =
             [.. cards.Select((card, at) => (card, at)).Where(e => e.card is Card.Joker).Select(e => e.at)];
@@ -56,6 +61,9 @@ public sealed class Deck
     public int Size { get; }
 
     public IReadOnlyList<int> Backs { get; }
+
+    /// <summary>The shuffle as it came out, before the cut touched it.</summary>
+    public IReadOnlyList<Card> Order { get; }
 
     /// <summary>
     /// The one thing here nobody at the table may know. It reaches a client

@@ -6,6 +6,9 @@ public static class Worth
     /// <summary>Rule 8.1.</summary>
     public const int NeverWentDown = 100;
 
+    /// <summary>Rule 8.1, and the only number here a player wants.</summary>
+    public const int Winner = -30;
+
     private const int Picture = 10;
     private const int Ace = 11;
     private const int JokerInHand = 20;

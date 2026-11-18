@@ -136,10 +136,13 @@ public sealed partial class Hand
 
         if (agreed)
         {
+            AgreedRedeals += 1;
             Phase = HandPhase.Keeping;
 
             return;
         }
+
+        ForcedRedeals += 1;
 
         // Rule 12.12: ended, so nobody keeps anything and nobody is asked.
         Array.Fill(keeping, []);
@@ -237,6 +240,8 @@ public sealed partial class Hand
         Passes = [];
 
         Array.Fill(wentDown, false);
+        Array.Fill(wentRummy, false);
+        Array.Fill(tookTheFinishingCard, false);
         Array.Fill(hasOffered, false);
         Array.Fill(hasPlayed, false);
 

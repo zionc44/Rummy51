@@ -68,6 +68,9 @@ internal sealed class TurnSoFar
     /// <summary>Rule 12.1: nothing of this turn's is on the table yet.</summary>
     public bool PutAnythingDown => putDown.Count > 0;
 
+    /// <summary>Rule 6.6: a card given to somebody's meld, or a joker taken out of one.</summary>
+    public bool LeanedOnTheTable => putDown.Any(move => move is Move.Joined or Move.Swapped);
+
     public void Laid(int meld) => putDown.Add(new Move.Laid(meld));
 
     /// <summary>Laid and not taken back, by their places. Rule 5.6.</summary>

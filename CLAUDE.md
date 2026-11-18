@@ -465,8 +465,11 @@ page shell asks for: a card below the fold is a card nobody can reach. So
 the board does not grow to hold more - what gives way as it fills is the
 size of the cards laid on it.
 
-Next: the end of a hand. Going out, the counting that follows, and the
-finishing card finally doing whatever it is going to do.
+Next: the counting. Going out and the finishing card are done; what no
+hand has yet produced is a result. Chapter 8 scores one, and it is also the
+first thing in this project that needs somewhere to put what it made - so
+it arrives with the games, hands and results tables, and with them the
+answer to a restart losing everything.
 
 Still open in the game: nothing sequences hands, so a game is one deal and
 stops — `GameMode` is chosen when a table is opened, checked, and then read

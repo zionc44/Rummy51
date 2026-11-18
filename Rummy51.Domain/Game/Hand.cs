@@ -44,6 +44,9 @@ public sealed partial class Hand
     private readonly List<List<HeldCard>> hands;
     private readonly TurnSoFar turn = new();
     private readonly bool[] wentDown;
+    private readonly bool[] wentRummy;
+    private readonly bool[] tookTheFinishingCard;
+    private bool downBeforeThisTurn;
 
     /// <summary>
     /// How the first round is counted. A turn taken back and taken again is
@@ -57,6 +60,8 @@ public sealed partial class Hand
         Seats = seats;
         hands = [.. Enumerable.Range(0, seats).Select(_ => new List<HeldCard>())];
         wentDown = new bool[seats];
+        wentRummy = new bool[seats];
+        tookTheFinishingCard = new bool[seats];
         hasOffered = new bool[seats];
         hasPlayed = new bool[seats];
         keeping = new int[seats][];
@@ -102,9 +107,33 @@ public sealed partial class Hand
     /// <summary>Public: their melds are lying there for everybody to read.</summary>
     public IReadOnlyList<bool> WentDown => wentDown;
 
-    /// <summary>Rule 8.1.</summary>
+    /// <summary>Rule 6.6.</summary>
+    public IReadOnlyList<bool> WentRummy => wentRummy;
+
+    /// <summary>Rule 7.1, which only one player a hand can ever have done.</summary>
+    public IReadOnlyList<bool> TookTheFinishingCard => tookTheFinishingCard;
+
+    /// <summary>Rule 8.2 doubles on the first of these and not the second.</summary>
+    public int AgreedRedeals { get; private set; }
+
+    public int ForcedRedeals { get; private set; }
+
+    /// <summary>Rule 8.1, and what the screen reads while the hand is still running.</summary>
     public int WorthOf(int seat) =>
         wentDown[seat] ? Worth.Held(hands[seat].Select(card => card.Card)) : Worth.NeverWentDown;
+
+    /// <summary>
+    /// Rule 8.1 for the whole table at once, because that is the shape it
+    /// has: one seat takes a minus and the rest pay, and no seat's number
+    /// means anything without the one that won. Empty until a hand is over,
+    /// since until then there is no winner to take the minus.
+    /// </summary>
+    public IReadOnlyList<int> Scores =>
+        Phase == HandPhase.Finished
+            ? [.. Enumerable.Range(0, Seats).Select(Scored)]
+            : [];
+
+    private int Scored(int seat) => seat == WinnerSeat ? Worth.Winner : WorthOf(seat);
 
     /// <summary>Rules 3.4, 5.6, 7.2. Laying nothing is always allowed.</summary>
     public bool CanEndTheTurn(int seat) =>
@@ -194,6 +223,7 @@ public sealed partial class Hand
         Phase = HandPhase.Playing;
         TurnSeat = (DealerSeat + 1) % Seats;
         HasDrawn = true;
+        downBeforeThisTurn = false;
         Forget();
 
         return true;
@@ -258,6 +288,7 @@ public sealed partial class Hand
 
         Give(seat, [taken]);
         HasDrawn = true;
+        tookTheFinishingCard[seat] |= from == DrawnFrom.Finishing;
         turn.Took(number, from);
 
         return true;
@@ -307,6 +338,10 @@ public sealed partial class Hand
     /// </summary>
     private void Won(int seat)
     {
+        // Rule 6.6: everything they laid went down in this one turn, and
+        // none of it came off the table.
+        wentRummy[seat] = !downBeforeThisTurn && !turn.LeanedOnTheTable;
+
         WinnerSeat = seat;
         Phase = HandPhase.Finished;
         TurnSeat = -1;
@@ -351,6 +386,7 @@ public sealed partial class Hand
         turnsTaken += 1;
         TurnSeat = (TurnSeat + 1) % Seats;
         HasDrawn = false;
+        downBeforeThisTurn = wentDown[TurnSeat];
         Forget();
     }
 

@@ -207,6 +207,209 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                     b.ToTable("player_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("Rummy51.Domain.Entities.Game", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("finished_at");
+
+                    b.Property<int>("Jokers")
+                        .HasColumnType("integer")
+                        .HasColumnName("jokers");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("integer")
+                        .HasColumnName("mode");
+
+                    b.Property<int>("Seats")
+                        .HasColumnType("integer")
+                        .HasColumnName("seats");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<Guid>("TableId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("table_id");
+
+                    b.Property<int?>("Target")
+                        .HasColumnType("integer")
+                        .HasColumnName("target");
+
+                    b.Property<Guid?>("WinnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("winner_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_games");
+
+                    b.HasIndex("StartedAt")
+                        .HasDatabaseName("ix_games_started_at");
+
+                    b.HasIndex("WinnerId")
+                        .HasDatabaseName("ix_games_winner_id");
+
+                    b.ToTable("games", (string)null);
+                });
+
+            modelBuilder.Entity("Rummy51.Domain.Entities.GamePlayer", b =>
+                {
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("game_id");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<int>("Seat")
+                        .HasColumnType("integer")
+                        .HasColumnName("seat");
+
+                    b.HasKey("GameId", "PlayerId")
+                        .HasName("pk_game_players");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_game_players_player_id");
+
+                    b.HasIndex("GameId", "Seat")
+                        .IsUnique()
+                        .HasDatabaseName("ix_game_players_game_id_seat");
+
+                    b.ToTable("game_players", (string)null);
+                });
+
+            modelBuilder.Entity("Rummy51.Domain.Entities.HandResult", b =>
+                {
+                    b.Property<Guid>("PlayedHandId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("played_hand_id");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<int>("CardsLeft")
+                        .HasColumnType("integer")
+                        .HasColumnName("cards_left");
+
+                    b.Property<int>("Doubled")
+                        .HasColumnType("integer")
+                        .HasColumnName("doubled");
+
+                    b.Property<string>("HeldCards")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("held_cards");
+
+                    b.Property<int>("HeldWorth")
+                        .HasColumnType("integer")
+                        .HasColumnName("held_worth");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer")
+                        .HasColumnName("score");
+
+                    b.Property<bool>("TookFinishingCard")
+                        .HasColumnType("boolean")
+                        .HasColumnName("took_finishing_card");
+
+                    b.Property<bool>("WalkedAway")
+                        .HasColumnType("boolean")
+                        .HasColumnName("walked_away");
+
+                    b.Property<bool>("WentDown")
+                        .HasColumnType("boolean")
+                        .HasColumnName("went_down");
+
+                    b.Property<bool>("WentRummy")
+                        .HasColumnType("boolean")
+                        .HasColumnName("went_rummy");
+
+                    b.Property<bool>("Won")
+                        .HasColumnType("boolean")
+                        .HasColumnName("won");
+
+                    b.HasKey("PlayedHandId", "PlayerId")
+                        .HasName("pk_hand_results");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_hand_results_player_id");
+
+                    b.ToTable("hand_results", (string)null);
+                });
+
+            modelBuilder.Entity("Rummy51.Domain.Entities.PlayedHand", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgreedRedeals")
+                        .HasColumnType("integer")
+                        .HasColumnName("agreed_redeals");
+
+                    b.Property<int>("CutAt")
+                        .HasColumnType("integer")
+                        .HasColumnName("cut_at");
+
+                    b.Property<int>("DealerSeat")
+                        .HasColumnType("integer")
+                        .HasColumnName("dealer_seat");
+
+                    b.Property<string>("DeckOrder")
+                        .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)")
+                        .HasColumnName("deck_order");
+
+                    b.Property<DateTimeOffset?>("EndedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ended_at");
+
+                    b.Property<string>("FinishingCard")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("finishing_card");
+
+                    b.Property<int>("ForcedRedeals")
+                        .HasColumnType("integer")
+                        .HasColumnName("forced_redeals");
+
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("game_id");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("integer")
+                        .HasColumnName("seed");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_played_hands");
+
+                    b.HasIndex("GameId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_played_hands_game_id_number");
+
+                    b.ToTable("played_hands", (string)null);
+                });
+
             modelBuilder.Entity("Rummy51.Domain.Entities.Player", b =>
                 {
                     b.Property<Guid>("Id")
@@ -403,6 +606,59 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_player_tokens_players_user_id");
+                });
+
+            modelBuilder.Entity("Rummy51.Domain.Entities.Game", b =>
+                {
+                    b.HasOne("Rummy51.Domain.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("WinnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_games_players_winner_id");
+                });
+
+            modelBuilder.Entity("Rummy51.Domain.Entities.GamePlayer", b =>
+                {
+                    b.HasOne("Rummy51.Domain.Entities.Game", null)
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_game_players_games_game_id");
+
+                    b.HasOne("Rummy51.Domain.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_game_players_players_player_id");
+                });
+
+            modelBuilder.Entity("Rummy51.Domain.Entities.HandResult", b =>
+                {
+                    b.HasOne("Rummy51.Domain.Entities.PlayedHand", null)
+                        .WithMany()
+                        .HasForeignKey("PlayedHandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_hand_results_played_hands_played_hand_id");
+
+                    b.HasOne("Rummy51.Domain.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hand_results_players_player_id");
+                });
+
+            modelBuilder.Entity("Rummy51.Domain.Entities.PlayedHand", b =>
+                {
+                    b.HasOne("Rummy51.Domain.Entities.Game", null)
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_played_hands_games_game_id");
                 });
 
             modelBuilder.Entity("Rummy51.Domain.Entities.PlayerAvatar", b =>

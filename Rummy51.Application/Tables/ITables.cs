@@ -1,4 +1,5 @@
 using Rummy51.Application.Authentication;
+using Rummy51.Application.Games;
 using Rummy51.Application.Common;
 using Rummy51.Domain.Game;
 
@@ -83,6 +84,12 @@ public interface ITables
     bool Watching(Guid playerId, Guid tableId);
 
     Swept ActForTheOverdue();
+
+    /// <summary>
+    /// Everything the tables have produced that outlives them, taken rather
+    /// than read: whoever asks is taking responsibility for writing it down.
+    /// </summary>
+    IReadOnlyList<GameRecord> TakeRecords();
 
     LobbyTable? Find(Guid tableId);
 }

@@ -7,10 +7,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Rummy51.Application.Account;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Authentication.External;
+using Rummy51.Application.Games;
 using Rummy51.Application.Lobby;
 using Rummy51.Application.Tables;
 using Rummy51.Domain.Entities;
 using Rummy51.Infrastructure.Avatars;
+using Rummy51.Infrastructure.Games;
 using Rummy51.Infrastructure.Identity;
 using Rummy51.Infrastructure.Lobby;
 using Rummy51.Infrastructure.Tables;
@@ -27,6 +29,8 @@ public static class DependencyInjection
     {
         services.AddPersistence(configuration);
         services.AddPlayerIdentity();
+
+        services.AddSingleton<IGameRecords, GameRecords>();
 
         services.Configure<AuthenticationSettings>(
             configuration.GetSection(AuthenticationSettings.SectionName));
@@ -68,6 +72,12 @@ public static class DependencyInjection
         services.AddDbContext<Rummy51DbContext>(options => options
             .UseNpgsql(connectionString)
             .UseSnakeCaseNamingConvention());
+
+        // Writing down what a table produced happens outside any request, so
+        // it cannot borrow a request's context and needs one of its own.
+        services.AddDbContextFactory<Rummy51DbContext>(
+            options => options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention(),
+            lifetime: ServiceLifetime.Singleton);
 
         // On disk these are lost whenever the host is replaced, which signs
         // every player out.

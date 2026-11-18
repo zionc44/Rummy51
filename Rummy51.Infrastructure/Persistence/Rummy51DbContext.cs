@@ -18,6 +18,18 @@ public class Rummy51DbContext(DbContextOptions<Rummy51DbContext> options)
 
     public DbSet<PlayerAvatar> PlayerAvatars => Set<PlayerAvatar>();
 
+    /// <summary>
+    /// What was played, which is the only part of a table that outlives it.
+    /// A table is memory; these are the four tables a result is read from.
+    /// </summary>
+    public DbSet<Game> Games => Set<Game>();
+
+    public DbSet<GamePlayer> GamePlayers => Set<GamePlayer>();
+
+    public DbSet<PlayedHand> PlayedHands => Set<PlayedHand>();
+
+    public DbSet<HandResult> HandResults => Set<HandResult>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         // Identity builds its own model first; everything below refines it.

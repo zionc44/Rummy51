@@ -83,6 +83,11 @@ internal sealed partial class OpenTable
 
         hand.Deal();
 
+        // Rule 7.1 takes it off the deck, and then nothing can say what it
+        // was. It is the hand's own and belongs in what the hand is written
+        // down as, so it is read while it is still there to read.
+        dealtFinishingCard = hand.Deck.FinishingCard?.Code;
+
         // Not a wait for anybody: the cards are going out, and the screen
         // takes a few seconds over what the server did at once.
         Wait(turns.DealSeconds);
@@ -211,6 +216,7 @@ internal sealed partial class OpenTable
         }
 
         Wait(turns.TurnSeconds);
+        NoteIfTheHandEnded();
 
         return true;
     }
@@ -249,6 +255,7 @@ internal sealed partial class OpenTable
         }
 
         PlayTheTurnFor(hand.TurnSeat);
+        NoteIfTheHandEnded();
 
         // However that went, the table is no longer waiting for the move it
         // was waiting for. A wait left standing is asked again every tick,

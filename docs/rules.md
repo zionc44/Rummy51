@@ -186,6 +186,13 @@ so the last turn of the first round can take the hand.
 going out is closed a hand keeps two cards back from the table instead of
 one, so it never reaches the last card it would have to throw.
 
+**6.6** Going out **rummy** is going out having laid every card from one's
+own hand and taken nothing from the table on the way: no card of theirs
+added to a run or set already lying there, and no joker bought out of one.
+It is the shape 7.2 demands of whoever takes the finishing card, reached
+without it - the last card came off the stock or off the pile like anybody
+else's. Players call it that in every language the game is played in.
+
 ## 7. The finishing card
 
 **7.1** The card the cut stopped on under 2.2 is what its name says it is. A
@@ -218,16 +225,26 @@ showed is not worth counting.
 
 **8.2** Doubling is blanket — it applies to the winner's minus as much as to
 everybody else's penalty — and the two conditions stack, so x4 is reachable
-when both hold: every player agreeing to a redeal, and a player finishing in
-one strike with nothing laid on the board beforehand.
+when both hold.
+
+The first is a redeal every player agreed to under 12.1. A forced one does
+not double, however it was answered: 12.9 takes the table's consent rather
+than being given it, and a doubling is a reward for something the table
+chose.
+
+The second is the hand being taken by somebody who owed the table nothing
+for it — going out rummy under 6.6, or taking the finishing card under 7.1,
+which asks the same of a player and is no easier for arriving by another
+road. Both double, and neither doubles twice.
 
 ## 9. Hands, games and tables
 
 **9.1** A hand is one deal and a game is a sequence of hands.
 
 **9.2** A table is opened for one of three modes and never changes between
-them: a single game, a series to a number of points, and a fixed number of
-games with running results.
+them: a single hand, hands until somebody crosses a number of points, and a
+fixed number of hands with running results. All three are one game; they
+differ only in what ends it.
 
 ## 10. Leaving
 
@@ -245,11 +262,16 @@ its player stops watching, because nothing has been played out yet and the
 chair is one three other people are waiting on. For the same reason a
 player may hold only one such seat.
 
-**10.4** A hand ends and everybody who was not there for it leaves the
-table, their seats falling empty. Whoever was watching stays.
+**10.4** A seat is held until the game ends, and the players a game began
+with are the players it ends with. Nobody is let go between hands and
+nobody takes an empty chair, because a score carried across hands is a
+score that cannot be handed to somebody else. So a player who walks out of
+a series after its first hand has 3.6 play the rest of it for them, and
+every one of those hands is scored against them under 8.1. They may come
+back to it at any point and go on playing.
 
 **10.5** So a player may hold seats at any number of tables, so long as a
-hand is running at each: they are the hands they walked out of. Only one of
+game is running at each: they are the games they walked out of. Only one of
 them is being watched, and 3.6 is playing the rest.
 
 **10.6** A seat that lets a wait run out is not being watched, whether or
@@ -350,5 +372,6 @@ owns what.
 Questions, not rules, so they have no numbers of their own. A rule written
 here before it is settled is a rule somebody will enforce by mistake.
 
-- What a leaver's loss comes to, which waits on chapter 8 being enforced.
-  That they take one is 10.1 and is settled.
+- Whether two agreed redeals in one hand double it twice. 8.2 reads as
+  though each condition is worth one doubling and x4 is the ceiling, but it
+  does not say so, and 12.2 allows the second redeal.

@@ -28,6 +28,7 @@ builder.Services.AddSignalR().AddJsonProtocol(options =>
 // thing they share rather than two that have to agree.
 builder.Services.AddSingleton<TableNews>();
 builder.Services.AddHostedService<TurnClock>();
+builder.Services.AddHostedService<GameRecorder>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

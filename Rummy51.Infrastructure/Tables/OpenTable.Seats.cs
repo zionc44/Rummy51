@@ -61,6 +61,7 @@ internal sealed partial class OpenTable
             // Filling the table is what starts the hand. There is no button
             // and nobody waits for anybody.
             hand = new Hand(seats.Length, Jokers, Random.Shared.Next(seats.Length), Random.Shared.Next());
+            NoteTheGameBegan();
             Wait(turns.CutSeconds);
         }
     }

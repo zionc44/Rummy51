@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Rummy51.Application.Authentication;
 using Rummy51.Application.Common;
+using Rummy51.Application.Games;
 using Rummy51.Application.Tables;
 using Rummy51.Domain.Entities;
 using Rummy51.Domain.Game;
@@ -218,6 +219,17 @@ public sealed partial class InMemoryTables(
         lock (gate)
         {
             return tables.TryGetValue(tableId, out var table) ? table.CardsOf(playerId) : [];
+        }
+    }
+
+    public IReadOnlyList<GameRecord> TakeRecords()
+    {
+        lock (gate)
+        {
+            // Under the lock because the tables are, and out of it in the
+            // same breath: what is taken here is written down by somebody
+            // who is not holding anything up.
+            return [.. tables.Values.SelectMany(table => table.TakeRecords())];
         }
     }
 
