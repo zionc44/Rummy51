@@ -483,9 +483,15 @@ redeal put to the table with what each of them said to it.
 
 Still open in the game: nothing sequences hands, so a game is one deal and
 stops — the other two modes in 9.2 are chosen, checked and then played as
-though they were the first. Nothing records a leaver's loss. Tables still
-live in memory, so a restart loses every table in play, though no longer
-the results of what was played in them.
+though they were the first. Tables still live in memory, so a restart loses
+every table in play, though no longer the results of what was played in
+them.
+
+Two rules are written and held to by nobody, and both on purpose. 3.5
+reshuffles the discard pile into a stock that has run out, and this stock
+does not run out. 7.5 says nobody has to take the finishing card, which is
+a permission and has nothing to enforce. They are what `rule-links.js`
+names, and they are the whole of that list.
 
 Still open around it: the Google link on the account page; rate limiting and
 CAPTCHA on registration — it cannot require a credential, so those are its

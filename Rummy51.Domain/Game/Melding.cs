@@ -106,7 +106,7 @@ public static class Melding
     /// <summary>Rules 5.1, 5.2.</summary>
     public static bool HasCleanRun(IReadOnlyList<Card> meld) => CleanRunIn(meld).Count >= Least;
 
-    /// <summary>Rules 1.3, 5.3.</summary>
+    /// <summary>Rules 1.3, 5.3, 5.5.</summary>
     public static int WorthOnTheTable(IReadOnlyList<Card> meld)
     {
         if (!IsMeld(meld))

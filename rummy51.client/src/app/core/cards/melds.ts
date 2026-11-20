@@ -137,7 +137,7 @@ function inOrderBy(
 /** Rules 5.1, 5.2. */
 export const hasCleanRun = (meld: readonly HeldCard[]) => cleanRunIn(meld).length >= Least;
 
-/** Rules 1.3, 5.3. */
+/** Rules 1.3, 5.3, 5.5. */
 export function worthOnTable(meld: readonly HeldCard[]): number {
   if (meld.length < Least || !isMeld(meld)) {
     return 0;
