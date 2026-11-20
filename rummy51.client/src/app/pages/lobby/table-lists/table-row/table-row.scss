@@ -32,7 +32,7 @@
 
 .row__seats {
   display: flex;
-  flex: 0 1 auto;
+  flex: 1;
   gap: 0.25rem;
   min-inline-size: 0;
 }
@@ -56,8 +56,11 @@
   border-radius: var(--radius-pill);
 }
 
+// Only where no heading carries it. It takes what it needs and never the
+// slack: demanding the slack is what left four seats and a button with no
+// room between them.
 .row__detail {
-  flex: 1;
+  flex: 0 1 auto;
   min-inline-size: 0;
   overflow: hidden;
   color: var(--text-muted);

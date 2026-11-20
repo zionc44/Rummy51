@@ -94,7 +94,8 @@
     "backToTable": "Back to the table",
     "jokers": "Jokers",
     "withJokers": "{{0}} jokers",
-    "noJokers": "No jokers"
+    "noJokers": "No jokers",
+    "freeOf": "{{0}} of {{1}} open"
   },
   "table": {
     "waiting": "Waiting for players",

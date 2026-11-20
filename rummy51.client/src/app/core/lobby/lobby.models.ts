@@ -38,6 +38,19 @@ export const SERIES_HANDS: Readonly<Record<number, readonly number[]>> = {
   4: [4, 8, 12],
 };
 
+/**
+ * Every stake a mode's tables are headed by in the lobby, lowest first. A
+ * single hand has none, there being nothing for it to reach.
+ *
+ * Nor has a series, yet. How many hands one may be depends on who is at
+ * the table, so heading them would mean a heading for every count any
+ * table could have been opened for - five of them for three choices. It
+ * waits until series are played at all, and until then a row says it.
+ */
+export function limitsOf(mode: GameMode): readonly number[] {
+  return mode === 'survival' ? SURVIVAL_POINTS : [];
+}
+
 export interface TableSeat {
   /** Null while the seat is empty, which is the only thing that marks it so. */
   readonly playerId: string | null;

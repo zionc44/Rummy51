@@ -5,7 +5,49 @@
     <span class="list__count">{{ rows().length }}</span>
   </h3>
 
-  @if (rows().length) {
+  @if (limits().length) {
+    <ul class="list__groups">
+      @for (group of groups(); track group.limit) {
+        <li>
+          <button
+            type="button"
+            class="stake"
+            [class.stake--open]="group.limit === open()"
+            [attr.aria-expanded]="group.limit === open()"
+            (click)="show(group.limit)"
+          >
+            <span class="stake__limit">
+              {{ stake() | translate: { '0': group.limit } }}
+            </span>
+
+            <span class="stake__count">
+              @if (group.tables.length) {
+                {{ 'lobby.freeOf' | translate: { '0': group.free, '1': group.tables.length } }}
+              } @else {
+                {{ 'lobby.noTables' | translate }}
+              }
+            </span>
+          </button>
+
+          @if (group.limit === open() && group.tables.length) {
+            <ul class="list__rows list__rows--under">
+              @for (table of group.tables; track table.tableId) {
+                <li>
+                  <app-table-row
+                    [table]="table"
+                    [mine]="seatedAt().has(table.tableId)"
+                    [waiting]="waiting()"
+                    (joined)="joined.emit($event)"
+                    (returned)="returned.emit($event)"
+                  />
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  } @else if (rows().length) {
     <ul class="list__rows">
       @for (table of rows(); track table.tableId) {
         <li>
@@ -13,6 +55,7 @@
             [table]="table"
             [mine]="seatedAt().has(table.tableId)"
             [waiting]="waiting()"
+            [showLimit]="true"
             (joined)="joined.emit($event)"
             (returned)="returned.emit($event)"
           />

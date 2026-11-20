@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import { ApiError } from '../../../core/errors/api-error';
+import { LobbyTab } from '../../../core/lobby/lobby-tab';
 import { LobbyConnection } from '../../../core/lobby/lobby-connection';
 import { CreateTableRequest, GAME_MODES, GameMode, LobbyTable } from '../../../core/lobby/lobby.models';
 import { TableService } from '../../../core/lobby/table-service';
@@ -32,8 +33,8 @@ export class TableLists {
 
   protected readonly modes = GAME_MODES;
 
-  /** Only consulted on a phone; wider screens show every list. */
-  protected readonly openMode = signal<GameMode>('single');
+  /** Kept in a service, so leaving for a table and coming back keeps it. */
+  protected readonly openMode = inject(LobbyTab).open;
   protected readonly creating = signal(false);
   protected readonly errors = signal<readonly ApiError[]>([]);
 

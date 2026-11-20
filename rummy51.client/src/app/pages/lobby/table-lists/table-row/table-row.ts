@@ -26,6 +26,13 @@ export class TableRow {
   /** Waiting at a table somewhere, which is the one seat they get only one of. */
   readonly waiting = input(false);
 
+  /**
+   * Whether this row has to say what the table is played for. It does so
+   * only where no heading above it already has, so the number is on the
+   * screen exactly once and the row keeps the width where it is not.
+   */
+  readonly showLimit = input(false);
+
   readonly joined = output<string>();
   readonly returned = output<string>();
 
@@ -35,7 +42,7 @@ export class TableRow {
   protected readonly detail = computed(() => {
     const { mode, limit } = this.table();
 
-    if (limit === null) {
+    if (limit === null || !this.showLimit()) {
       return null;
     }
 

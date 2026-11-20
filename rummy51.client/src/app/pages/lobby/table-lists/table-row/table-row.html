@@ -14,11 +14,9 @@
     }
   </div>
 
-  <span class="row__detail">
-    @if (detail(); as detail) {
-      {{ detail.key | translate: detail.amount }}
-    }
-  </span>
+  @if (detail(); as detail) {
+    <span class="row__detail">{{ detail.key | translate: detail.amount }}</span>
+  }
 
   <!-- Absent rather than zero: no jokers is the quieter fact of the two. -->
   @if (table().jokers; as jokers) {

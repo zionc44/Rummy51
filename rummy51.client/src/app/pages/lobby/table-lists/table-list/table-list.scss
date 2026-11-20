@@ -33,6 +33,56 @@
   color: var(--text-faint);
 }
 
+.list__groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// A stake and what is being played for it. All of them are always here, so
+// their places are learnt once: an empty one says so rather than going.
+.stake {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  inline-size: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  padding: 0.375rem 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text);
+  }
+}
+
+.stake--open {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.stake__limit {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.stake__count {
+  flex: none;
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
 .list__rows {
   display: flex;
   flex-direction: column;
@@ -51,4 +101,11 @@
   color: var(--text-faint);
   font-size: 0.6875rem;
   text-align: center;
+}
+
+// Indented under the heading that opened them, so it is plain which stake
+// they are being played for once the heading has scrolled to the top.
+.list__rows--under {
+  margin-block: 0.3125rem 0.625rem;
+  padding-inline-start: 0.5rem;
 }
