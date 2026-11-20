@@ -61,14 +61,14 @@ internal static class ArrangedDeal
 
         Fill(laid, Rest(laid, jokers), position);
 
-        // Rule 8.2 reads the redeal counts at the end of the hand, and this
-        // is the one road to a hand that has been redealt and then won.
+        // The cards are replaced; the hand being dealt them is the same one
+        // it was, and this is the only road to a hand that has been redealt
+        // and then won.
         return new Hand(
             seats,
             was.DealerSeat,
             Deck.Arranged([.. laid.Select(card => card!)], jokers),
-            was.AgreedRedeals,
-            was.ForcedRedeals);
+            was);
     }
 
     /// <summary>

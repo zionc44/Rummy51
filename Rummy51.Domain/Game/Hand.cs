@@ -62,15 +62,18 @@ public sealed partial class Hand
 
     /// <summary>
     /// A hand dealt from a deck somebody else laid out, which only a
-    /// development aid asks for: every other hand makes its own. The redeal
-    /// counts come with it because rule 8.2 reads them at the end and the
-    /// aid replaces the cards rather than the hand they are being dealt to.
+    /// development aid asks for: every other hand makes its own.
+    ///
+    /// Whatever the hand it replaces has already been through comes with
+    /// it, because rule 12.8 leaves a hand that was redealt the same hand
+    /// and chapters 8 and 12 both read that at the end. It is taken whole
+    /// rather than field by field on purpose: a carry that lists what to
+    /// bring is a carry that forgets the next thing added beside it, which
+    /// is how the redeals came to be written down and then thrown away.
     /// </summary>
-    public Hand(int seats, int dealerSeat, Deck deck, int agreedRedeals = 0, int forcedRedeals = 0)
+    public Hand(int seats, int dealerSeat, Deck deck, Hand? was = null)
     {
         Seats = seats;
-        AgreedRedeals = agreedRedeals;
-        ForcedRedeals = forcedRedeals;
         hands = [.. Enumerable.Range(0, seats).Select(_ => new List<HeldCard>())];
         wentDown = new bool[seats];
         wentRummy = new bool[seats];
@@ -81,6 +84,15 @@ public sealed partial class Hand
         DealerSeat = dealerSeat;
         CutterSeat = (dealerSeat + seats - 1) % seats;
         Deck = deck;
+
+        if (was is null)
+        {
+            return;
+        }
+
+        AgreedRedeals = was.AgreedRedeals;
+        ForcedRedeals = was.ForcedRedeals;
+        redeals.AddRange(was.Redeals);
     }
 
     public int Seats { get; }
