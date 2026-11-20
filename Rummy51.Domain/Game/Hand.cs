@@ -49,6 +49,7 @@ public sealed partial class Hand
 {
     private readonly List<List<HeldCard>> hands;
     private readonly TurnSoFar turn = new();
+    private readonly bool[] playing;
     private readonly bool[] wentDown;
     private readonly bool[] wentRummy;
     private readonly bool[] tookTheFinishingCard;
@@ -61,8 +62,8 @@ public sealed partial class Hand
     private int turnsTaken;
     private int given;
 
-    public Hand(int seats, int jokers, int dealerSeat, int seed)
-        : this(seats, dealerSeat, new Deck(jokers, seed))
+    public Hand(int seats, int jokers, int dealerSeat, int seed, IReadOnlyList<bool>? playing = null)
+        : this(seats, dealerSeat, new Deck(jokers, seed), playing)
     {
     }
 
@@ -77,9 +78,15 @@ public sealed partial class Hand
     /// bring is a carry that forgets the next thing added beside it, which
     /// is how the redeals came to be written down and then thrown away.
     /// </summary>
-    public Hand(int seats, int dealerSeat, Deck deck, Hand? was = null)
+    public Hand(
+        int seats,
+        int dealerSeat,
+        Deck deck,
+        IReadOnlyList<bool>? playing = null,
+        Hand? was = null)
     {
         Seats = seats;
+        this.playing = [.. playing ?? was?.Playing ?? Enumerable.Repeat(true, seats)];
         hands = [.. Enumerable.Range(0, seats).Select(_ => new List<HeldCard>())];
         wentDown = new bool[seats];
         wentRummy = new bool[seats];
@@ -88,7 +95,7 @@ public sealed partial class Hand
         hasPlayed = new bool[seats];
         keeping = new int[seats][];
         DealerSeat = dealerSeat;
-        CutterSeat = (dealerSeat + seats - 1) % seats;
+        CutterSeat = Dealing.Before(dealerSeat, this.playing);
         Deck = deck;
 
         if (was is null)
@@ -134,6 +141,16 @@ public sealed partial class Hand
 
     /// <summary>A hand says who may reach for it; what is there is its own.</summary>
     public Board Board { get; private set; } = new();
+
+    /// <summary>
+    /// Which seats are in this hand. A seat that is out keeps its place -
+    /// everything here counts seats by where they sit - and is dealt
+    /// nothing, given no turn, and stepped over by rules 2.1 and 3.2.
+    /// </summary>
+    public IReadOnlyList<bool> Playing => playing;
+
+    /// <summary>How many are in it, which is what a round is counted in.</summary>
+    public int Players => playing.Count(one => one);
 
     /// <summary>Public: their melds are lying there for everybody to read.</summary>
     public IReadOnlyList<bool> WentDown => wentDown;

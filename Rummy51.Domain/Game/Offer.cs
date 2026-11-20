@@ -15,6 +15,9 @@ internal sealed class Offer
     private readonly bool?[] answers;
     private readonly bool[] read;
 
+    /// <summary>Rule 11.1 has nothing to do with it: a seat out was never asked.</summary>
+    private readonly bool[] asked;
+
     // Rule 12.4 turns silence into agreement in place, so by the time
     // anybody reads the answers the two look alike. This is the difference.
     private readonly bool[] spoke;
@@ -27,15 +30,21 @@ internal sealed class Offer
     /// Rule 12.10: ended there and then, which is an offer with nothing left
     /// to ask. It is made answered so that the table reads it and no more.
     /// </param>
-    public Offer(int by, int seats, DateTimeOffset at, bool forced = false, bool atOnce = false)
+    public Offer(
+        int by,
+        IReadOnlyList<bool> playing,
+        DateTimeOffset at,
+        bool forced = false,
+        bool atOnce = false)
     {
         By = by;
         Forced = forced;
         AtOnce = atOnce;
         AskedAt = at;
-        answers = new bool?[seats];
-        read = new bool[seats];
-        spoke = new bool[seats];
+        asked = [.. playing];
+        answers = new bool?[asked.Length];
+        read = new bool[asked.Length];
+        spoke = new bool[asked.Length];
 
         if (atOnce)
         {
@@ -44,6 +53,18 @@ internal sealed class Offer
         else
         {
             answers[by] = true;
+        }
+
+        // A seat that is not in the hand is not in the question either. It
+        // is answered and read before anybody is asked, so that it holds up
+        // neither the vote nor the showing of it.
+        for (var seat = 0; seat < asked.Length; seat++)
+        {
+            if (!asked[seat])
+            {
+                answers[seat] = true;
+                read[seat] = true;
+            }
         }
     }
 
@@ -117,6 +138,11 @@ internal sealed class Offer
 
     private RedealReply Said(int seat)
     {
+        if (!asked[seat])
+        {
+            return RedealReply.NotAsked;
+        }
+
         if (seat == By)
         {
             return RedealReply.Offered;
@@ -130,5 +156,5 @@ internal sealed class Offer
         return AtOnce ? RedealReply.NotAsked : RedealReply.Silent;
     }
 
-    private bool Holds(int seat) => seat >= 0 && seat < answers.Length;
+    private bool Holds(int seat) => seat >= 0 && seat < answers.Length && asked[seat];
 }

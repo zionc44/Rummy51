@@ -68,7 +68,7 @@ internal static class ArrangedDeal
             seats,
             was.DealerSeat,
             Deck.Arranged([.. laid.Select(card => card!)], jokers),
-            was);
+            was: was);
     }
 
     /// <summary>

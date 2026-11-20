@@ -14,8 +14,8 @@ public sealed partial class Hand
         && !MustStillGoOut(seat)
         && (wentDown[seat] || turn.Laying.Count == 0 || Melding.IsAShowing(Showing));
 
-    /// <summary>Rule 6.4.</summary>
-    public bool CanFinish => turnsTaken >= Seats - 1;
+    /// <summary>Rule 6.4, counted in the seats that are in this hand.</summary>
+    public bool CanFinish => turnsTaken >= Players - 1;
 
     /// <summary>Rules 7.1, 7.3, and 6.4 because taking it is going out.</summary>
     public bool CanTakeTheFinishingCard(int seat) =>

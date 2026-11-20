@@ -23,6 +23,11 @@ public static class Dealing
     private const int FewerInTheLast = 2;
 
     /// <param name="cards">The deck as the cut left it.</param>
+    /// <param name="playing">
+    /// Which seats are in this hand, by their places at the table. A seat
+    /// that is out keeps its place and is dealt nothing, so that the hands
+    /// come back indexed the way everything else counts seats.
+    /// </param>
     /// <param name="alreadyHeld">
     /// Cards the cutter is already holding from the cut. Each one is a card
     /// they are not dealt, so everybody ends the deal holding the same number.
@@ -30,27 +35,27 @@ public static class Dealing
     /// <param name="rounds"><see cref="FirstDeal"/> or <see cref="Redeal"/>.</param>
     public static HandDeal Deal(
         IReadOnlyList<Card> cards,
-        int seats,
+        IReadOnlyList<bool> playing,
         int dealerSeat,
         int alreadyHeld,
         int rounds)
     {
-        if (seats is < 2 or > 4)
+        if (playing.Count(one => one) is < 2 or > 4)
         {
-            throw new ArgumentOutOfRangeException(nameof(seats), "A table seats two to four.");
+            throw new ArgumentOutOfRangeException(nameof(playing), "A hand is dealt to two to four.");
         }
 
-        var cutter = Before(dealerSeat, seats);
-        var first = After(dealerSeat, seats);
+        var cutter = Before(dealerSeat, playing);
+        var first = After(dealerSeat, playing);
 
-        var hands = Enumerable.Range(0, seats).Select(_ => new List<Card>()).ToArray();
+        var hands = Enumerable.Range(0, playing.Count).Select(_ => new List<Card>()).ToArray();
         var passes = new List<DealPass>();
         var drawn = 0;
         var owed = alreadyHeld;
 
         foreach (var round in Enumerable.Range(0, rounds))
         {
-            foreach (var seat in Clockwise(first, seats))
+            foreach (var seat in Clockwise(first, playing))
             {
                 var count = round == rounds - 1 && seat != first ? FewerInTheLast : PerPass;
 
@@ -79,10 +84,40 @@ public static class Dealing
     }
 
     /// <summary>Round the table from the first player, ending at the dealer.</summary>
-    private static IEnumerable<int> Clockwise(int first, int seats) =>
-        Enumerable.Range(0, seats).Select(step => (first + step) % seats);
+    public static IEnumerable<int> Clockwise(int first, IReadOnlyList<bool> playing)
+    {
+        var seat = first;
 
-    private static int After(int seat, int seats) => (seat + 1) % seats;
+        do
+        {
+            yield return seat;
+            seat = After(seat, playing);
+        }
+        while (seat != first);
+    }
 
-    private static int Before(int seat, int seats) => (seat + seats - 1) % seats;
+    /// <summary>
+    /// The next seat in this hand, which is not always the next chair: a
+    /// seat that is out keeps its place at the table and is stepped over.
+    /// </summary>
+    public static int After(int seat, IReadOnlyList<bool> playing) => Step(seat, playing, 1);
+
+    public static int Before(int seat, IReadOnlyList<bool> playing) => Step(seat, playing, -1);
+
+    private static int Step(int seat, IReadOnlyList<bool> playing, int by)
+    {
+        var at = seat;
+
+        for (var tried = 0; tried < playing.Count; tried++)
+        {
+            at = (at + by + playing.Count) % playing.Count;
+
+            if (playing[at])
+            {
+                return at;
+            }
+        }
+
+        return seat;
+    }
 }

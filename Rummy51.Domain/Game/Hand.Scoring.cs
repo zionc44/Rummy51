@@ -24,7 +24,8 @@ public sealed partial class Hand
             : [];
 
     /// <summary>Rule 8.3, by seat, and empty alongside empty scores.</summary>
-    public IReadOnlyList<int> Places => Placing.Of(Scores);
+    public IReadOnlyList<int> Places =>
+        Scores.Count == 0 ? [] : Placing.Of(Scores, playing);
 
     /// <summary>
     /// Rule 8.2, which is the table's and not any player's: it multiplies
@@ -43,6 +44,9 @@ public sealed partial class Hand
         && WinnerSeat != -1
         && (wentRummy[WinnerSeat] || tookTheFinishingCard[WinnerSeat]) ? 2 : 1;
 
+    // A seat that was not in the hand pays nothing for it. Rule 8.1 is
+    // about cards somebody is holding, and they were dealt none.
     private int Scored(int seat) =>
-        (seat == WinnerSeat ? Worth.Winner : WorthOf(seat)) * ResultMultiplier;
+        !playing[seat] ? 0
+        : (seat == WinnerSeat ? Worth.Winner : WorthOf(seat)) * ResultMultiplier;
 }

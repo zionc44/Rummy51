@@ -129,7 +129,7 @@ public sealed partial class Hand
     {
         hasPlayed[TurnSeat] = true;
         turnsTaken += 1;
-        TurnSeat = (TurnSeat + 1) % Seats;
+        TurnSeat = Dealing.After(TurnSeat, playing);
         HasDrawn = false;
         downBeforeThisTurn = wentDown[TurnSeat];
         Forget();

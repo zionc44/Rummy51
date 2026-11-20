@@ -33,7 +33,7 @@ public sealed partial class Hand
         }
 
         Phase = HandPhase.Playing;
-        TurnSeat = (DealerSeat + 1) % Seats;
+        TurnSeat = Dealing.After(DealerSeat, playing);
         HasDrawn = true;
         downBeforeThisTurn = false;
         Forget();
@@ -51,7 +51,7 @@ public sealed partial class Hand
 
         var dealt = Dealing.Deal(
             Deck.Remaining,
-            Seats,
+            playing,
             DealerSeat,
             Deck.RevealedAtCut.Count,
             nextDeal);

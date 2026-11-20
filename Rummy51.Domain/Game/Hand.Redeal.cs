@@ -32,7 +32,7 @@ public sealed partial class Hand
         }
 
         hasOffered[seat] = true;
-        offer = new Offer(seat, Seats, at);
+        offer = new Offer(seat, playing, at);
         Phase = HandPhase.Offering;
 
         return true;

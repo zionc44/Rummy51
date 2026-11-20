@@ -43,6 +43,7 @@ public sealed partial class Hand
         Phase == HandPhase.Playing
         && seat >= 0
         && seat < Seats
+        && playing[seat]
         && !hasPlayed[seat]
         && FourPairsOf(seat).Count == Pairs * 2;
 
@@ -56,7 +57,7 @@ public sealed partial class Hand
 
         Undo(TurnSeat);
 
-        offer = new Offer(seat, Seats, at, forced: true, atOnce);
+        offer = new Offer(seat, playing, at, forced: true, atOnce);
         Phase = atOnce ? HandPhase.Answered : HandPhase.Offering;
 
         return true;

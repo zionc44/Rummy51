@@ -14,10 +14,18 @@ public sealed partial class Hand
     /// <summary>How many of their own a player keeps through a redeal. Rule 12.6.</summary>
     public const int Kept = 3;
 
+    /// <summary>Everybody this hand was dealt to, the rest having nothing to keep.</summary>
+    private bool EverybodyHasKept =>
+        Enumerable.Range(0, Seats).All(seat => !playing[seat] || keeping[seat] is not null);
+
     /// <summary>Rule 12.6: exactly three, and their own.</summary>
     public bool Keep(int seat, IReadOnlyList<int> cardIds)
     {
-        if (Phase != HandPhase.Keeping || seat < 0 || seat >= Seats || keeping[seat] is not null)
+        if (Phase != HandPhase.Keeping
+            || seat < 0
+            || seat >= Seats
+            || !playing[seat]
+            || keeping[seat] is not null)
         {
             return false;
         }
@@ -34,7 +42,7 @@ public sealed partial class Hand
 
         keeping[seat] = [.. cardIds];
 
-        if (keeping.All(three => three is not null))
+        if (EverybodyHasKept)
         {
             DealAgain();
         }
@@ -56,6 +64,13 @@ public sealed partial class Hand
 
         for (var seat = 0; seat < Seats; seat++)
         {
+            if (!playing[seat])
+            {
+                keeping[seat] = [];
+
+                continue;
+            }
+
             keeping[seat] ??=
             [
                 .. hands[seat]
