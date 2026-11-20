@@ -48,7 +48,7 @@ internal sealed class TurnClock(
             await news.AboutTheHandAsync(tableId);
         }
 
-        if (swept.Closed)
+        if (swept.ListChanged)
         {
             await news.AboutTheTablesAsync();
         }

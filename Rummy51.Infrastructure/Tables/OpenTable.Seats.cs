@@ -26,8 +26,10 @@ internal sealed partial class OpenTable
     private readonly bool[] here;
 
     /// <summary>
-    /// Set the moment the last seat is taken, and never unset: a game that has
-    /// begun is not waiting again because somebody walked away from it.
+    /// Set the moment the last seat is taken, and unset only where rule 9.3
+    /// has emptied one again: a game that has begun is not waiting again
+    /// because somebody walked away from it, but a game that is over leaves
+    /// a table that may be a chair short.
     /// </summary>
     public bool Started { get; private set; }
 
@@ -59,10 +61,10 @@ internal sealed partial class OpenTable
         if (Started)
         {
             // Filling the table is what starts the hand. There is no button
-            // and nobody waits for anybody.
-            hand = new Hand(seats.Length, Jokers, Random.Shared.Next(seats.Length), Random.Shared.Next());
-            NoteTheGameBegan();
-            Wait(turns.CutSeconds);
+            // and nobody waits for anybody. Rule 9.3: a table that had a
+            // chair to fill deals as a new one, the question rule 2.1
+            // answers no longer being the same question.
+            Deal(Random.Shared.Next(seats.Length));
         }
     }
 
@@ -145,39 +147,21 @@ internal sealed partial class OpenTable
         return answered;
     }
 
-    /// <summary>
-    /// Rule 10.4.
-    /// </summary>
-    private IEnumerable<Guid> ReleaseWhoeverWasNotHere()
-    {
-        if (hand?.Phase != HandPhase.Finished)
-        {
-            yield break;
-        }
-
-        for (var seat = 0; seat < seats.Length; seat++)
-        {
-            if (gone[seat] is null || seats[seat] is not { } player)
-            {
-                continue;
-            }
-
-            seats[seat] = null;
-            gone[seat] = null;
-            here[seat] = false;
-
-            yield return player.PlayerId;
-        }
-    }
-
     public int SeatOf(Guid playerId) =>
         Array.FindIndex(seats, seat => seat?.PlayerId == playerId);
 
     public LobbyTable Describe() =>
         new(Id, Mode, Limit, Jokers, [.. seats.Select(Occupant)], Started);
 
-    /// <summary>Whoever rule 10.1 has finished with, for the lobby to forget.</summary>
-    public IReadOnlyList<Guid> LetGo() => [.. ReleaseWhoeverWasNotHere()];
+    /// <summary>Whoever rule 10.8 has finished with, since this was last asked.</summary>
+    public IReadOnlyList<Guid> LetGo()
+    {
+        var taken = letGo.ToArray();
+
+        letGo.Clear();
+
+        return taken;
+    }
 
     private TableSeat Occupant(PlayerSummary? player, int seat) =>
         player is null

@@ -138,6 +138,13 @@ public class TablesController(
     public Task<IActionResult> Answer(Guid tableId, AnswerRequest request) =>
         MoveAsync(tableId, playerId => tables.Answer(tableId, playerId, request.Agreed));
 
+    /// <summary>Rule 9.3.</summary>
+    [HttpPost("{tableId:guid}/stay")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> Stay(Guid tableId, StayRequest request) =>
+        MoveAsync(tableId, playerId => tables.Stay(tableId, playerId, request.Another));
+
     /// <summary>Rule 12.4.</summary>
     [HttpPost("{tableId:guid}/redeal/read")]
     [ProducesResponseType<HandView>(StatusCodes.Status200OK)]

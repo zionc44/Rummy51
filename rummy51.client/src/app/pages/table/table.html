@@ -79,6 +79,7 @@
           }
         } @else if (!current.started) {
           <p class="table__waiting">
+            <span class="table__turning" aria-hidden="true"></span>
             {{ 'table.waiting' | translate }}
             <span class="table__count">
               {{ 'table.seatedOf' | translate: { '0': seating.taken(), '1': current.seats.length } }}
@@ -159,6 +160,18 @@
           [pairs]="asking.pairs()"
           (forced)="forceARedeal($event)"
           (cancelled)="asking.choosing.set(false)"
+        />
+      }
+
+      <!-- Rules 8.3 and 9.3: how it came out, and the one question left. -->
+      @if (hand.phase === 'finished' && hand.scores.length) {
+        <app-hand-result
+          [rows]="results()"
+          [winner]="winnerName()"
+          [doubling]="hand.doubling"
+          [asking]="askedToStay()"
+          [left]="asking.secondsLeft()"
+          (stayed)="stay($event)"
         />
       }
 

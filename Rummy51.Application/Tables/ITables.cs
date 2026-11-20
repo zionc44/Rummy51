@@ -48,6 +48,9 @@ public interface ITables
     /// <summary>Rule 12.4.</summary>
     Result<HandView> ReadTheResult(Guid tableId, Guid playerId);
 
+    /// <summary>Rule 9.3.</summary>
+    Result<HandView> Stay(Guid tableId, Guid playerId, bool another);
+
     /// <summary>Rule 12.6.</summary>
     Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds);
 

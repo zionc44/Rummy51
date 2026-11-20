@@ -1,4 +1,4 @@
-<div class="melds" [style.--laid]="size()">
+<div #board class="melds" [style.--laid]="size()">
   @for (meld of melds(); track $index; let at = $index) {
     <div class="melds__meld">
       <!-- A place for the picked card, at whichever end it would go. A run

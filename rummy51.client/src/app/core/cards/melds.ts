@@ -13,7 +13,7 @@ import { worthOfHand, worthOfRank } from './worth';
  */
 
 /** Rule 4.1. */
-const Least = 3;
+export const Least = 3;
 
 /** Rule 5.1. */
 export const GoingDown = 51;

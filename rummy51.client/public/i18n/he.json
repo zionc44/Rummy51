@@ -145,7 +145,22 @@
       "down": "לרדת",
       "yes": "כן",
       "no": "לא"
-    }
+    },
+    "wonBy": "{{0}} ניצח",
+    "neverWentDown": "לא ירד",
+    "staying": "נשאר",
+    "going": "יוצא",
+    "anotherGame": "לשחק עוד משחק סביב אותו שולחן?",
+    "stay": "נשאר",
+    "leaveTable": "יוצא",
+    "waitingForTheRest": "ממתין לשאר השחקנים",
+    "youTookIt": "ניצחת! היד שלך",
+    "youPlaced": "סיימת במקום {{0}}",
+    "byRummy": "רמי",
+    "byFinishingCard": "קלף הסיום",
+    "ordinaryWin": "ניצחון רגיל",
+    "forTheRedeal": "חלוקה מחדש שהוסכמה",
+    "altogether": "סה״כ ×{{0}}"
   },
   "profile": {
     "open": "תפריט החשבון",

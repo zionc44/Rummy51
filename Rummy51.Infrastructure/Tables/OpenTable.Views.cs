@@ -80,6 +80,10 @@ internal sealed partial class OpenTable
                 hand.TurnSeat,
                 hand.WinnerSeat,
                 hand.WentDown,
+                hand.Scores,
+                hand.Places,
+                Doubled(hand),
+                staying ?? [],
                 Absent,
                 hand.HasDrawn,
                 hand.Board.TopOfDiscards?.Code,
@@ -93,6 +97,15 @@ internal sealed partial class OpenTable
                 hand.Forced,
                 hand.ForcedWith,
                 countdown.Describe(hand.WaitingSeat));
+
+    /// <summary>Rule 8.2, with what met each of its two conditions.</summary>
+    private static Doubling Doubled(Hand hand) =>
+        new(
+            hand.RedealMultiplier,
+            hand.WinMultiplier,
+            hand.ResultMultiplier,
+            hand.WinnerSeat != -1 && hand.WentRummy[hand.WinnerSeat],
+            hand.WinnerSeat != -1 && hand.TookTheFinishingCard[hand.WinnerSeat]);
 
     /// <summary>Rule 11.3.</summary>
     private static MeldView Laid(Meld meld) =>

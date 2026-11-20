@@ -14,6 +14,10 @@
   --pile-tall: calc(var(--pile) * 336 / 240);
   // Between the two lines a hand is laid in on a phone.
   --hand-gap: 0.125rem;
+  // What the buttons and the prompt take at the foot of the board. They
+  // are laid over it rather than in it, so this is the one thing that
+  // tells the melds the room is spoken for.
+  --tools-tall: 1.5rem;
 
   display: flex;
   flex: 1;
@@ -67,6 +71,26 @@
 
 .table__count {
   display: block;
+}
+
+// An empty felt says nothing by itself, and after a game has ended it is
+// the same empty felt as before one began. This is what tells them the
+// table is waiting for somebody rather than finished with them.
+.table__turning {
+  display: block;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  margin: 0 auto 0.5rem;
+  border: 2px solid var(--border-strong);
+  border-block-start-color: var(--felt-500);
+  border-radius: 50%;
+  animation: table-turning 900ms linear infinite;
+}
+
+@keyframes table-turning {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 // The near seat, where the player's own hand will go once there is one.

@@ -56,8 +56,21 @@ public sealed partial class Hand
     private int given;
 
     public Hand(int seats, int jokers, int dealerSeat, int seed)
+        : this(seats, dealerSeat, new Deck(jokers, seed))
+    {
+    }
+
+    /// <summary>
+    /// A hand dealt from a deck somebody else laid out, which only a
+    /// development aid asks for: every other hand makes its own. The redeal
+    /// counts come with it because rule 8.2 reads them at the end and the
+    /// aid replaces the cards rather than the hand they are being dealt to.
+    /// </summary>
+    public Hand(int seats, int dealerSeat, Deck deck, int agreedRedeals = 0, int forcedRedeals = 0)
     {
         Seats = seats;
+        AgreedRedeals = agreedRedeals;
+        ForcedRedeals = forcedRedeals;
         hands = [.. Enumerable.Range(0, seats).Select(_ => new List<HeldCard>())];
         wentDown = new bool[seats];
         wentRummy = new bool[seats];
@@ -67,7 +80,7 @@ public sealed partial class Hand
         keeping = new int[seats][];
         DealerSeat = dealerSeat;
         CutterSeat = (dealerSeat + seats - 1) % seats;
-        Deck = new Deck(jokers, seed);
+        Deck = deck;
     }
 
     public int Seats { get; }
@@ -133,7 +146,28 @@ public sealed partial class Hand
             ? [.. Enumerable.Range(0, Seats).Select(Scored)]
             : [];
 
-    private int Scored(int seat) => seat == WinnerSeat ? Worth.Winner : WorthOf(seat);
+    /// <summary>Rule 8.3, by seat, and empty alongside empty scores.</summary>
+    public IReadOnlyList<int> Places => Placing.Of(Scores);
+
+    /// <summary>
+    /// Rule 8.2, which is the table's and not any player's: it multiplies
+    /// the winner's minus and everybody's penalty alike. One while a hand
+    /// is still being played, there being nothing yet to multiply.
+    /// </summary>
+    public int ResultMultiplier => RedealMultiplier * WinMultiplier;
+
+    /// <summary>Rule 8.2: a redeal the table agreed to, however many there were.</summary>
+    public int RedealMultiplier =>
+        Phase == HandPhase.Finished && AgreedRedeals > 0 ? 2 : 1;
+
+    /// <summary>Rule 8.2: taken by somebody who owed the table nothing for it.</summary>
+    public int WinMultiplier =>
+        Phase == HandPhase.Finished
+        && WinnerSeat != -1
+        && (wentRummy[WinnerSeat] || tookTheFinishingCard[WinnerSeat]) ? 2 : 1;
+
+    private int Scored(int seat) =>
+        (seat == WinnerSeat ? Worth.Winner : WorthOf(seat)) * ResultMultiplier;
 
     /// <summary>Rules 3.4, 5.6, 7.2. Laying nothing is always allowed.</summary>
     public bool CanEndTheTurn(int seat) =>

@@ -1,0 +1,158 @@
+using Rummy51.Domain.Entities;
+using Rummy51.Domain.Game;
+
+namespace Rummy51.Infrastructure.Tables;
+
+/// <summary>
+/// Rules 9.3 and 10.8: what a table does once its game is over. It asks
+/// who wants another and the answers decide the rest - everybody staying
+/// deals again, anybody going leaves a chair for the lobby to fill.
+/// </summary>
+internal sealed partial class OpenTable
+{
+    /// <summary>Null while nobody is being asked; a seat is null until it has answered.</summary>
+    private bool?[]? staying;
+
+    /// <summary>Rule 2.1, kept because rule 9.3 moves the deal on from it.</summary>
+    private int dealerWas = -1;
+
+    /// <summary>Whoever rule 10.8 has finished with, for the lobby to forget.</summary>
+    private readonly List<Guid> letGo = [];
+
+    /// <summary>
+    /// The row this table shows in the lobby is out of date. Letting
+    /// somebody go is not the whole of it: a table whose game is over stops
+    /// being one anybody is told about, and nothing else would ever say so,
+    /// because the people who need to hear it are the ones not sitting here.
+    /// </summary>
+    private bool rowChanged;
+
+    /// <summary>Rule 9.3.</summary>
+    private void AskWhoIsStaying()
+    {
+        // Rule 9.2: a single hand is the whole of its game, so this is the
+        // only mode whose game has ended. The other two end somewhere
+        // nothing reaches yet.
+        if (staying is not null || Mode != GameMode.Single || hand?.Phase != HandPhase.Finished)
+        {
+            return;
+        }
+
+        staying = new bool?[seats.Length];
+        Wait(turns.StaySeconds);
+    }
+
+    /// <summary>Rule 9.3, answered.</summary>
+    public bool Stay(int seat, bool another)
+    {
+        if (staying is null || seat < 0 || seat >= seats.Length || staying[seat] is not null)
+        {
+            return false;
+        }
+
+        staying[seat] = another;
+
+        // Rule 10.8: the answer is the giving up, and waiting for the rest
+        // of the table to speak would leave everybody looking at somebody
+        // sitting in a chair they have already left.
+        if (!another)
+        {
+            GiveUp(seat);
+        }
+
+        if (staying.All(said => said is not null))
+        {
+            Settle();
+        }
+
+        return true;
+    }
+
+    /// <summary>Rule 10.8: not answering is giving the seat up.</summary>
+    private bool NobodyElseIsStaying()
+    {
+        if (staying is null)
+        {
+            return false;
+        }
+
+        Settle();
+
+        return true;
+    }
+
+    private void Settle()
+    {
+        for (var seat = 0; seat < seats.Length; seat++)
+        {
+            if (staying![seat] != true)
+            {
+                GiveUp(seat);
+            }
+        }
+
+        staying = null;
+        hand = null;
+        Started = seats.All(seat => seat is not null);
+        rowChanged = true;
+
+        if (Started)
+        {
+            // Rule 9.3: the same people in the same places, so rule 2.1
+            // moves the deal on exactly as it does between hands.
+            Deal((dealerWas + 1) % seats.Length);
+
+            return;
+        }
+
+        // Nothing is being waited for until somebody takes the chair, and a
+        // wait left standing is asked again on every tick for ever.
+        countdown.Stop();
+    }
+
+    /// <summary>
+    /// The chair is empty from this moment and the lobby is told at the next
+    /// sweep. <see cref="Started"/> is left alone until the question is over,
+    /// so that nobody takes the chair while the rest are still answering.
+    /// </summary>
+    private void GiveUp(int seat)
+    {
+        if (seats[seat] is not { } going)
+        {
+            return;
+        }
+
+        letGo.Add(going.PlayerId);
+        seats[seat] = null;
+        gone[seat] = null;
+        here[seat] = false;
+        rowChanged = true;
+    }
+
+    /// <summary>Whether the lobby's list has to be sent out again.</summary>
+    public bool TakeRowChange()
+    {
+        var changed = rowChanged;
+
+        rowChanged = false;
+
+        return changed;
+    }
+
+    /// <summary>
+    /// Rules 2.1 and 9.3. The testing aids are let go of here rather than
+    /// kept for the table's life: they are about a first deal, and a game
+    /// that begins again has one. A redeal is not one, which is what the
+    /// flag they turn off goes on meaning.
+    /// </summary>
+    private void Deal(int dealerSeat)
+    {
+        dealerWas = dealerSeat;
+        hand = new Hand(seats.Length, Jokers, dealerSeat, Random.Shared.Next());
+        handWritten = false;
+        dealtOnce = false;
+
+        NoteTheGameBegan();
+        Wait(turns.CutSeconds);
+    }
+}

@@ -73,11 +73,6 @@ public static class DependencyInjection
             .UseNpgsql(connectionString)
             .UseSnakeCaseNamingConvention());
 
-        // Writing down what a table produced happens outside any request, so
-        // it cannot borrow a request's context and needs one of its own.
-        services.AddDbContextFactory<Rummy51DbContext>(
-            options => options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention(),
-            lifetime: ServiceLifetime.Singleton);
 
         // On disk these are lost whenever the host is replaced, which signs
         // every player out.

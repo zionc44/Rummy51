@@ -32,14 +32,25 @@ public sealed class Deck
     {
     }
 
-    private Deck(IReadOnlyList<Card> fresh, IReadOnlyList<int> backs, int seed)
-    {
-        Seed = seed;
+    /// <summary>
+    /// A deck in the order it is given, shuffled by nobody. Only a
+    /// development aid wants this, and it is public so that the aid can
+    /// live outside the game rather than inside it.
+    /// </summary>
+    public static Deck Arranged(IReadOnlyList<Card> cards, int jokers) =>
+        new(cards, BacksOf(jokers), seed: 0, [.. Enumerable.Range(0, cards.Count)]);
 
+    private Deck(IReadOnlyList<Card> fresh, IReadOnlyList<int> backs, int seed)
         // One shuffle, applied to both, so every card keeps the back of the
         // pack it came from. Shuffling the backs separately would be a lie
         // about what two packs are, and would not come out even.
-        var order = Shuffle<int>([.. Enumerable.Range(0, fresh.Count)], seed);
+        : this(fresh, backs, seed, Shuffle<int>([.. Enumerable.Range(0, fresh.Count)], seed))
+    {
+    }
+
+    private Deck(IReadOnlyList<Card> fresh, IReadOnlyList<int> backs, int seed, IReadOnlyList<int> order)
+    {
+        Seed = seed;
 
         cards = [.. order.Select(index => fresh[index])];
         Backs = [.. order.Select(index => backs[index])];

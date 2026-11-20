@@ -68,8 +68,22 @@ internal sealed class TurnSoFar
     /// <summary>Rule 12.1: nothing of this turn's is on the table yet.</summary>
     public bool PutAnythingDown => putDown.Count > 0;
 
-    /// <summary>Rule 6.6: a card given to somebody's meld, or a joker taken out of one.</summary>
-    public bool LeanedOnTheTable => putDown.Any(move => move is Move.Joined or Move.Swapped);
+    /// <summary>Rule 6.6.</summary>
+    public bool LeanedOnTheTable => putDown.Any(TookFromTheTable);
+
+    /// <summary>
+    /// Rule 6.6, which asks about a meld already lying there. One this turn
+    /// laid is not one of those: its cards came out of the same hand, so a
+    /// fifteenth card put on a run just laid leans on nothing that was not
+    /// the player's own, and laying it among the other four would have been
+    /// the same move under another name.
+    /// </summary>
+    private bool TookFromTheTable(Move move) => move switch
+    {
+        Move.Swapped => true,
+        Move.Joined joined => !Laying.Contains(joined.Meld),
+        _ => false,
+    };
 
     public void Laid(int meld) => putDown.Add(new Move.Laid(meld));
 

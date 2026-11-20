@@ -3,9 +3,10 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth-service';
 import { LobbyConnection } from '../../core/lobby/lobby-connection';
+import { HandResult, ResultRow } from './hand-result/hand-result';
 import { ArrangedHand } from '../../core/cards/arranged-hand';
 import { Fit, Swap } from '../../core/cards/card';
-import { GoingDown, hasCleanRun, showingWorth } from '../../core/cards/melds';
+import { GoingDown, Least, hasCleanRun, showingWorth } from '../../core/cards/melds';
 import { NeverWentDown, worthOfHand } from '../../core/cards/worth';
 import { HandPhase, HandView } from '../../core/lobby/lobby.models';
 import { TableService } from '../../core/lobby/table-service';
@@ -47,6 +48,7 @@ const CardOwed = 'TakenCardStillHeld';
   selector: 'app-table',
   imports: [
     TranslatePipe,
+    HandResult,
     Notice,
     PageShell,
     PlayerHand,
@@ -366,13 +368,21 @@ export class Table implements OnDestroy {
    * A run tapped by its band, which lays it on the table. The window is the
    * same one a card is thrown in - after taking one and before giving one
    * back - because laying cards down ends neither half of a turn.
+   *
+   * Rule 6.2: a meld that is the whole of a hand lays all but its last
+   * card, because a hand emptied onto the table has nothing left to end
+   * the turn with. The last is the card that is always safe to hold back -
+   * a run shortened at its end is still a run, and four of a rank are a
+   * set at three - and it is the one that then goes out as the throw.
    */
   protected layDown(ids: readonly number[]): void {
     if (!this.turn.toThrow()) {
       return;
     }
 
-    this.moves.lay(ids);
+    const whole = ids.length === this.myCards().length;
+
+    this.moves.lay(whole && ids.length > Least ? ids.slice(0, -1) : ids);
   }
 
   /**
@@ -458,6 +468,53 @@ export class Table implements OnDestroy {
   protected forceARedeal(atOnce: boolean): void {
     this.asking.choosing.set(false);
     this.moves.forceARedeal(atOnce);
+  }
+
+  /** Rules 8.1 and 8.3, lowest first, which puts the winner at the top. */
+  protected readonly results = computed<readonly ResultRow[]>(() => {
+    const hand = this.hand();
+    const seats = this.seating.seats();
+
+    if (!hand?.scores.length) {
+      return [];
+    }
+
+    return hand.scores
+      .map((score, seat) => ({
+        place: hand.places[seat],
+        name: seats[seat]?.displayName ?? '',
+        score,
+        won: seat === hand.winnerSeat,
+        wentDown: hand.wentDown[seat],
+        mine: seat === this.seating.ownSeat(),
+        staying: hand.staying[seat] ?? null,
+      }))
+      .sort((one, other) => one.place - other.place);
+  });
+
+  protected readonly winnerName = computed(() => {
+    const hand = this.hand();
+
+    return hand ? (this.seating.seats()[hand.winnerSeat]?.displayName ?? '') : '';
+  });
+
+  /** Rule 9.3: the table is asking and this player has still to answer. */
+  protected readonly askedToStay = computed(() => {
+    const staying = this.hand()?.staying ?? [];
+    const seat = this.seating.ownSeat();
+
+    return seat !== -1 && staying.length > 0 && staying[seat] === null;
+  });
+
+  /** Rule 9.3. */
+  protected stay(another: boolean): void {
+    this.moves.stay(another);
+
+    // Rule 10.8 frees the chair once everybody has answered, which can be
+    // a while yet. Nobody who has given it up should sit watching for it.
+    if (!another) {
+      this.moves.backToLobby();
+    }
   }
 
   /** Rule 12.3. */

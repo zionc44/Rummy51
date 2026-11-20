@@ -78,7 +78,8 @@ internal sealed partial class OpenTable
             ended.ForcedRedeals,
             gameStartedAt,
             at,
-            [.. Enumerable.Range(0, seats.Length).Select(seat => Scored(ended, seat))]));
+            [.. Enumerable.Range(0, seats.Length).Select(seat => Scored(ended, seat))],
+            Asked(ended)));
 
         // Rule 9.2: one hand is the whole of a single game. The other two
         // modes end somewhere this does not reach yet.
@@ -99,8 +100,23 @@ internal sealed partial class OpenTable
             ended.Hands[seat].Count,
             Codes(ended.Hands[seat].Select(card => card.Card)),
             Worth.Held(ended.Hands[seat].Select(card => card.Card)),
-            Doubled: 1,
+            ended.ResultMultiplier,
             ended.Scores[seat]);
+
+    /// <summary>Chapter 12, turned from seats into the people sitting in them.</summary>
+    private IReadOnlyList<RedealAsked> Asked(Hand ended) =>
+    [
+        .. ended.Redeals.Select((redeal, before) => new RedealAsked(
+            before + 1,
+            seats[redeal.By]!.PlayerId,
+            redeal.Forced,
+            redeal.AtOnce,
+            string.Join(',', redeal.ForcedWith),
+            redeal.Agreed,
+            [.. redeal.Replies.Select((reply, seat) => new RedealReplied(seats[seat]!.PlayerId, reply))],
+            redeal.AskedAt,
+            redeal.SettledAt))
+    ];
 
     private static string Codes(IEnumerable<Card> cards) =>
         string.Join(',', cards.Select(card => card.Code));

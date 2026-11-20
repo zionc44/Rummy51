@@ -22,6 +22,11 @@
 
   --danger: #fca5a5;
 
+  // Where a card would go if it were played. Amber and not the felt's own
+  // green, because a green outline on green felt is a shape nobody notices
+  // and this one is asking to be pressed.
+  --place: #f59e0b;
+
   // Lobby presence. Green, amber and red are the convention players already
   // know from chat apps; the fourth is red darkened, for in a game and away.
   --status-available: #10b981;

@@ -34,7 +34,7 @@ public class HandResultConfiguration : IEntityTypeConfiguration<HandResult>
 
         builder.Property(result => result.CardsLeft).IsRequired();
         builder.Property(result => result.HeldWorth).IsRequired();
-        builder.Property(result => result.Doubled).IsRequired();
+        builder.Property(result => result.ResultMultiplier).IsRequired();
         builder.Property(result => result.Score).IsRequired();
 
         // Everything anybody will ask of this table starts with a player.

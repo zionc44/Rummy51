@@ -145,7 +145,22 @@
       "down": "Can go down",
       "yes": "Yes",
       "no": "No"
-    }
+    },
+    "wonBy": "{{0}} won",
+    "neverWentDown": "never went down",
+    "staying": "Staying",
+    "going": "Going",
+    "anotherGame": "Another game at this table?",
+    "stay": "Stay",
+    "leaveTable": "Leave",
+    "waitingForTheRest": "Waiting for the others",
+    "youTookIt": "You won it!",
+    "youPlaced": "You finished in place {{0}}",
+    "byRummy": "Rummy",
+    "byFinishingCard": "The finishing card",
+    "ordinaryWin": "An ordinary win",
+    "forTheRedeal": "An agreed redeal",
+    "altogether": "Altogether ×{{0}}"
   },
   "profile": {
     "open": "Account menu",

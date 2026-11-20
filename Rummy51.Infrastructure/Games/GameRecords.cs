@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Rummy51.Application.Games;
 using Rummy51.Domain.Entities;
 using Rummy51.Infrastructure.Persistence;
@@ -10,7 +11,7 @@ namespace Rummy51.Infrastructure.Games;
 /// all: a hand with nobody's score against it, or a score against no hand,
 /// is worse than neither.
 /// </summary>
-public sealed class GameRecords(IDbContextFactory<Rummy51DbContext> contexts) : IGameRecords
+public sealed class GameRecords(IServiceScopeFactory scopes) : IGameRecords
 {
     public async Task WriteAsync(IReadOnlyList<GameRecord> records, CancellationToken stopping)
     {
@@ -19,7 +20,11 @@ public sealed class GameRecords(IDbContextFactory<Rummy51DbContext> contexts) : 
             return;
         }
 
-        await using var db = await contexts.CreateDbContextAsync(stopping);
+        // Writing down what a table produced happens outside any request,
+        // so there is no scope to borrow a context from and it opens one.
+        using var scope = scopes.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<Rummy51DbContext>();
         await using var written = await db.Database.BeginTransactionAsync(stopping);
 
         foreach (var record in records)
@@ -102,8 +107,39 @@ public sealed class GameRecords(IDbContextFactory<Rummy51DbContext> contexts) : 
             CardsLeft = result.CardsLeft,
             HeldCards = result.HeldCards,
             HeldWorth = result.HeldWorth,
-            Doubled = result.Doubled,
+            ResultMultiplier = result.ResultMultiplier,
             Score = result.Score,
+        }));
+
+        foreach (var asked in ended.Redeals)
+        {
+            Asked(db, hand.Id, asked);
+        }
+    }
+
+    private static void Asked(Rummy51DbContext db, Guid handId, RedealAsked asked)
+    {
+        var redeal = new HandRedeal
+        {
+            Id = Guid.CreateVersion7(),
+            PlayedHandId = handId,
+            Number = asked.Number,
+            OfferedById = asked.OfferedById,
+            Forced = asked.Forced,
+            AtOnce = asked.AtOnce,
+            ForcedWith = asked.ForcedWith,
+            Agreed = asked.Agreed,
+            AskedAt = asked.AskedAt,
+            SettledAt = asked.SettledAt,
+        };
+
+        db.HandRedeals.Add(redeal);
+
+        db.RedealAnswers.AddRange(asked.Answers.Select(answer => new RedealAnswer
+        {
+            HandRedealId = redeal.Id,
+            PlayerId = answer.PlayerId,
+            Reply = answer.Reply,
         }));
     }
 

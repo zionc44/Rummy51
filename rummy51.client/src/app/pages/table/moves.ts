@@ -86,6 +86,11 @@ export class Moves {
     this.send(this.tables.readTheResult(this.tableId()));
   }
 
+  /** Rule 9.3. */
+  stay(another: boolean): void {
+    this.send(this.tables.stay(this.tableId(), another));
+  }
+
   /** Rule 12.6. */
   keep(cardIds: readonly number[]): void {
     this.send(this.tables.keep(this.tableId(), cardIds));

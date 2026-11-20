@@ -149,6 +149,9 @@ public sealed partial class InMemoryTables(
     public Result<HandView> ReadTheResult(Guid tableId, Guid playerId) =>
         Move(tableId, playerId, (table, seat) => table.ReadTheResult(seat), Refused("CannotAnswer"));
 
+    public Result<HandView> Stay(Guid tableId, Guid playerId, bool another) =>
+        Move(tableId, playerId, (table, seat) => table.Stay(seat, another), Refused("CannotStay"));
+
     public Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
         Move(tableId, playerId, (table, seat) => table.Keep(seat, cardIds), Refused("CannotKeep"));
 
@@ -241,7 +244,7 @@ public sealed partial class InMemoryTables(
             // one more thing that changes a table and must not meet a move
             // halfway through.
             var acted = new List<Guid>();
-            var closed = false;
+            var listChanged = false;
 
             foreach (var table in tables.Values.ToList())
             {
@@ -255,16 +258,29 @@ public sealed partial class InMemoryTables(
                     Stood(playerId, table.Id);
                 }
 
+                // Rules 9.3 and 10.8: a chair given up, or a game that is
+                // over, changes what this table looks like to everybody who
+                // is not at it.
+                if (table.TakeRowChange())
+                {
+                    listChanged = true;
+
+                    if (!acted.Contains(table.Id))
+                    {
+                        acted.Add(table.Id);
+                    }
+                }
+
                 // Rule 10.4 can have emptied the last seat, which leaves a
                 // table nobody is at.
                 if (table.Deserted)
                 {
                     Forget(table);
-                    closed = true;
+                    listChanged = true;
                 }
             }
 
-            return new Swept(acted, closed);
+            return new Swept(acted, listChanged);
         }
     }
 

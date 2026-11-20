@@ -69,7 +69,16 @@ internal sealed partial class OpenTable
             return false;
         }
 
-        if (testing.FourPairs && !dealtOnce)
+        // Every deal and not only the first, because a redeal that nobody
+        // can then go out on tells nothing about rule 8.2's first condition.
+        // It costs rule 12.7: what comes out is a whole hand rather than
+        // twelve and eleven on top of three kept, and the three everybody
+        // chose are thrown back. That is a cheat, and so is the rest of it.
+        if (testing.ArrangedHand)
+        {
+            hand = ArrangedDeal.For(hand, seats.Length, Jokers, position);
+        }
+        else if (testing.FourPairs && !dealtOnce)
         {
             hand = TestingDeals.ShuffledUntilFourPairs(hand, seats.Length, Jokers, position);
         }
@@ -128,17 +137,19 @@ internal sealed partial class OpenTable
     public bool CanOfferARedeal(int seat) => hand?.CanOfferARedeal(seat) == true;
 
     /// <summary>Rule 12.1. The turn's clock gives way to the offer's.</summary>
-    public bool OfferARedeal(int seat) => Moved(() => hand?.OfferARedeal(seat) == true);
+    public bool OfferARedeal(int seat) =>
+        Moved(() => hand?.OfferARedeal(seat, clock.GetUtcNow()) == true);
 
     /// <summary>Rules 12.9 and 12.10, which do not wait for a turn.</summary>
     public bool ForceARedeal(int seat, bool atOnce) =>
-        Moved(() => hand?.ForceARedeal(seat, atOnce) == true);
+        Moved(() => hand?.ForceARedeal(seat, atOnce, clock.GetUtcNow()) == true);
 
     /// <summary>Rule 12.3.</summary>
     public bool Answer(int seat, bool agreed) => Moved(() => hand?.Answer(seat, agreed) == true);
 
     /// <summary>Rule 12.4.</summary>
-    public bool ReadTheResult(int seat) => Moved(() => hand?.Read(seat) == true);
+    public bool ReadTheResult(int seat) =>
+        Moved(() => hand?.Read(seat, clock.GetUtcNow()) == true);
 
     /// <summary>Rule 12.6.</summary>
     public bool Keep(int seat, IReadOnlyList<int> cardIds) =>
@@ -217,6 +228,7 @@ internal sealed partial class OpenTable
 
         Wait(turns.TurnSeconds);
         NoteIfTheHandEnded();
+        AskWhoIsStaying();
 
         return true;
     }
@@ -231,6 +243,14 @@ internal sealed partial class OpenTable
 
         // Read before anything below moves the hand on, because what the
         // table was waiting for is the whole of what this says.
+        // Rules 9.3 and 10.8: the game is over and the table is asking,
+        // so what ran out is the question and not anybody's turn. Nobody
+        // stopped watching a seat; there is no seat being waited on.
+        if (NobodyElseIsStaying())
+        {
+            return true;
+        }
+
         StoppedWatching(hand.WaitingSeat);
 
         if (hand.Phase == HandPhase.Cutting)
@@ -249,13 +269,14 @@ internal sealed partial class OpenTable
             return Moved(() => hand.Phase switch
             {
                 HandPhase.Offering => hand.TakeSilenceAsAgreement(),
-                HandPhase.Answered => hand.StopShowingTheResult(),
+                HandPhase.Answered => hand.StopShowingTheResult(clock.GetUtcNow()),
                 _ => hand.KeepForWhoeverHasNot(),
             });
         }
 
         PlayTheTurnFor(hand.TurnSeat);
         NoteIfTheHandEnded();
+        AskWhoIsStaying();
 
         // However that went, the table is no longer waiting for the move it
         // was waiting for. A wait left standing is asked again every tick,

@@ -285,6 +285,64 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                     b.ToTable("game_players", (string)null);
                 });
 
+            modelBuilder.Entity("Rummy51.Domain.Entities.HandRedeal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Agreed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("agreed");
+
+                    b.Property<DateTimeOffset>("AskedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("asked_at");
+
+                    b.Property<bool>("AtOnce")
+                        .HasColumnType("boolean")
+                        .HasColumnName("at_once");
+
+                    b.Property<bool>("Forced")
+                        .HasColumnType("boolean")
+                        .HasColumnName("forced");
+
+                    b.Property<string>("ForcedWith")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("forced_with");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("OfferedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offered_by_id");
+
+                    b.Property<Guid>("PlayedHandId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("played_hand_id");
+
+                    b.Property<DateTimeOffset>("SettledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("settled_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_hand_redeals");
+
+                    b.HasIndex("OfferedById")
+                        .HasDatabaseName("ix_hand_redeals_offered_by_id");
+
+                    b.HasIndex("PlayedHandId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_hand_redeals_played_hand_id_number");
+
+                    b.ToTable("hand_redeals", (string)null);
+                });
+
             modelBuilder.Entity("Rummy51.Domain.Entities.HandResult", b =>
                 {
                     b.Property<Guid>("PlayedHandId")
@@ -299,10 +357,6 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("cards_left");
 
-                    b.Property<int>("Doubled")
-                        .HasColumnType("integer")
-                        .HasColumnName("doubled");
-
                     b.Property<string>("HeldCards")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -312,6 +366,10 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                     b.Property<int>("HeldWorth")
                         .HasColumnType("integer")
                         .HasColumnName("held_worth");
+
+                    b.Property<int>("ResultMultiplier")
+                        .HasColumnType("integer")
+                        .HasColumnName("result_multiplier");
 
                     b.Property<int>("Score")
                         .HasColumnType("integer")
@@ -551,6 +609,29 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                     b.ToTable("player_avatars", (string)null);
                 });
 
+            modelBuilder.Entity("Rummy51.Domain.Entities.RedealAnswer", b =>
+                {
+                    b.Property<Guid>("HandRedealId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hand_redeal_id");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<int>("Reply")
+                        .HasColumnType("integer")
+                        .HasColumnName("reply");
+
+                    b.HasKey("HandRedealId", "PlayerId")
+                        .HasName("pk_redeal_answers");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_redeal_answers_player_id");
+
+                    b.ToTable("redeal_answers", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -634,6 +715,23 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_game_players_players_player_id");
                 });
 
+            modelBuilder.Entity("Rummy51.Domain.Entities.HandRedeal", b =>
+                {
+                    b.HasOne("Rummy51.Domain.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("OfferedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hand_redeals_players_offered_by_id");
+
+                    b.HasOne("Rummy51.Domain.Entities.PlayedHand", null)
+                        .WithMany()
+                        .HasForeignKey("PlayedHandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_hand_redeals_played_hands_played_hand_id");
+                });
+
             modelBuilder.Entity("Rummy51.Domain.Entities.HandResult", b =>
                 {
                     b.HasOne("Rummy51.Domain.Entities.PlayedHand", null)
@@ -669,6 +767,23 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_player_avatars_players_player_id");
+                });
+
+            modelBuilder.Entity("Rummy51.Domain.Entities.RedealAnswer", b =>
+                {
+                    b.HasOne("Rummy51.Domain.Entities.HandRedeal", null)
+                        .WithMany()
+                        .HasForeignKey("HandRedealId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_redeal_answers_hand_redeals_hand_redeal_id");
+
+                    b.HasOne("Rummy51.Domain.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_redeal_answers_players_player_id");
                 });
 #pragma warning restore 612, 618
         }

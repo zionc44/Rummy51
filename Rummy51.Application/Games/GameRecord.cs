@@ -40,12 +40,30 @@ public sealed record HandEnded(
     int ForcedRedeals,
     DateTimeOffset StartedAt,
     DateTimeOffset EndedAt,
-    IReadOnlyList<PlayerResult> Results) : GameRecord;
+    IReadOnlyList<PlayerResult> Results,
+    IReadOnlyList<RedealAsked> Redeals) : GameRecord;
 
 /// <summary>
-/// Rules 8.1 and 8.2 as they were applied. <paramref name="Doubled"/> is
-/// one until 8.2 is enforced, which is the truth and not a placeholder:
-/// nothing doubles anything yet.
+/// Chapter 12: one redeal put to the table and what came of it. A hand may
+/// hold several, so they are numbered rather than counted.
+/// </summary>
+public sealed record RedealAsked(
+    int Number,
+    Guid OfferedById,
+    bool Forced,
+    bool AtOnce,
+    string ForcedWith,
+    bool Agreed,
+    IReadOnlyList<RedealReplied> Answers,
+    DateTimeOffset AskedAt,
+    DateTimeOffset SettledAt);
+
+public sealed record RedealReplied(Guid PlayerId, RedealReply Reply);
+
+/// <summary>
+/// Rules 8.1 and 8.2 as they were applied, and not as they would be
+/// worked out today: a rule that changes must not rewrite a hand already
+/// played.
 /// </summary>
 public sealed record PlayerResult(
     Guid PlayerId,
@@ -57,7 +75,7 @@ public sealed record PlayerResult(
     int CardsLeft,
     string HeldCards,
     int HeldWorth,
-    int Doubled,
+    int ResultMultiplier,
     int Score);
 
 /// <summary>Rule 9.2: whichever of the three endings arrived.</summary>

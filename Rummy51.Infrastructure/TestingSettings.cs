@@ -20,4 +20,14 @@ public sealed class TestingSettings
     /// pairs, which is otherwise about one hand in a hundred and twenty.
     /// </summary>
     public bool FourPairs { get; init; }
+
+    /// <summary>
+    /// Deals the player after the dealer a hand of nothing but melds, so
+    /// that a hand can be taken to its end on purpose rather than waited
+    /// for. Everything after the deal is the real game. It does this on
+    /// every deal, a redeal included, which is what makes rule 8.2's
+    /// doubling reachable by hand - at the cost of rule 12.7, since what
+    /// a redeal then deals is a whole hand and not twelve on top of three.
+    /// </summary>
+    public bool ArrangedHand { get; init; }
 }

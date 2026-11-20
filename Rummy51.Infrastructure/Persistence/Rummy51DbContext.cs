@@ -20,7 +20,7 @@ public class Rummy51DbContext(DbContextOptions<Rummy51DbContext> options)
 
     /// <summary>
     /// What was played, which is the only part of a table that outlives it.
-    /// A table is memory; these are the four tables a result is read from.
+    /// A table is memory; these are the tables a result is read from.
     /// </summary>
     public DbSet<Game> Games => Set<Game>();
 
@@ -29,6 +29,10 @@ public class Rummy51DbContext(DbContextOptions<Rummy51DbContext> options)
     public DbSet<PlayedHand> PlayedHands => Set<PlayedHand>();
 
     public DbSet<HandResult> HandResults => Set<HandResult>();
+
+    public DbSet<HandRedeal> HandRedeals => Set<HandRedeal>();
+
+    public DbSet<RedealAnswer> RedealAnswers => Set<RedealAnswer>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

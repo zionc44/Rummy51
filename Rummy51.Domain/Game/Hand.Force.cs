@@ -47,7 +47,7 @@ public sealed partial class Hand
         && FourPairsOf(seat).Count == Pairs * 2;
 
     /// <summary>Rules 12.10 and 12.13.</summary>
-    public bool ForceARedeal(int seat, bool atOnce)
+    public bool ForceARedeal(int seat, bool atOnce, DateTimeOffset at)
     {
         if (!CanForceARedeal(seat))
         {
@@ -56,7 +56,7 @@ public sealed partial class Hand
 
         Undo(TurnSeat);
 
-        offer = new Offer(seat, Seats, forced: true, atOnce);
+        offer = new Offer(seat, Seats, at, forced: true, atOnce);
         Phase = atOnce ? HandPhase.Answered : HandPhase.Offering;
 
         return true;

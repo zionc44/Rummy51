@@ -3,10 +3,10 @@
   block-size: 100%;
 }
 
-// Below the two piles, which keep the top of the board to themselves, and
-// flowing from there into as many lines as there is room for. What will not
-// fit is cut and never scrolled: the board is the screen, and a card below
-// the fold is a card nobody can reach.
+// Between the two piles and the buttons, each of which keeps an end of the
+// board to itself, and flowing between them into as many lines as there is
+// room for. What will not fit is cut and never scrolled: the board is the
+// screen, and a card below the fold is a card nobody can reach.
 .melds {
   display: flex;
   // Left to right, as a hand is laid and for the same reason: the index a
@@ -19,7 +19,11 @@
   gap: 0.375rem 0.5rem;
   block-size: 100%;
   overflow: hidden;
-  padding-block-start: calc(var(--pile-tall) + 0.5rem);
+  // Both ends are held open rather than drawn around, because everything
+  // at either end is laid over the board and not in it. Without the foot a
+  // last line of melds slides under the buttons, which is not a spill and
+  // so is not something the measuring below can see.
+  padding-block: calc(var(--pile-tall) + 0.5rem) var(--tools-tall);
 }
 
 .melds__meld {
@@ -27,39 +31,43 @@
 }
 
 // Card over card, the way they are laid on a table, which is what makes a
-// run of five cost little more than a run of three.
+// run of five cost little more than a run of three. A place where a card
+// would go overlaps the same way and for the same reason: it is standing
+// in for a card, so it has to cost what one costs.
+.melds__meld > * + * {
+  margin-inline-start: calc(var(--laid) * -0.55);
+}
+
 .melds__card {
   display: block;
   flex: none;
   inline-size: var(--laid);
   border-radius: 0.125rem;
-
-  & + & {
-    margin-inline-start: calc(var(--laid) * -0.55);
-  }
 }
 
-// Where the picked card would go, drawn the size of a card so the run is
-// seen to make room for it rather than simply to be marked.
+// A card that is not there yet, so it is drawn as one: the same size, in
+// the same line, covering what a card would cover. A place at the front is
+// covered by the card after it, which is what would happen to the card
+// that went there.
 .melds__place {
   flex: none;
   inline-size: var(--laid);
   aspect-ratio: 240 / 336;
-  border: 2px dashed var(--felt-500);
+  border: 2px dashed var(--place);
   border-radius: 0.1875rem;
-  background: none;
+  background: color-mix(in srgb, var(--place) 12%, transparent);
   padding: 0;
 }
 
 // Only on the turn that could use it. The rest of the time it says that the
 // card has a place here, which is worth knowing while you wait for a turn.
 .melds__place:enabled {
-  background: color-mix(in srgb, var(--felt-500) 22%, transparent);
+  background: color-mix(in srgb, var(--place) 28%, transparent);
   cursor: pointer;
 }
 
 .melds__place:enabled:hover {
-  background: color-mix(in srgb, var(--felt-500) 38%, transparent);
+  background: color-mix(in srgb, var(--place) 45%, transparent);
 }
 
 // A joker the picked card is standing in for. It stands up out of the run

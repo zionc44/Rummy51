@@ -103,6 +103,19 @@ export interface MeldView {
  * nothing beyond it. Cards arrive as their code, which is also the name of
  * the picture, so there is one name and not two.
  */
+/** Rule 8.2 as it was arrived at. All ones while a hand is being played. */
+export interface Doubling {
+  readonly forTheRedeal: number;
+  readonly forTheWin: number;
+  readonly altogether: number;
+
+  /** Rule 6.6, which is also what makes the win an uncommon one to say so. */
+  readonly rummy: boolean;
+
+  /** Rule 7.1. */
+  readonly finishingCard: boolean;
+}
+
 export interface HandView {
   readonly phase: HandPhase;
   readonly dealerSeat: number;
@@ -145,6 +158,18 @@ export interface HandView {
 
   /** Rule 11.3. */
   readonly wentDown: readonly boolean[];
+
+  /** Rules 8.1 and 8.2, by seat, and empty until the hand is over. */
+  readonly scores: readonly number[];
+
+  /** Rule 8.3, by seat. Empty alongside empty scores. */
+  readonly places: readonly number[];
+
+  /** Rule 8.2, broken out so a score can say why it is what it is. */
+  readonly doubling: Doubling;
+
+  /** Rules 9.3 and 10.8. Empty while nobody is being asked. */
+  readonly staying: readonly (boolean | null)[];
 
   /** Chapter 10: holding a chair without watching it. */
   readonly away: readonly boolean[];

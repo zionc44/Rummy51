@@ -38,6 +38,16 @@ public sealed record Waiting(int Seat, double SecondsLeft, double Seconds);
 /// table may see them. Who *could* force is not here and never is - that is
 /// rule 11.1, and it goes where cards go.
 /// </param>
+/// <param name="Scores">
+/// Rules 8.1 and 8.2 as they came out, by seat, and empty until a hand is
+/// over. The doubling beside it is the table's and not anybody's, and is
+/// broken out rather than multiplied so that a score can say why.
+/// </param>
+/// <param name="Staying">
+/// Rules 9.3 and 10.8: who has said they want another game. Empty while
+/// nobody is being asked, and a seat is null until it has answered. Nothing
+/// is masked - unlike 12.4, an answer here costs nobody anything to know.
+/// </param>
 /// <param name="JokerPositions">
 /// Rule 11.5 says nobody may know this. It reaches a client only where a
 /// development setting has asked for it, and knowing it is a cheat.
@@ -58,6 +68,10 @@ public sealed record HandView(
     int TurnSeat,
     int WinnerSeat,
     IReadOnlyList<bool> WentDown,
+    IReadOnlyList<int> Scores,
+    IReadOnlyList<int> Places,
+    Doubling Doubling,
+    IReadOnlyList<bool?> Staying,
     IReadOnlyList<bool> Away,
     bool HasDrawn,
     string? DiscardTop,

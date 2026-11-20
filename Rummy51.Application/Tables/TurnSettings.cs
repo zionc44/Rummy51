@@ -18,6 +18,9 @@ public sealed class TurnSettings
     /// <summary>Rule 12.4: how long the table has to answer before silence agrees.</summary>
     public int OfferSeconds { get; init; } = 20;
 
+    /// <summary>Rule 10.8: how long a seat is held for an answer about another game.</summary>
+    public int StaySeconds { get; init; } = 15;
+
     /// <summary>
     /// Long enough to read who agreed and who refused, which rule 12.4 puts
     /// in front of everybody before anything moves.

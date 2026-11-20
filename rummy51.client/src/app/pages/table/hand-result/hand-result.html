@@ -1,0 +1,88 @@
+<div class="result">
+  <div class="result__panel" role="alertdialog" aria-modal="true">
+    @if (me()?.won) {
+      <p class="result__won result__won--mine">{{ 'table.youTookIt' | translate }}</p>
+    } @else {
+      <p class="result__won">{{ 'table.wonBy' | translate: { '0': winner() } }}</p>
+    }
+
+    <p class="result__how">{{ how() | translate }}</p>
+
+    @if (me(); as mine) {
+      @if (!mine.won) {
+        <p class="result__placed">
+          {{ 'table.youPlaced' | translate: { '0': mine.place } }}
+        </p>
+      }
+    }
+
+    <!-- Rule 8.2 has two conditions and they stack, so a doubling that only
+         said x4 would leave nobody able to tell which of them was met. -->
+    @if (doubling(); as doubling) {
+      @if (doubling.altogether > 1) {
+        <ul class="result__doublings">
+          @if (doubling.forTheRedeal > 1) {
+            <li class="result__doubling">
+              <span class="result__times">&times;{{ doubling.forTheRedeal }}</span>
+              {{ 'table.forTheRedeal' | translate }}
+            </li>
+          }
+
+          @if (doubling.forTheWin > 1) {
+            <li class="result__doubling">
+              <span class="result__times">&times;{{ doubling.forTheWin }}</span>
+              {{ how() | translate }}
+            </li>
+          }
+
+          <li class="result__doubling result__doubling--all">
+            {{ 'table.altogether' | translate: { '0': doubling.altogether } }}
+          </li>
+        </ul>
+      }
+    }
+
+    <ol class="result__rows">
+      @for (row of rows(); track row.name) {
+        <li class="result__row" [class.result__row--mine]="row.mine">
+          <span class="result__place">{{ row.place }}</span>
+
+          <span class="result__name">
+            {{ row.name }}
+
+            <!-- Rule 8.1 hangs its hundred on this, so a score nobody can
+                 account for says where it came from. -->
+            @if (!row.wentDown && !row.won) {
+              <small class="result__never">{{ 'table.neverWentDown' | translate }}</small>
+            }
+          </span>
+
+          @if (row.staying === true) {
+            <span class="result__staying" [title]="'table.staying' | translate">&#10003;</span>
+          } @else if (row.staying === false) {
+            <span class="result__going" [title]="'table.going' | translate">&#10007;</span>
+          }
+
+          <span class="result__score" [class.result__score--won]="row.won">{{ row.score }}</span>
+        </li>
+      }
+    </ol>
+
+    @if (asking()) {
+      <p class="result__another">{{ 'table.anotherGame' | translate }}</p>
+
+      <div class="result__buttons">
+        <button type="button" class="btn-primary" (click)="stayed.emit(true)">
+          {{ 'table.stay' | translate }}
+        </button>
+        <button type="button" class="btn-ghost" (click)="stayed.emit(false)">
+          {{ 'table.leaveTable' | translate }}
+        </button>
+      </div>
+
+      <p class="result__left" [class.result__left--urgent]="left() <= 5">{{ left() }}</p>
+    } @else {
+      <p class="result__waiting">{{ 'table.waitingForTheRest' | translate }}</p>
+    }
+  </div>
+</div>

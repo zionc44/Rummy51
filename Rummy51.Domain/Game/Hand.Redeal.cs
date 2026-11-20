@@ -1,20 +1,17 @@
 namespace Rummy51.Domain.Game;
 
 /// <summary>
-/// Chapter 12: a redeal offered, answered, read, and then dealt. It is a
-/// stage of a hand rather than a thing beside one - it hands the same cards
-/// round the same table and leaves the same hand playing - so it is the
-/// same class, in a file of its own because it is a long stage.
+/// Rules 12.1 to 12.4: a redeal offered, answered and read. What one that
+/// was taken then costs is the deal's and sits beside this. It is a stage
+/// of a hand rather than a thing beside one - it hands the same cards round
+/// the same table and leaves the same hand playing - so it is the same
+/// class, in a file of its own because it is a long stage.
 /// </summary>
 public sealed partial class Hand
 {
     private readonly bool[] hasOffered;
-    private readonly int[]?[] keeping;
+    private readonly List<Redeal> redeals = [];
     private Offer? offer;
-    private int nextDeal = Dealing.FirstDeal;
-
-    /// <summary>How many of their own a player keeps through a redeal. Rule 12.6.</summary>
-    public const int Kept = 3;
 
     /// <summary>
     /// Rules 12.1, 12.2. The finishing card is not in flight either: taking
@@ -27,7 +24,7 @@ public sealed partial class Hand
         && !PromisedToGoOut
         && !turn.PutAnythingDown;
 
-    public bool OfferARedeal(int seat)
+    public bool OfferARedeal(int seat, DateTimeOffset at)
     {
         if (!CanOfferARedeal(seat))
         {
@@ -35,7 +32,7 @@ public sealed partial class Hand
         }
 
         hasOffered[seat] = true;
-        offer = new Offer(seat, Seats);
+        offer = new Offer(seat, Seats, at);
         Phase = HandPhase.Offering;
 
         return true;
@@ -43,6 +40,13 @@ public sealed partial class Hand
 
     /// <summary>Who offered, or -1 when nothing is on the table to answer.</summary>
     public int OfferedBy => offer?.By ?? -1;
+
+    /// <summary>
+    /// Every redeal this hand has finished with, in the order they were put
+    /// to the table. It survives a deal again on purpose: rule 12.8 leaves
+    /// the hand the same one, so what was asked of it earlier is still its.
+    /// </summary>
+    public IReadOnlyList<Redeal> Redeals => redeals;
 
     /// <summary>Rule 12.4: everything but the offerer's is kept from whoever has not answered.</summary>
     public IReadOnlyList<bool?> OfferAsSeenBy(int seat) => offer?.AsSeenBy(seat) ?? [];
@@ -81,7 +85,7 @@ public sealed partial class Hand
     /// The result read. Rule 12.4 puts it in front of everybody before
     /// anything moves, so that a refusal is never anonymous.
     /// </summary>
-    public bool Read(int seat)
+    public bool Read(int seat, DateTimeOffset at)
     {
         if (Phase != HandPhase.Answered || offer?.Read(seat) != true)
         {
@@ -90,21 +94,21 @@ public sealed partial class Hand
 
         if (offer.EverybodyHasRead)
         {
-            Settle();
+            Settle(at);
         }
 
         return true;
     }
 
     /// <summary>Long enough to have read it, whether anybody did or not.</summary>
-    public bool StopShowingTheResult()
+    public bool StopShowingTheResult(DateTimeOffset at)
     {
         if (Phase != HandPhase.Answered)
         {
             return false;
         }
 
-        Settle();
+        Settle(at);
 
         return true;
     }
@@ -113,10 +117,25 @@ public sealed partial class Hand
     /// Rule 12.3 sends the turn back where it was, and rule 12.5 hands every
     /// card on the table to whoever put it there.
     /// </summary>
-    private void Settle()
+    private void Settle(DateTimeOffset at)
     {
         var agreed = offer?.Agreed == true;
         var forced = offer?.Forced == true;
+
+        if (offer is not null)
+        {
+            // Before rule 12.5 moves anything: the pairs are read out of the
+            // forcer's hand, and in a moment the table goes back into it.
+            redeals.Add(new Redeal(
+                offer.By,
+                forced,
+                offer.AtOnce,
+                forced ? FourPairsOf(offer.By) : [],
+                agreed,
+                offer.Replies,
+                offer.AskedAt,
+                at));
+        }
 
         offer = null;
 
@@ -143,113 +162,6 @@ public sealed partial class Hand
         }
 
         ForcedRedeals += 1;
-
-        // Rule 12.12: ended, so nobody keeps anything and nobody is asked.
-        Array.Fill(keeping, []);
-        DealAgain();
-    }
-
-    /// <summary>Rule 12.6: exactly three, and their own.</summary>
-    public bool Keep(int seat, IReadOnlyList<int> cardIds)
-    {
-        if (Phase != HandPhase.Keeping || seat < 0 || seat >= Seats || keeping[seat] is not null)
-        {
-            return false;
-        }
-
-        if (cardIds.Count != Kept || cardIds.Distinct().Count() != Kept)
-        {
-            return false;
-        }
-
-        if (cardIds.Any(id => hands[seat].All(card => card.Id != id)))
-        {
-            return false;
-        }
-
-        keeping[seat] = [.. cardIds];
-
-        if (keeping.All(three => three is not null))
-        {
-            DealAgain();
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Rule 12.6 for whoever has not chosen. The dearest three, which puts
-    /// the jokers first: twenty in the hand is the most any card is worth,
-    /// so the one sort answers both.
-    /// </summary>
-    public bool KeepForWhoeverHasNot()
-    {
-        if (Phase != HandPhase.Keeping)
-        {
-            return false;
-        }
-
-        for (var seat = 0; seat < Seats; seat++)
-        {
-            keeping[seat] ??=
-            [
-                .. hands[seat]
-                    .OrderByDescending(card => Worth.Held(card.Card))
-                    .Take(Kept)
-                    .Select(card => card.Id)
-            ];
-        }
-
-        DealAgain();
-
-        return true;
-    }
-
-    /// <summary>
-    /// Rules 12.6, 12.7 and 12.8. Everything but the kept cards goes into a
-    /// deck again and the hand starts at the cut, so the cutter cuts and the
-    /// deal runs exactly as they did the first time - one round shorter.
-    /// </summary>
-    private void DealAgain()
-    {
-        var kept = keeping.Sum(three => three!.Length);
-        var loose = new List<Card>(Board.Stock);
-
-        loose.AddRange(Board.Discards);
-
-        if (Deck.FinishingCard is { } finishing)
-        {
-            loose.Add(finishing);
-        }
-
-        for (var seat = 0; seat < Seats; seat++)
-        {
-            var keep = keeping[seat]!.ToHashSet();
-
-            loose.AddRange(hands[seat].Where(card => !keep.Contains(card.Id)).Select(card => card.Card));
-            hands[seat].RemoveAll(card => !keep.Contains(card.Id));
-            keeping[seat] = null;
-        }
-
-        // Rule 12.7 deals twelve and eleven on top of three kept; rule
-        // 12.12 keeps none, so the hand is dealt from nothing as it was.
-        nextDeal = kept == 0 ? Dealing.FirstDeal : Dealing.Redeal;
-
-        Deck = new Deck(loose, Deck.Seed);
-        Board = new Board();
-        Passes = [];
-
-        Array.Fill(wentDown, false);
-        Array.Fill(wentRummy, false);
-        Array.Fill(tookTheFinishingCard, false);
-        Array.Fill(hasOffered, false);
-        Array.Fill(hasPlayed, false);
-
-        turnsTaken = 0;
-        TurnSeat = -1;
-        HasDrawn = false;
-        Phase = HandPhase.Cutting;
-
-        Forget();
+        DealAgainKeepingNothing();
     }
 }

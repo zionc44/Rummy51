@@ -465,23 +465,36 @@ page shell asks for: a card below the fold is a card nobody can reach. So
 the board does not grow to hold more - what gives way as it fills is the
 size of the cards laid on it.
 
-Next: the counting. Going out and the finishing card are done; what no
-hand has yet produced is a result. Chapter 8 scores one, and it is also the
-first thing in this project that needs somewhere to put what it made - so
-it arrives with the games, hands and results tables, and with them the
-answer to a restart losing everything.
+A hand that ends is counted. Chapter 8 scores it, chapter 12's agreed
+redeal and 6.6's rummy double it, and 8.3 places everybody - the winner
+always first, since only their score is a minus, and equal scores sharing
+a place and leaving the next one empty. The window that says so is the
+same window that asks the one question a finished game has: another at
+this table, or the chair given up. Fifteen seconds, and 10.8 reads
+silence as going, which is the other way round from 12.4 and says why.
+Everybody staying deals again with the deal moved on under 2.1; anybody
+going leaves a chair for the lobby, and the table deals as a new one once
+somebody takes it. That is also the first thing here that reads
+`GameMode` rather than only checking it.
+
+What a hand produced outlives the table it was played at: six tables hold
+the games, who sat where, the deals, what each player came to, and every
+redeal put to the table with what each of them said to it.
 
 Still open in the game: nothing sequences hands, so a game is one deal and
-stops — `GameMode` is chosen when a table is opened, checked, and then read
-by nobody. Nothing scores a hand, nothing doubles, nothing records a leaver's
-loss. Tables live in memory, so a restart loses every table and every result
-in it. Two of those wait on rules `docs/rules.md` still calls unsettled.
+stops — the other two modes in 9.2 are chosen, checked and then played as
+though they were the first. Nothing records a leaver's loss. Tables still
+live in memory, so a restart loses every table in play, though no longer
+the results of what was played in them.
 
 Still open around it: the Google link on the account page; rate limiting and
 CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
 
-There is no test project. What has been checked was checked by harnesses
-built against the real code and thrown away afterwards, which is why nothing
-notices when one of them goes stale.
+There is no test project yet, and there is going to be one for each of
+them, a sitting at a time. What has been checked so far was checked by harnesses built against
+the real code and thrown away afterwards, which is why nothing notices when
+one of them goes stale. [`docs/testing.md`](docs/testing.md) holds the
+decision, which project is taken in which order and why, how a test is
+named after the rule it holds the code to, and what none of it will catch.

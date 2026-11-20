@@ -1,3 +1,5 @@
+using Rummy51.Domain.Entities;
+
 namespace Rummy51.Domain.Game;
 
 /// <summary>
@@ -13,6 +15,10 @@ internal sealed class Offer
     private readonly bool?[] answers;
     private readonly bool[] read;
 
+    // Rule 12.4 turns silence into agreement in place, so by the time
+    // anybody reads the answers the two look alike. This is the difference.
+    private readonly bool[] spoke;
+
     /// <param name="forced">
     /// Rule 12.11: a forced offer deals the hand again whichever way it is
     /// answered, so what the answers decide is only what anybody keeps.
@@ -21,12 +27,15 @@ internal sealed class Offer
     /// Rule 12.10: ended there and then, which is an offer with nothing left
     /// to ask. It is made answered so that the table reads it and no more.
     /// </param>
-    public Offer(int by, int seats, bool forced = false, bool atOnce = false)
+    public Offer(int by, int seats, DateTimeOffset at, bool forced = false, bool atOnce = false)
     {
         By = by;
         Forced = forced;
+        AtOnce = atOnce;
+        AskedAt = at;
         answers = new bool?[seats];
         read = new bool[seats];
+        spoke = new bool[seats];
 
         if (atOnce)
         {
@@ -42,6 +51,11 @@ internal sealed class Offer
 
     /// <summary>Rule 12.9.</summary>
     public bool Forced { get; }
+
+    /// <summary>Rule 12.10.</summary>
+    public bool AtOnce { get; }
+
+    public DateTimeOffset AskedAt { get; }
 
     public IReadOnlyList<bool?> Answers => answers;
 
@@ -61,6 +75,7 @@ internal sealed class Offer
         }
 
         answers[seat] = agreed;
+        spoke[seat] = true;
 
         return true;
     }
@@ -95,6 +110,25 @@ internal sealed class Offer
         Holds(seat) && answers[seat] is null
             ? [.. answers.Select((answer, at) => at == By ? answer : null)]
             : answers;
+
+    /// <summary>What each seat said, to be written down rather than played on.</summary>
+    public IReadOnlyList<RedealReply> Replies =>
+        [.. Enumerable.Range(0, answers.Length).Select(Said)];
+
+    private RedealReply Said(int seat)
+    {
+        if (seat == By)
+        {
+            return RedealReply.Offered;
+        }
+
+        if (spoke[seat])
+        {
+            return answers[seat] == true ? RedealReply.Agreed : RedealReply.Refused;
+        }
+
+        return AtOnce ? RedealReply.NotAsked : RedealReply.Silent;
+    }
 
     private bool Holds(int seat) => seat >= 0 && seat < answers.Length;
 }

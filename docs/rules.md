@@ -224,8 +224,9 @@ and then they take a hundred whatever they are holding. A hand nobody ever
 showed is not worth counting.
 
 **8.2** Doubling is blanket — it applies to the winner's minus as much as to
-everybody else's penalty — and the two conditions stack, so x4 is reachable
-when both hold.
+everybody else's penalty — and there are two conditions. Each is worth one
+doubling however many times it was met, and together they make x4, which is
+the ceiling.
 
 The first is a redeal every player agreed to under 12.1. A forced one does
 not double, however it was answered: 12.9 takes the table's consent rather
@@ -237,6 +238,12 @@ for it — going out rummy under 6.6, or taking the finishing card under 7.1,
 which asks the same of a player and is no easier for arriving by another
 road. Both double, and neither doubles twice.
 
+**8.3** The hands are placed by what they came to, lowest first, so the
+winner is always first. Two worth the same take the same place, and the
+place after them is the one that would have followed had they differed.
+Nothing in a hand breaks a tie: there is no second thing to weigh, and
+inventing one would score the game on something it never asked about.
+
 ## 9. Hands, games and tables
 
 **9.1** A hand is one deal and a game is a sequence of hands.
@@ -245,6 +252,13 @@ road. Both double, and neither doubles twice.
 them: a single hand, hands until somebody crosses a number of points, and a
 fixed number of hands with running results. All three are one game; they
 differ only in what ends it.
+
+**9.3** A game that ends does not close the table. Everyone who was in it
+is asked whether they want another, and another begins the moment they
+have all said yes. The deal moves on under 2.1 as it would between hands,
+because the same people are sitting in the same places and whoever dealt
+last has dealt. A table that has to fill a chair first deals as a new
+table does, since the question 2.1 answers is no longer the same one.
 
 ## 10. Leaving
 
@@ -284,6 +298,13 @@ running in it was nobody's to finish, and the seats held in it were held
 for people who had all gone. A table that 10.6 has doubted all of is not
 one of these: everybody there is being asked a question, and closing it
 would be answering for them.
+
+**10.8** A seat is held through 9.3's question by answering it, and
+whoever does not answer gives it up. That is the other way round from
+12.4, and for a reason: silence carries a hand that is already dealt,
+because the cards are in somebody's hands and somebody has to play them,
+while here nothing has been dealt and an empty chair costs the table
+nothing but the wait for somebody to take it.
 
 ## 11. What may be seen
 
@@ -372,6 +393,5 @@ owns what.
 Questions, not rules, so they have no numbers of their own. A rule written
 here before it is settled is a rule somebody will enforce by mistake.
 
-- Whether two agreed redeals in one hand double it twice. 8.2 reads as
-  though each condition is worth one doubling and x4 is the ceiling, but it
-  does not say so, and 12.2 allows the second redeal.
+Nothing, for a single hand. A game of several is chapter 9, and nothing
+sequences one yet.

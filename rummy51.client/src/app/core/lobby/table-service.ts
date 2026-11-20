@@ -96,6 +96,13 @@ export class TableService {
     return this.http.post<HandView>(`${API}/${tableId}/redeal/read`, {}).pipe(failWithApiErrors());
   }
 
+  /** Rule 9.3. */
+  stay(tableId: string, another: boolean): Observable<HandView> {
+    return this.http
+      .post<HandView>(`${API}/${tableId}/stay`, { another })
+      .pipe(failWithApiErrors());
+  }
+
   /** Rule 12.6. */
   keep(tableId: string, cardIds: readonly number[]): Observable<HandView> {
     return this.http
