@@ -9,5 +9,6 @@
   <Project Path="Rummy51.Server/Rummy51.Server.csproj" />
   <Folder Name="/Tests/">
     <Project Path="Tests/Rummy51.Domain.Tests/Rummy51.Domain.Tests.csproj" />
+    <Project Path="Tests/Rummy51.Infrastructure.Tests/Rummy51.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>

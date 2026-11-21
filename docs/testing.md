@@ -52,7 +52,7 @@ Measured, and ordered by what is at risk rather than by size.
 |---|---|---|---|---|
 | 1 | 2,377 | `Tests/Rummy51.Domain.Tests` | the rules | 157 tests |
 | 2 | 1,855 | client, `core/` | the twins, and what the screen works out | 125 tests |
-| 3 | 2,918 | `Tests/Rummy51.Infrastructure.Tests` | tables, clocks, presence | |
+| 3 | 2,918 | `Tests/Rummy51.Infrastructure.Tests` | tables, clocks, presence | 89 tests |
 | 4 | 1,184 | `Tests/Rummy51.Server.Tests` | the pipeline and the error contract | |
 
 **Domain first** because it is the product. It has no dependencies at all -
@@ -85,11 +85,12 @@ sitting, where it is actually exercised.
 
 ## Where it got to
 
-**1. `Tests/Rummy51.Domain.Tests` - landed.** 136 tests over eleven files
-and 1,605 lines, against the domain's 2,377. Every suite lives under
-`Tests/`, one folder per project held, so the four of them sit together
-rather than each beside what it is about. The whole suite runs in about a
-tenth of a second, because nothing in it waits for anything.
+**1. `Tests/Rummy51.Domain.Tests` - landed.** 157 tests over ten suites
+and two fixtures, 1,844 lines in all, against the domain's 2,377. Every
+suite lives under `Tests/`, one folder per project held, so the four of
+them sit together rather than each beside what it is about. The whole
+suite runs in about a tenth of a second, because nothing in it waits for
+anything.
 
 `Dealt.cs` is the fixture, and the fixture was most of the sitting.
 `Holding(cards)` lays a whole deck out so that the opener is dealt exactly
@@ -133,6 +134,73 @@ had no minimum length, so two of a suit in order were a meld there and not
 on the server. Nothing was reading it that way yet. The server was right
 and the client was changed, which is the bargain the twins were written
 under.
+
+**3. `Tests/Rummy51.Infrastructure.Tests` - landed.** 89 tests over nine
+suites and a fixture, 1,578 lines in all, against the 2,052 of `Tables/`
+and `Lobby/` that this sitting is answerable for. They run in about seven
+tenths of a second.
+
+`Opened.cs` is the fixture, and everything in it goes through
+`InMemoryTables` rather than reaching for the table behind it - who is
+asking is half of what this project decides, and a suite that stepped over
+that would be holding the other half to nothing. Two things about a table
+are drawn at random, the dealer and the seed, so nothing here names a seat
+it was not told: a test that wants the player in turn asks the hand who
+that is.
+
+The other half of the fixture is `Arranged`, which switches on the testing
+aid that deals one seat nothing but melds. A hand that can be gone out with
+is one deal in some enormous number, and without it nothing across chapter
+9 is reachable at all - no hand ends, so no total is counted, nobody is
+knocked out and no game is ever over. It goes out in one strike, which is
+rule 6.6, so every hand that ends this way is doubled; nothing here asserts
+a figure for that reason, because what a hand is worth is the domain's and
+is held there.
+
+`FakeTimeProvider` is what makes the rest of it possible. Rule 3.6 is the
+whole of what moves a table nobody is pressing anything at, and every one
+of its stages - the cut, the deal, a turn, an offer, the keeping, a
+restock, the pause between hands, the question about another game - is a
+wait that has to run out. Here one runs out in a line.
+
+Held to: the wait itself and what is left of it; opening and joining and
+the one rule that runs through both; chapter 10's two questions about a
+seat, which seats are held and which are let go; rule 3.6 acting at every
+stage it can; rule 3.5 reached by playing a stock dry, which a person
+cannot do by hand; the totals and the knockouts and the places across a
+game; rules 9.3 and 10.8, where both of this session's real bugs lived;
+what a finished game leaves written down; who is online; and the refusal
+codes the client turns into words.
+
+Not held to: the database writer, which wants a real PostgreSQL and is a
+project of its own; Identity, which wants a `UserManager`; and the avatar
+re-encoding, which wants images.
+
+**Two things it found, neither of them a rule, and both now fixed.** A
+throw that emptied the stock left the restock waiting a turn's length
+rather than `RestockSeconds` - both throw paths set the turn's wait
+without asking what the hand had become, though `WaitForTheHand` next to
+them already knew. It was live and it showed: the window saying the pile
+is going back into the deck counted down the wrong number.
+
+The second was only latent. `ActForTheOverdue` set the turn wait on the
+line after `TheHandEnded`, which would have overwritten the pause between
+hands and the question about another game; the human throw beside it did
+the two the other way round and was right. It could not bite, for a
+reason worth writing down: rule 3.6's auto-play takes back whatever the
+turn laid before it throws, so a hand it plays can never be the hand that
+ends one, and that call never fired. It would have bitten the day
+auto-play could finish a hand, or the day those three waits stopped all
+defaulting to fifteen seconds.
+
+One change answers both, and it is a deletion rather than an addition:
+both paths ask `WaitForTheHand`, which already maps every stage to its
+own length, and both set it before counting the hand, since counting is
+what sets the longer wait of the two. The two paths now read the same,
+which they had no reason not to. Three tests hold it - the restock, the
+pause between hands and the question about another game, each given a
+length of its own so that passing means something.
+
 
 ## How a test is named
 

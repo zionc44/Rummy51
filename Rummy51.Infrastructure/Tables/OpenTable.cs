@@ -235,7 +235,7 @@ internal sealed partial class OpenTable
             return false;
         }
 
-        Wait(turns.TurnSeconds);
+        WaitForTheHand();
         TheHandEnded();
 
         return true;
@@ -293,12 +293,13 @@ internal sealed partial class OpenTable
         }
 
         PlayTheTurnFor(hand.TurnSeat);
-        TheHandEnded();
 
         // However that went, the table is no longer waiting for the move it
         // was waiting for. A wait left standing is asked again every tick,
-        // for ever.
-        Wait(turns.TurnSeconds);
+        // for ever. This way round, because counting the hand sets the
+        // longer wait of the two and that one is the answer.
+        WaitForTheHand();
+        TheHandEnded();
 
         return true;
     }

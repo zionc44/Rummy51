@@ -526,14 +526,22 @@ CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
 
-Two of the four suites this is getting are written, a sitting at a time.
-`Tests/Rummy51.Domain.Tests` is 157 tests over the rules, run with
+Three of the four suites this is getting are written, a sitting at a time.
+`Tests/Rummy51.Domain.Tests` is 157 tests over the rules and
+`Tests/Rummy51.Infrastructure.Tests` 89 over the tables, both run with
 `dotnet test`; the client's `core/` is 125 more, run with `npm test`. Every
 test is named after the rule it holds the code to. The server's suites live
 under `Tests/`, one folder per project held; the client's live beside what
 they test, as Angular looks for them, and `rule-links.js` knows a test by
-its name rather than by where it sits. The other two are not written yet,
-and what has been checked in them so far was checked by harnesses built
+its name rather than by where it sits.
+
+The tables are reached through `InMemoryTables` and never behind it, since
+who is asking is half of what that project decides. Two things it needs are
+cheats: `FakeTimeProvider`, because rule 3.6 is the whole of what moves a
+table nobody is pressing anything at, and `ArrangedHand`, because a hand
+that can be gone out with is one deal in some enormous number and nothing
+across chapter 9 is reachable until one is. The last suite is not written
+yet, and what has been checked in it so far was checked by harnesses built
 against the real code and thrown away afterwards, which is why nothing
 notices when one of them goes stale.
 [`docs/testing.md`](docs/testing.md) holds the decision, which project is
