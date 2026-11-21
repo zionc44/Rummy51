@@ -50,8 +50,8 @@ Measured, and ordered by what is at risk rather than by size.
 
 | | lines | suite | sitting | stands at |
 |---|---|---|---|---|
-| 1 | 2,377 | `Tests/Rummy51.Domain.Tests` | the rules | 136 tests |
-| 2 | 1,753 | client, `core/` | the twins, and what the screen works out | |
+| 1 | 2,377 | `Tests/Rummy51.Domain.Tests` | the rules | 157 tests |
+| 2 | 1,855 | client, `core/` | the twins, and what the screen works out | 125 tests |
 | 3 | 2,918 | `Tests/Rummy51.Infrastructure.Tests` | tables, clocks, presence | |
 | 4 | 1,184 | `Tests/Rummy51.Server.Tests` | the pipeline and the error contract | |
 
@@ -107,6 +107,32 @@ kinds of redeal, and the seats that sit out of a survival hand.
 
 Not held to: anything that needs a clock, a table or a wire. Those are
 sittings 3 and 4.
+
+**2. The client's `core/` - landed.** 125 tests over nine files and 834
+lines, beside the 1,855 they hold. They run in about two seconds.
+
+`ng test` had been left as the CLI scaffolded it, pointed at a karma
+config whose packages were never installed, so the first thing was to
+point it at the vitest that already was. A spec sits beside what it tests,
+as Angular looks for it, and `card.spec.ts` is both the suite for `card.ts`
+and where every other one gets its `S(4)` and its `joker()` - spelled the
+server's way, two digits and zero padded, because a suite that invented
+its own spelling would hold the twins to each other and to nothing real.
+
+Held to: what a card is worth, runs and sets and the ace at both ends,
+what a meld comes to on the table, the clean run and which one provides
+it, the bands a line is lying in, sorting and carrying and where a hand
+wraps, where a card let go of would land, the cut read as a ring, and the
+client's half of the error contract.
+
+**The twins are checkable now rather than promised.** Rules 5.3 and 5.4
+work three examples out in words - six-to-ten with three tens coming to
+exactly fifty-one among them - and both suites assert all three, card for
+card. Writing them found the first disagreement: `isMeld` on the client
+had no minimum length, so two of a suit in order were a meld there and not
+on the server. Nothing was reading it that way yet. The server was right
+and the client was changed, which is the bargain the twins were written
+under.
 
 ## How a test is named
 

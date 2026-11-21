@@ -22,8 +22,13 @@ const { Root, filesUnder, read } = require('./files');
 
 const Book = path.join(Root, 'docs', 'rules.md');
 
-/** Where the suites live, which is the one place a pointer proves nothing. */
-const Suites = 'Tests/';
+/**
+ * A test, which is the one kind of file where a pointer proves nothing.
+ * The server's suites live under Tests/ and the client's live beside what
+ * they test, because that is where Angular looks for them - so this asks
+ * what a file is rather than where it sits.
+ */
+const isATest = (file) => file.startsWith('Tests/') || file.endsWith('.spec.ts');
 
 /** Every rule the book states, in the order it states them. */
 function stated() {
@@ -118,7 +123,7 @@ function report() {
     rules.filter(
       (rule) =>
         pointedAt.has(rule.id) &&
-        pointedAt.get(rule.id).every((file) => file.startsWith(Suites)),
+        pointedAt.get(rule.id).every(isATest),
     ),
   );
 

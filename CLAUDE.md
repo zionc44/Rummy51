@@ -163,6 +163,10 @@ to `launchSettings.json`.
 - Server: F5 in Visual Studio (`https` profile), opens `/swagger`
 - Client: `cd rummy51.client && npm start` → `https://localhost:57541`
 
+`npm test` runs the client's suites on vitest, in about two seconds. The
+karma config the CLI scaffolded is gone: its packages were never installed
+and `ng test` had never run once.
+
 `npm run lint` is the client's other guard: six rules of our own in
 `eslint.config.js`, each answering to a line written above, plus what Angular
 and TypeScript recommend. The list is short on purpose — a hundred rules
@@ -347,8 +351,10 @@ goes at the end of its chapter even where it reads better in the middle, and
 a deleted one leaves its number empty rather than passing it on. Code that
 enforces a rule names the number and says nothing else about it, so `grep`
 on a number finds every place it is held to — in the client as well as the
-server, which is what makes the deliberate twins (`Melding.cs` beside
-`melds.ts`, `Worth.cs` beside `worth.ts`) checkable rather than a promise.
+server. The deliberate twins (`Melding.cs` beside `melds.ts`, `Worth.cs`
+beside `worth.ts`) are checkable rather than promised because both suites
+assert rule 5.3's own worked examples, card for card: the first run of them
+found `isMeld` on the client missing its minimum length.
 
 ## State of play
 
@@ -520,13 +526,16 @@ CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
 
-`Tests/Rummy51.Domain.Tests` is the first of the four suites this is
-getting, a sitting at a time: 136 tests over the rules, each named after the
-rule it holds the code to, run with `dotnet test`. Every suite lives under
-`Tests/`, one folder per project held. The other three are not written
-yet, and what has been checked in them so far was checked by harnesses
-built against the real code and thrown away afterwards, which is why
-nothing notices when one of them goes stale.
+Two of the four suites this is getting are written, a sitting at a time.
+`Tests/Rummy51.Domain.Tests` is 157 tests over the rules, run with
+`dotnet test`; the client's `core/` is 125 more, run with `npm test`. Every
+test is named after the rule it holds the code to. The server's suites live
+under `Tests/`, one folder per project held; the client's live beside what
+they test, as Angular looks for them, and `rule-links.js` knows a test by
+its name rather than by where it sits. The other two are not written yet,
+and what has been checked in them so far was checked by harnesses built
+against the real code and thrown away afterwards, which is why nothing
+notices when one of them goes stale.
 [`docs/testing.md`](docs/testing.md) holds the decision, which project is
 taken in which order and why, where it has got to, and what none of it will
 catch.

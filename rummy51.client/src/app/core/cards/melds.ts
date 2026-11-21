@@ -63,8 +63,9 @@ function longestFrom(line: readonly (HeldCard | null)[], at: number): number {
   return 0;
 }
 
-/** Rule 4.1. */
-export const isMeld = (cards: readonly HeldCard[]) => isSet(cards) || isRun(cards);
+/** Rule 4.1, the length included: two of a suit in order are not a run yet. */
+export const isMeld = (cards: readonly HeldCard[]) =>
+  cards.length >= Least && (isSet(cards) || isRun(cards));
 
 /** Rule 4.1. */
 export function isSet(cards: readonly HeldCard[]): boolean {
@@ -139,7 +140,7 @@ export const hasCleanRun = (meld: readonly HeldCard[]) => cleanRunIn(meld).lengt
 
 /** Rules 1.3, 5.3, 5.5. */
 export function worthOnTable(meld: readonly HeldCard[]): number {
-  if (meld.length < Least || !isMeld(meld)) {
+  if (!isMeld(meld)) {
     return 0;
   }
 

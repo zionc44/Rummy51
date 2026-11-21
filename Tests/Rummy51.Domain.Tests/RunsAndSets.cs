@@ -140,4 +140,27 @@ public class RunsAndSets
             30 + 29,
             Melding.ShowingWorth([[S(4), S(5), S(6), Joker(), S(8)], [H(9), H(10), H(Jack)]]));
     }
+
+    // ------------------------------------------------ the book's own three
+
+    // Rule 5.3 and 5.4 work three examples out in words. They are asserted
+    // here and again, card for card, in melds.spec.ts across the wire: the
+    // twins are only checkable while both are answering the same question.
+
+    [Fact]
+    public void Rule_5_3_six_to_ten_with_three_tens_comes_to_exactly_fifty_one() =>
+        Assert.Equal(
+            51,
+            Melding.ShowingWorth(
+                [[S(6), S(7), S(8), Joker(), S(10)], [S(10), H(10), D(10)]]));
+
+    [Fact]
+    public void Rule_5_3_five_to_nine_laid_alone_is_the_clean_three_of_it() =>
+        Assert.Equal(18, Melding.ShowingWorth([[H(5), H(6), H(7), Joker(), H(9)]]));
+
+    [Fact]
+    public void Rule_5_3_and_beside_a_clean_run_of_its_own_is_all_of_itself() =>
+        Assert.Equal(
+            35 + 15,
+            Melding.ShowingWorth([[H(5), H(6), H(7), Joker(), H(9)], [D(4), D(5), D(6)]]));
 }
