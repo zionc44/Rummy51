@@ -51,6 +51,12 @@ public interface ITables
     /// <summary>Rule 9.3.</summary>
     Result<HandView> Stay(Guid tableId, Guid playerId, bool another);
 
+    /// <summary>Rule 9.6.</summary>
+    Result<HandView> GiveUpTheChair(Guid tableId, Guid playerId);
+
+    /// <summary>Read what the hand came to, and ready for the next.</summary>
+    Result<HandView> ReadTheHand(Guid tableId, Guid playerId);
+
     /// <summary>Rule 12.6.</summary>
     Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds);
 

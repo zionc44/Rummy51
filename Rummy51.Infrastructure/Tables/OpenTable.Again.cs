@@ -30,10 +30,9 @@ internal sealed partial class OpenTable
     /// <summary>Rule 9.3.</summary>
     private void AskWhoIsStaying()
     {
-        // Rule 9.2: a single hand is the whole of its game, so this is the
-        // only mode whose game has ended. The other two end somewhere
-        // nothing reaches yet.
-        if (staying is not null || Mode != GameMode.Single || hand?.Phase != HandPhase.Finished)
+        // Only ever reached once the game itself is over: rule 9.4 deals
+        // another hand instead while anybody is still in it.
+        if (staying is not null || hand?.Phase != HandPhase.Finished)
         {
             return;
         }
@@ -100,7 +99,7 @@ internal sealed partial class OpenTable
         {
             // Rule 9.3: the same people in the same places, so rule 2.1
             // moves the deal on exactly as it does between hands.
-            Deal((dealerWas + 1) % seats.Length);
+            BeginAGame((dealerWas + 1) % seats.Length);
 
             return;
         }
@@ -140,19 +139,30 @@ internal sealed partial class OpenTable
     }
 
     /// <summary>
-    /// Rules 2.1 and 9.3. The testing aids are let go of here rather than
-    /// kept for the table's life: they are about a first deal, and a game
-    /// that begins again has one. A redeal is not one, which is what the
-    /// flag they turn off goes on meaning.
+    /// Rule 2.1, among whoever rule 9.4 has left in it. The testing aids
+    /// are let go of here rather than kept for the table's life: they are
+    /// about a first deal, and every hand has one. A redeal is not one,
+    /// which is what the flag they turn off goes on meaning.
     /// </summary>
     private void Deal(int dealerSeat)
     {
         dealerWas = dealerSeat;
-        hand = new Hand(seats.Length, Jokers, dealerSeat, Random.Shared.Next());
+        hand = new Hand(seats.Length, Jokers, dealerSeat, Random.Shared.Next(), StillIn);
         handWritten = false;
         dealtOnce = false;
 
-        NoteTheGameBegan();
         Wait(turns.CutSeconds);
+    }
+
+    /// <summary>
+    /// Rules 9.1 and 10.4: a game of its own, from nothing. What ran across
+    /// the last one is forgotten before the first hand is dealt, or the new
+    /// game would begin with somebody already out of it.
+    /// </summary>
+    private void BeginAGame(int dealerSeat)
+    {
+        ForgetTheGame();
+        NoteTheGameBegan();
+        Deal(dealerSeat);
     }
 }

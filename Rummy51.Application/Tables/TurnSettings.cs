@@ -22,6 +22,13 @@ public sealed class TurnSettings
     public int StaySeconds { get; init; } = 15;
 
     /// <summary>
+    /// How long a hand's result stands before the next one is dealt. Rule
+    /// 9.4 would deal at once; this is the table being read rather than the
+    /// game being slow.
+    /// </summary>
+    public int BetweenHandsSeconds { get; init; } = 15;
+
+    /// <summary>
     /// Long enough to read who agreed and who refused, which rule 12.4 puts
     /// in front of everybody before anything moves.
     /// </summary>

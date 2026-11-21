@@ -9,6 +9,18 @@
   </button>
 }
 
+@if (across()) {
+  <button
+    type="button"
+    class="board__standing"
+    [attr.aria-label]="'table.standing' | translate"
+    [attr.title]="'table.standing' | translate"
+    (click)="asked.emit()"
+  >
+    <app-icon-standing />
+  </button>
+}
+
 @if (turn().canOfferRedeal()) {
   <button type="button" class="board__redeal" (click)="offeredRedeal.emit()">
     {{ 'table.redeal' | translate }}

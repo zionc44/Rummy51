@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { IconStanding } from '../../../shared/icons/icon-standing/icon-standing';
 import { TranslatePipe } from '@ngx-translate/core';
 import { IconSort } from '../../../shared/icons/icon-sort/icon-sort';
 import { Turn } from '../turn';
@@ -11,7 +12,7 @@ import { Turn } from '../turn';
  */
 @Component({
   selector: 'app-table-tools',
-  imports: [TranslatePipe, IconSort],
+  imports: [TranslatePipe, IconSort, IconStanding],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-tools.html',
   styleUrl: './table-tools.scss',
@@ -25,6 +26,11 @@ export class TableTools {
   readonly winner = input<{ readonly name: string; readonly mine: boolean } | null>(null);
 
   readonly sorted = output<void>();
+
+  /** Rule 9.2: there is a game across hands, so there is a standing to read. */
+  readonly across = input(false);
+
+  readonly asked = output<void>();
 
   /** Rule 12.9, which is nobody else's business and so is not on the hand. */
   readonly canForce = input(false);

@@ -26,6 +26,29 @@
   }
 }
 
+// In the corner of the board and on its own. Everything else sits along
+// the foot, and a reading of the game is not a move in the hand.
+.board__standing {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  padding: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--felt-500);
+    color: var(--felt-500);
+  }
+}
+
 // The sort sits inside the undo's place, so the two never collide whether
 // or not there is anything to take back.
 .board__sort {

@@ -46,6 +46,11 @@ internal sealed partial class OpenTable
         seats = new PlayerSummary?[request.Seats];
         gone = new DateTimeOffset?[request.Seats];
         here = new bool[request.Seats];
+        totals = new int[request.Seats];
+        handsPlayed = new int[request.Seats];
+        outOfIt = new bool[request.Seats];
+        lastHand = new int[request.Seats];
+        readIt = new bool[request.Seats];
     }
 
     public Guid Id { get; }
@@ -227,8 +232,7 @@ internal sealed partial class OpenTable
         }
 
         Wait(turns.TurnSeconds);
-        NoteIfTheHandEnded();
-        AskWhoIsStaying();
+        TheHandEnded();
 
         return true;
     }
@@ -247,6 +251,14 @@ internal sealed partial class OpenTable
         // so what ran out is the question and not anybody's turn. Nobody
         // stopped watching a seat; there is no seat being waited on.
         if (NobodyElseIsStaying())
+        {
+            return true;
+        }
+
+        // The result has stood long enough to be read, so rule 9.4 gets on
+        // with it. Nobody stopped watching anything; there is no seat the
+        // table was waiting on.
+        if (DealTheNextHand())
         {
             return true;
         }
@@ -275,8 +287,7 @@ internal sealed partial class OpenTable
         }
 
         PlayTheTurnFor(hand.TurnSeat);
-        NoteIfTheHandEnded();
-        AskWhoIsStaying();
+        TheHandEnded();
 
         // However that went, the table is no longer waiting for the move it
         // was waiting for. A wait left standing is asked again every tick,

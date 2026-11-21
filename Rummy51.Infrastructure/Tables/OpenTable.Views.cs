@@ -83,6 +83,10 @@ internal sealed partial class OpenTable
                 hand.Scores,
                 hand.Places,
                 Doubled(hand),
+                // Copied, not handed over: these arrays belong to the game
+                // and go on changing, and a view is what was true when it
+                // was asked for.
+                new Standing([.. Totals], [.. HandsPlayed], [.. LastHand], [.. OutOfIt], WonSeat),
                 staying ?? [],
                 Absent,
                 hand.HasDrawn,

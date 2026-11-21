@@ -260,6 +260,26 @@ because the same people are sitting in the same places and whoever dealt
 last has dealt. A table that has to fill a chair first deals as a new
 table does, since the question 2.1 answers is no longer the same one.
 
+**9.4** A game of the second kind is played until one player is left in it.
+Whoever's total reaches the number the table was opened for is out at the
+end of the hand that put them there, and the hands go on among the rest
+under 2.1, which steps over them as it steps over an empty chair. The last
+one in has won. A total falls as well as rises - the winner of a hand takes
+a minus under 8.1 - so nobody is out until the scoring of a hand says so,
+and reaching the number is enough: it does not have to be reached exactly.
+
+**9.5** They are placed by the order they went out in, last out first and
+the winner above all of them. Two who go out in the same hand are placed
+between them by what they have, the lower first. Nothing else is weighed,
+because lasting is the whole of what this kind of game asks: somebody who
+went out early with less has still gone out earlier.
+
+**9.6** A player who is out may stay and watch the rest of it or give the
+chair up, and the chair stays empty until the game ends either way. Nobody
+joins a game in progress, and 9.3 is what offers the chair again once there
+is no game to join. It is the one chair 10.4 does not hold to the end,
+there being nothing left in it to play out.
+
 ## 10. Leaving
 
 **10.1** A player who walks away from a game in progress has their hand

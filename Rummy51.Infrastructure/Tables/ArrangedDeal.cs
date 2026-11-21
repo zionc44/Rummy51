@@ -42,14 +42,15 @@ internal static class ArrangedDeal
     ];
 
     /// <summary>
-    /// The same hand, dealt to the player after the dealer. They open, so
-    /// they are the seat somebody testing will be watching.
+    /// The same hand, dealt to the player after the dealer among those still
+    /// in it. They open, so they are the seat somebody testing is watching -
+    /// and rule 9.4 can have put an empty chair between them and the dealer.
     /// </summary>
     public static Hand For(Hand was, int seats, int jokers, int position)
     {
         var whole = Deck.Packs * Suits() * Ranks() + jokers;
-        var first = (was.DealerSeat + 1) % seats;
-        var landing = WhereTheyLand(seats, was.DealerSeat, first);
+        var first = Dealing.After(was.DealerSeat, was.Playing);
+        var landing = WhereTheyLand(was.Playing, was.DealerSeat, first);
         var laid = new Card?[whole];
 
         // The cut rotates to `position` and takes that card as the finishing
@@ -76,17 +77,19 @@ internal static class ArrangedDeal
     /// taken. It mirrors <see cref="Dealing"/> and is checked against it by
     /// the harness rather than trusted.
     /// </summary>
-    private static IReadOnlyList<int> WhereTheyLand(int seats, int dealerSeat, int seat)
+    private static IReadOnlyList<int> WhereTheyLand(
+        IReadOnlyList<bool> playing,
+        int dealerSeat,
+        int seat)
     {
-        var first = (dealerSeat + 1) % seats;
+        var first = Dealing.After(dealerSeat, playing);
         var landed = new List<int>();
         var at = 0;
 
         foreach (var round in Enumerable.Range(0, Dealing.FirstDeal))
         {
-            foreach (var step in Enumerable.Range(0, seats))
+            foreach (var who in Dealing.Clockwise(first, playing))
             {
-                var who = (first + step) % seats;
                 var count = round == Dealing.FirstDeal - 1 && who != first ? FewerInTheLast : PerPass;
 
                 if (who == seat)

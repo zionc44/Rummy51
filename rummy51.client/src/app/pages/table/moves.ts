@@ -91,6 +91,16 @@ export class Moves {
     this.send(this.tables.stay(this.tableId(), another));
   }
 
+  /** Read, and ready for the next hand. */
+  readTheHand(): void {
+    this.send(this.tables.readTheHand(this.tableId()));
+  }
+
+  /** Rule 9.6. */
+  giveUpTheChair(): void {
+    this.send(this.tables.giveUpTheChair(this.tableId()));
+  }
+
   /** Rule 12.6. */
   keep(cardIds: readonly number[]): void {
     this.send(this.tables.keep(this.tableId(), cardIds));

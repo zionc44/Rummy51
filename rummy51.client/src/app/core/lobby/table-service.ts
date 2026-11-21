@@ -103,6 +103,16 @@ export class TableService {
       .pipe(failWithApiErrors());
   }
 
+  /** Read, and ready for the next hand. */
+  readTheHand(tableId: string): Observable<HandView> {
+    return this.http.post<HandView>(`${API}/${tableId}/read`, {}).pipe(failWithApiErrors());
+  }
+
+  /** Rule 9.6. */
+  giveUpTheChair(tableId: string): Observable<HandView> {
+    return this.http.post<HandView>(`${API}/${tableId}/chair`, {}).pipe(failWithApiErrors());
+  }
+
   /** Rule 12.6. */
   keep(tableId: string, cardIds: readonly number[]): Observable<HandView> {
     return this.http

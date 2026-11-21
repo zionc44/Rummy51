@@ -129,6 +129,20 @@ export interface Doubling {
   readonly finishingCard: boolean;
 }
 
+/** Rules 9.4 and 9.5: where the game stands, by seat. */
+export interface Standing {
+  readonly totals: readonly number[];
+  readonly hands: readonly number[];
+
+  /** What the hand before this one came to, which outlives it. */
+  readonly last: readonly number[];
+
+  readonly out: readonly boolean[];
+
+  /** Rule 9.5: the seat the game went to, and -1 until there is one. */
+  readonly won: number;
+}
+
 export interface HandView {
   readonly phase: HandPhase;
   readonly dealerSeat: number;
@@ -180,6 +194,9 @@ export interface HandView {
 
   /** Rule 8.2, broken out so a score can say why it is what it is. */
   readonly doubling: Doubling;
+
+  /** Rules 9.4 and 9.5: the game across its hands, by seat. */
+  readonly standing: Standing;
 
   /** Rules 9.3 and 10.8. Empty while nobody is being asked. */
   readonly staying: readonly (boolean | null)[];

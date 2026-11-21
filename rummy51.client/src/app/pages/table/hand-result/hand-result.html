@@ -1,6 +1,14 @@
 <div class="result">
   <div class="result__panel" role="alertdialog" aria-modal="true">
-    @if (me()?.won) {
+    <!-- Rule 9.5: once a game has been won, that is the news. What the last
+         hand did is underneath it, because it is what the table came to. -->
+    @if (gameWinner(); as champion) {
+      @if (wonTheGame()) {
+        <p class="result__won result__won--mine">{{ 'table.youWonTheGame' | translate }}</p>
+      } @else {
+        <p class="result__won">{{ 'table.wonTheGame' | translate: { '0': champion } }}</p>
+      }
+    } @else if (me()?.won) {
       <p class="result__won result__won--mine">{{ 'table.youTookIt' | translate }}</p>
     } @else {
       <p class="result__won">{{ 'table.wonBy' | translate: { '0': winner() } }}</p>
@@ -9,7 +17,7 @@
     <p class="result__how">{{ how() | translate }}</p>
 
     @if (me(); as mine) {
-      @if (!mine.won) {
+      @if (!mine.won && !across()) {
         <p class="result__placed">
           {{ 'table.youPlaced' | translate: { '0': mine.place } }}
         </p>
@@ -42,28 +50,58 @@
       }
     }
 
+    <!-- Rule 9.4: once a game runs across hands, where somebody stands in
+         it matters more than where they came in this one. -->
+    @if (across()) {
+      <p class="result__heads">
+        <span class="result__place"></span>
+        <span class="result__name"></span>
+        <span class="result__cell">{{ 'table.handsLasted' | translate }}</span>
+        <span class="result__cell">{{ 'table.thisHand' | translate }}</span>
+        <span class="result__cell">{{ 'table.inTheGame' | translate }}</span>
+      </p>
+    }
+
     <ol class="result__rows">
       @for (row of rows(); track row.name) {
-        <li class="result__row" [class.result__row--mine]="row.mine">
-          <span class="result__place">{{ row.place }}</span>
+        <li
+          class="result__row"
+          [class.result__row--mine]="row.mine"
+          [class.result__row--out]="row.out"
+        >
+          <span class="result__place">{{ row.out ? '' : row.place }}</span>
 
           <span class="result__name">
             {{ row.name }}
 
             <!-- Rule 8.1 hangs its hundred on this, so a score nobody can
                  account for says where it came from. -->
-            @if (!row.wentDown && !row.won) {
+            @if (!row.wentDown && !row.won && !row.out) {
               <small class="result__never">{{ 'table.neverWentDown' | translate }}</small>
+            }
+
+            @if (row.out) {
+              <small class="result__never">{{ 'table.wentOut' | translate }}</small>
+            }
+
+            @if (row.staying === true) {
+              <span class="result__staying" [title]="'table.staying' | translate">&#10003;</span>
+            } @else if (row.staying === false) {
+              <span class="result__going" [title]="'table.going' | translate">&#10007;</span>
             }
           </span>
 
-          @if (row.staying === true) {
-            <span class="result__staying" [title]="'table.staying' | translate">&#10003;</span>
-          } @else if (row.staying === false) {
-            <span class="result__going" [title]="'table.going' | translate">&#10007;</span>
+          @if (across()) {
+            <span class="result__cell">{{ row.hands }}</span>
+            <span class="result__cell" [class.result__cell--won]="row.won">
+              {{ row.playedLast ? row.score : '' }}
+            </span>
+            <span class="result__cell result__cell--heavy">{{ row.total }}</span>
+          } @else {
+            <span class="result__cell result__cell--heavy" [class.result__cell--won]="row.won">
+              {{ row.score }}
+            </span>
           }
-
-          <span class="result__score" [class.result__score--won]="row.won">{{ row.score }}</span>
         </li>
       }
     </ol>
@@ -81,6 +119,27 @@
       </div>
 
       <p class="result__left" [class.result__left--urgent]="left() <= 5">{{ left() }}</p>
+    } @else if (justOut()) {
+      <!-- Rule 9.6: the game is over for them and the chair is theirs to
+           keep or not, which is a different question from 9.3's. -->
+      <p class="result__another">{{ 'table.knockedOut' | translate }}</p>
+
+      <div class="result__buttons">
+        <button type="button" class="btn-primary" (click)="wentOn.emit(false)">
+          {{ 'table.watchOn' | translate }}
+        </button>
+        <button type="button" class="btn-ghost" (click)="wentOn.emit(true)">
+          {{ 'table.leaveTable' | translate }}
+        </button>
+      </div>
+    } @else if (anotherHand()) {
+      <p class="result__waiting">{{ 'table.nextHand' | translate }}</p>
+
+      <button type="button" class="btn-primary" (click)="closed.emit()">
+        {{ 'common.ok' | translate }}
+      </button>
+
+      <p class="result__left" [class.result__left--urgent]="left() <= 3">{{ left() }}</p>
     } @else {
       <p class="result__waiting">{{ 'table.waitingForTheRest' | translate }}</p>
     }

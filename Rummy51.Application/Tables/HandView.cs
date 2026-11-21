@@ -71,6 +71,7 @@ public sealed record HandView(
     IReadOnlyList<int> Scores,
     IReadOnlyList<int> Places,
     Doubling Doubling,
+    Standing Standing,
     IReadOnlyList<bool?> Staying,
     IReadOnlyList<bool> Away,
     bool HasDrawn,

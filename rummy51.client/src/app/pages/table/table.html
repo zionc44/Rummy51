@@ -70,6 +70,8 @@
                 [arrangeable]="seating.seated() && myCards().length > 0"
                 [winner]="seating.winner()"
                 (sorted)="sortHand()"
+                [across]="across()"
+                (asked)="reading.set(true)"
                 [canForce]="asking.pairs().length > 0"
                 (offeredRedeal)="offerARedeal()"
                 (forced)="chooseHowToForce()"
@@ -164,14 +166,30 @@
       }
 
       <!-- Rules 8.3 and 9.3: how it came out, and the one question left. -->
-      @if (hand.phase === 'finished' && hand.scores.length) {
+      @if (hand.phase === 'finished' && hand.scores.length && !done()) {
         <app-hand-result
           [rows]="results()"
           [winner]="winnerName()"
           [doubling]="hand.doubling"
+          [across]="across()"
           [asking]="askedToStay()"
+          [justOut]="justOut()"
+          [anotherHand]="anotherHand()"
+          [gameWinner]="gameWinner()"
+          [wonTheGame]="wonTheGame()"
           [left]="asking.secondsLeft()"
           (stayed)="stay($event)"
+          (wentOn)="wentOn($event)"
+          (closed)="readTheHand()"
+        />
+      }
+
+      <!-- Rule 9.4: asked for in the middle of a hand, and gone again. -->
+      @if (reading()) {
+        <app-table-standing
+          [rows]="standingRows()"
+          [limit]="table()?.limit ?? null"
+          (closed)="reading.set(false)"
         />
       }
 

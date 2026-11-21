@@ -64,7 +64,7 @@ internal sealed partial class OpenTable
             // and nobody waits for anybody. Rule 9.3: a table that had a
             // chair to fill deals as a new one, the question rule 2.1
             // answers no longer being the same question.
-            Deal(Random.Shared.Next(seats.Length));
+            BeginAGame(Random.Shared.Next(seats.Length));
         }
     }
 

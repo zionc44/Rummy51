@@ -1,0 +1,47 @@
+<div class="standing">
+  <div class="standing__panel" role="dialog" aria-modal="true">
+    <p class="standing__title">
+      {{ 'table.standing' | translate }}
+
+      @if (limit(); as limit) {
+        <span class="standing__limit">{{ 'lobby.points' | translate: { '0': limit } }}</span>
+      }
+    </p>
+
+    <p class="standing__heads">
+      <span class="standing__place"></span>
+      <span class="standing__name"></span>
+      <span class="standing__cell">{{ 'table.handsLasted' | translate }}</span>
+      <span class="standing__cell">{{ 'table.lastHand' | translate }}</span>
+      <span class="standing__cell">{{ 'table.inTheGame' | translate }}</span>
+    </p>
+
+    <ol class="standing__rows">
+      @for (row of rows(); track row.name) {
+        <li
+          class="standing__row"
+          [class.standing__row--mine]="row.mine"
+          [class.standing__row--out]="row.out"
+        >
+          <span class="standing__place">{{ row.out ? '' : row.place }}</span>
+
+          <span class="standing__name">
+            {{ row.name }}
+
+            @if (row.out) {
+              <small class="standing__out">{{ 'table.wentOut' | translate }}</small>
+            }
+          </span>
+
+          <span class="standing__cell">{{ row.hands }}</span>
+          <span class="standing__cell">{{ row.playedLast ? row.score : '' }}</span>
+          <span class="standing__cell standing__cell--heavy">{{ row.total }}</span>
+        </li>
+      }
+    </ol>
+
+    <button type="button" class="btn-primary" (click)="closed.emit()">
+      {{ 'common.ok' | translate }}
+    </button>
+  </div>
+</div>

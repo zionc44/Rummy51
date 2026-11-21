@@ -68,7 +68,7 @@ internal sealed partial class OpenTable
 
         pending.Add(new HandEnded(
             gameId,
-            Number: 1,
+            Number: handsSoFar + 1,
             ended.DealerSeat,
             ended.Deck.CutPosition ?? 0,
             dealtFinishingCard,
@@ -78,15 +78,28 @@ internal sealed partial class OpenTable
             ended.ForcedRedeals,
             gameStartedAt,
             at,
-            [.. Enumerable.Range(0, seats.Length).Select(seat => Scored(ended, seat))],
+            // Rule 9.4: only the seats this hand was dealt to. A seat that
+            // was out of it has nothing to be scored for, and a row of
+            // nought is worse than no row - it reads as a hand they played
+            // and drew. It can also be an empty chair by now, under 9.6.
+            [
+                .. Enumerable.Range(0, seats.Length)
+                    .Where(seat => ended.Playing[seat])
+                    .Select(seat => Scored(ended, seat))
+            ],
             Asked(ended)));
 
-        // Rule 9.2: one hand is the whole of a single game. The other two
-        // modes end somewhere this does not reach yet.
-        if (Mode == GameMode.Single)
-        {
-            pending.Add(new GameEnded(gameId, seats[ended.WinnerSeat]?.PlayerId, at));
-        }
+    }
+
+    /// <summary>Rules 9.2 and 9.5: whoever the mode's own ending left in front.</summary>
+    private void NoteTheGameEnded()
+    {
+        var won = WonTheGame();
+
+        pending.Add(new GameEnded(
+            gameId,
+            won == -1 ? null : seats[won]?.PlayerId,
+            clock.GetUtcNow()));
     }
 
     private PlayerResult Scored(Hand ended, int seat) =>

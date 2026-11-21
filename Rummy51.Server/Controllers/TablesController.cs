@@ -145,6 +145,20 @@ public class TablesController(
     public Task<IActionResult> Stay(Guid tableId, StayRequest request) =>
         MoveAsync(tableId, playerId => tables.Stay(tableId, playerId, request.Another));
 
+    /// <summary>Read, and ready for the next hand.</summary>
+    [HttpPost("{tableId:guid}/read")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> ReadTheHand(Guid tableId) =>
+        MoveAsync(tableId, playerId => tables.ReadTheHand(tableId, playerId));
+
+    /// <summary>Rule 9.6.</summary>
+    [HttpPost("{tableId:guid}/chair")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> GiveUpTheChair(Guid tableId) =>
+        MoveAsync(tableId, playerId => tables.GiveUpTheChair(tableId, playerId));
+
     /// <summary>Rule 12.4.</summary>
     [HttpPost("{tableId:guid}/redeal/read")]
     [ProducesResponseType<HandView>(StatusCodes.Status200OK)]

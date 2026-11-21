@@ -152,6 +152,16 @@ public sealed partial class InMemoryTables(
     public Result<HandView> Stay(Guid tableId, Guid playerId, bool another) =>
         Move(tableId, playerId, (table, seat) => table.Stay(seat, another), Refused("CannotStay"));
 
+    public Result<HandView> ReadTheHand(Guid tableId, Guid playerId) =>
+        Move(tableId, playerId, (table, seat) => table.ReadTheHand(seat), Refused("CannotRead"));
+
+    public Result<HandView> GiveUpTheChair(Guid tableId, Guid playerId) =>
+        Move(
+            tableId,
+            playerId,
+            (table, seat) => table.GiveUpTheChair(seat),
+            Refused("CannotGiveUpTheChair"));
+
     public Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
         Move(tableId, playerId, (table, seat) => table.Keep(seat, cardIds), Refused("CannotKeep"));
 
