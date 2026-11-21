@@ -52,7 +52,7 @@ Measured, and ordered by what is at risk rather than by size.
 |---|---|---|---|---|
 | 1 | 2,377 | `Tests/Rummy51.Domain.Tests` | the rules | 159 tests |
 | 2 | 1,855 | client, `core/` | the twins, and what the screen works out | 125 tests |
-| 3 | 2,918 | `Tests/Rummy51.Infrastructure.Tests` | tables, clocks, presence | 89 tests |
+| 3 | 2,918 | `Tests/Rummy51.Infrastructure.Tests` | tables, clocks, presence | 94 tests |
 | 4 | 1,184 | `Tests/Rummy51.Server.Tests` | the pipeline and the error contract | 31 tests |
 
 **Domain first** because it is the product. It has no dependencies at all -
@@ -145,7 +145,7 @@ on the server. Nothing was reading it that way yet. The server was right
 and the client was changed, which is the bargain the twins were written
 under.
 
-**3. `Tests/Rummy51.Infrastructure.Tests` - landed.** 89 tests over nine
+**3. `Tests/Rummy51.Infrastructure.Tests` - landed.** 94 tests over ten
 suites and a fixture, 1,578 lines in all, against the 2,052 of `Tables/`
 and `Lobby/` that this sitting is answerable for. They run in about seven
 tenths of a second.
@@ -183,8 +183,18 @@ what a finished game leaves written down; who is online; and the refusal
 codes the client turns into words.
 
 Not held to: the database writer, which wants a real PostgreSQL and is a
-project of its own; Identity, which wants a `UserManager`; and the avatar
-re-encoding, which wants images.
+project of its own, and Identity, which wants a `UserManager`.
+
+The picture an avatar is made from was in that list and is not any more,
+because the day it was tested it failed. What it must do is narrow - a
+square of a known size, in one format, carrying nothing the uploaded file
+carried - and the last of those was not true: the encoder copied the EXIF
+profile straight across, so a phone's GPS went into the database and out
+again to every player at the table. The code said otherwise and so did
+CLAUDE.md. Five tests hold it now, and the size is read out of the WebP
+container by hand rather than asked of an imaging library, so that what
+checks the picture is never also what drew it - which is what made the
+library underneath replaceable and the answer still worth something.
 
 **Two things it found, neither of them a rule, and both now fixed.** A
 throw that emptied the stock left the restock waiting a turn's length

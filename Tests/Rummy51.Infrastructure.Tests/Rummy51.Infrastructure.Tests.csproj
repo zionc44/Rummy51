@@ -18,6 +18,12 @@
     <ProjectReference Include="../../Rummy51.Infrastructure/Rummy51.Infrastructure.csproj" />
   </ItemGroup>
 
+  <!-- Two pictures a stranger might upload: one wide and carrying EXIF,
+       one whose header claims it is enormous. -->
+  <ItemGroup>
+    <None Include="Pictures\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Microsoft.Extensions.Time.Testing" />

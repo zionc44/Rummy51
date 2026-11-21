@@ -366,7 +366,15 @@ name, and a password that can be added as well as changed.
 
 A picture can be uploaded, cropped in the browser and re-encoded on the
 server, which keeps nothing of the original file — its EXIF, and the GPS a
-phone writes into it, included. It lives in `player_avatars` rather than on
+phone writes into it, included. That sentence was written long before it
+was true: the encoder carried the EXIF profile across, and the first test
+ever written against `SquarePicture` found it. The pixels are now all that
+is read and all that is drawn, and five tests say so - with
+`dotnet run scripts/avatars.cs` to ask the same of what is really in the
+database, since a row stored before the fix still carries what it carried. The drawing is
+SkiaSharp: ImageSharp's licence is Apache 2.0 for a project like this one
+but its build task fails a Release build until a key is declared, which is
+a thing to meet while deploying and not before. It lives in `player_avatars` rather than on
 the player row, which Identity reads on every authenticated request, and is
 served from a URL carrying a tag of its contents so the answer can be cached
 for good. A provider's picture and the player's own are both kept; the player

@@ -164,6 +164,15 @@ All of it free, and none of it licensed.
 | `unattended-upgrades` | security patches without you |
 | `fail2ban` | blocks the SSH knocking |
 
+The one thing in the project that was licensed is not any more. Resizing
+an avatar used ImageSharp, whose split licence grants Apache 2.0 to an
+open-source project and to anyone under a million dollars a year - this is
+both - but whose build task looks for a licence key and turns a warning
+into an **error on a Release build**. That is a thing to discover while
+deploying. It is SkiaSharp now, MIT with nothing to declare, carrying the
+natives that need no fontconfig on the host, since nothing here draws any
+text.
+
 Certificates are free and come from Let's Encrypt, not from the host. With
 Caddy a domain is a line in a file and you never think about renewal again;
 with nginx you set up certbot and own the renewal yourself.

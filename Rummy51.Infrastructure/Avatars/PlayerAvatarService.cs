@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rummy51.Application.Account;
@@ -7,8 +7,6 @@ using Rummy51.Application.Common;
 using Rummy51.Domain.Entities;
 using Rummy51.Infrastructure.Identity;
 using Rummy51.Infrastructure.Persistence;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 
 namespace Rummy51.Infrastructure.Avatars;
 
@@ -18,21 +16,6 @@ internal sealed class PlayerAvatarService(
     SignInManager<Player> signInManager,
     TimeProvider timeProvider) : IPlayerAvatarService
 {
-    /// <summary>
-    /// The circle is drawn at fifty pixels at most, but a dense screen asks
-    /// for three times that, and the table will want it larger still.
-    /// </summary>
-    private const int Side = 256;
-
-    /// <summary>
-    /// Refused before decoding. A small file can still describe an enormous
-    /// picture, and the memory to decode one is the picture's size, not the
-    /// file's.
-    /// </summary>
-    private const int LargestAccepted = 8000;
-
-    private const string Webp = "image/webp";
-
     public async Task<Result<PlayerSummary>> UploadAsync(
         Stream image,
         CancellationToken cancellationToken = default)
@@ -42,7 +25,7 @@ internal sealed class PlayerAvatarService(
             return SessionExpired;
         }
 
-        var encoded = await SquareWebpAsync(image, cancellationToken);
+        var encoded = await SquarePicture.FromAsync(image, cancellationToken);
 
         if (encoded is null)
         {
@@ -107,51 +90,6 @@ internal sealed class PlayerAvatarService(
     }
 
     /// <summary>
-    /// Decodes the picture and draws a square one from its pixels. Nothing of
-    /// the original file survives the trip, which is the point: the metadata
-    /// goes with it, and the GPS coordinates a phone writes into it go too.
-    /// </summary>
-    private static async Task<byte[]?> SquareWebpAsync(Stream image, CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var buffered = new MemoryStream();
-            await image.CopyToAsync(buffered, cancellationToken);
-            buffered.Position = 0;
-
-            // The header alone says how big this will be once unpacked.
-            var described = await Image.IdentifyAsync(buffered, cancellationToken);
-
-            if (described.Width > LargestAccepted || described.Height > LargestAccepted)
-            {
-                return null;
-            }
-
-            buffered.Position = 0;
-            using var decoded = await Image.LoadAsync(buffered, cancellationToken);
-
-            decoded.Mutate(picture => picture.Resize(new ResizeOptions
-            {
-                Size = new Size(Side, Side),
-                // Centres and trims whatever is not already square. The player
-                // has usually cropped it themselves; this is the floor, not
-                // the feature.
-                Mode = ResizeMode.Crop
-            }));
-
-            using var output = new MemoryStream();
-            await decoded.SaveAsWebpAsync(output, cancellationToken);
-
-            return output.ToArray();
-        }
-        catch (Exception error) when (error is not OperationCanceledException)
-        {
-            // Anything unreadable is an answer to the player, not a fault.
-            return null;
-        }
-    }
-
-    /// <summary>
     /// The picture is written before the row that points at it, so the tag
     /// never names bytes that are not there yet. A failure between the two
     /// leaves a picture nothing refers to, which costs a few kilobytes and
@@ -168,14 +106,14 @@ internal sealed class PlayerAvatarService(
             {
                 PlayerId = playerId,
                 Image = image,
-                ContentType = Webp,
+                ContentType = SquarePicture.Webp,
                 UpdatedAt = timeProvider.GetUtcNow()
             });
         }
         else
         {
             existing.Image = image;
-            existing.ContentType = Webp;
+            existing.ContentType = SquarePicture.Webp;
             existing.UpdatedAt = timeProvider.GetUtcNow();
         }
 
