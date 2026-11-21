@@ -16,6 +16,12 @@
     <UserSecretsId>e85457e1-ee58-4d32-91ad-e04b01650102</UserSecretsId>
   </PropertyGroup>
 
+  <!-- Top-level statements leave Program internal, and the suite that boots
+       the real pipeline has to name it. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rummy51.Server.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.14" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />

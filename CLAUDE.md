@@ -526,24 +526,29 @@ CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
 
-Three of the four suites this is getting are written, a sitting at a time.
-`Tests/Rummy51.Domain.Tests` is 157 tests over the rules and
-`Tests/Rummy51.Infrastructure.Tests` 89 over the tables, both run with
-`dotnet test`; the client's `core/` is 125 more, run with `npm test`. Every
-test is named after the rule it holds the code to. The server's suites live
-under `Tests/`, one folder per project held; the client's live beside what
-they test, as Angular looks for them, and `rule-links.js` knows a test by
-its name rather than by where it sits.
+All four suites are written, a sitting at a time. `dotnet test` runs 276
+of them - 157 over the rules, 89 over the tables and 30 over the pipeline
+- and `npm test` 125 more over the client's `core/`. Every test is named
+after the rule it holds the code to. The server's suites live under
+`Tests/`, one folder per project held; the client's live beside what they
+test, as Angular looks for them, and `rule-links.js` knows a test by its
+name rather than by where it sits.
 
 The tables are reached through `InMemoryTables` and never behind it, since
 who is asking is half of what that project decides. Two things it needs are
 cheats: `FakeTimeProvider`, because rule 3.6 is the whole of what moves a
 table nobody is pressing anything at, and `ArrangedHand`, because a hand
 that can be gone out with is one deal in some enormous number and nothing
-across chapter 9 is reachable until one is. The last suite is not written
-yet, and what has been checked in it so far was checked by harnesses built
-against the real code and thrown away afterwards, which is why nothing
-notices when one of them goes stale.
+across chapter 9 is reachable until one is.
+
+The server's is the only one that starts anything. It boots the real
+pipeline with nothing in it replaced - not the cookie, not the exception
+handler, not the model binding - because what crosses the wire is all it
+asks about, and it runs as Testing rather than Development so that the
+framework's own exception page is not what answers. Only the account
+service is a double, being the one thing behind the wire that wants a
+database, and that is also what it cannot reach: no test there is signed
+in, because the cookie is real.
 [`docs/testing.md`](docs/testing.md) holds the decision, which project is
 taken in which order and why, where it has got to, and what none of it will
 catch.

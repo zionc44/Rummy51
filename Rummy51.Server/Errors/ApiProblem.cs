@@ -11,7 +11,8 @@ namespace Rummy51.Server.Errors;
 /// </summary>
 internal static class ApiProblem
 {
-    private const string ProblemJson = "application/problem+json";
+    /// <summary>Said once, the uncaught path answering with it too.</summary>
+    public const string ProblemJson = "application/problem+json";
 
     public static ProblemDetails Create(
         HttpContext context,

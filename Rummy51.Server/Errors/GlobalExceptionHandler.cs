@@ -31,8 +31,12 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             [new Error("UnexpectedError")]);
 
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        httpContext.Response.ContentType = "application/problem+json";
-        await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);
+
+        // Handed over rather than set on the response, which writing the
+        // body would set back to plain JSON - and leave this the one path
+        // of the three answering with a type of its own.
+        await httpContext.Response.WriteAsJsonAsync(
+            problem, options: null, ApiProblem.ProblemJson, cancellationToken);
 
         return true;
     }

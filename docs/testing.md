@@ -53,7 +53,7 @@ Measured, and ordered by what is at risk rather than by size.
 | 1 | 2,377 | `Tests/Rummy51.Domain.Tests` | the rules | 157 tests |
 | 2 | 1,855 | client, `core/` | the twins, and what the screen works out | 125 tests |
 | 3 | 2,918 | `Tests/Rummy51.Infrastructure.Tests` | tables, clocks, presence | 89 tests |
-| 4 | 1,184 | `Tests/Rummy51.Server.Tests` | the pipeline and the error contract | |
+| 4 | 1,184 | `Tests/Rummy51.Server.Tests` | the pipeline and the error contract | 30 tests |
 
 **Domain first** because it is the product. It has no dependencies at all -
 no database, no clock, no HTTP - so a suite against it needs no scaffolding
@@ -76,12 +76,22 @@ wants a real PostgreSQL or Testcontainers and is a project of its own.
 
 **The server last**, as integration tests through `WebApplicationFactory`:
 that the three paths of the error contract all still produce the one shape,
-that the guards are where they say they are, that 401 and 403 come back
-rather than a redirect.
+that the guards are where they say they are, and that 401 comes back rather
+than a redirect. 403 was meant to be here too and is not reachable - nothing
+authorizes by role, so no route can produce one.
 
-`Rummy51.Application` gets **no suite**. One file in it has a method body;
-the rest is contracts and views. `Result<T>` is covered from the domain
-sitting, where it is actually exercised.
+`Rummy51.Application` gets **no suite**. Of its thirty-seven files exactly
+one has a method body, and the rest are records and interfaces - a test on
+those would be asserting that C# generates a constructor. The one with a
+body is `Result<T>`, and it is two static factories: the question worth
+asking of it is not whether `Success` is a success but whether it reaches
+the client in the right shape, which is the controller's and falls to
+sitting 4.
+
+It is exercised all the same, from sitting 3 rather than from the domain -
+`Result<T>` lives in `Application`, references point inward, and the domain
+suite cannot see it. `Seating` and `Refusals` assert the kind and the code
+on every refusal `InMemoryTables` has.
 
 ## Where it got to
 
@@ -200,6 +210,62 @@ what sets the longer wait of the two. The two paths now read the same,
 which they had no reason not to. Three tests hold it - the restock, the
 pause between hands and the question about another game, each given a
 length of its own so that passing means something.
+
+
+**4. `Tests/Rummy51.Server.Tests` - landed.** 30 tests over three suites
+and three fixtures, 469 lines, against the server's 1,212. They run in
+about five seconds, which is almost all of it the host booting: these are
+the only tests here that start anything.
+
+The pipeline is the real one, booted by `WebApplicationFactory` with
+nothing in it replaced - not the cookie scheme, not the exception handler,
+not the model binding - because what crosses the wire is the whole of what
+this sitting asks about. One thing behind the wire is a double, the
+account service, being the only thing a request reaches that wants a
+database. `ITables` is left real: it is memory already, and sitting 3 has
+just been through it.
+
+The host runs as Testing rather than Development, which matters more than
+it reads. In Development the framework puts its own exception page in
+front of everything, and what a client is handed instead of an exception
+is one of the three things this sitting exists to ask.
+
+Held to: all three paths of the error contract, asserted out of the body
+rather than off the object a controller returned - a `Result` turned into
+a problem, model binding refusing a request before any of our code runs,
+and something uncaught; that `FailureKind` picks the status that says the
+same thing; that `parameters` is always there and in order; that framework
+prose becomes `MalformedRequest` rather than arriving as a key the client
+would look up; that nothing of an exception crosses; which routes are
+behind a credential and which three are the way in, the hub included; that
+what comes back is 401 and not the redirect to a login page that cookie
+authentication would send by itself; and that an enum crosses as its name
+and a player summary carries no secret.
+
+Not held to: anything that needs a signed-in caller. The cookie is real
+here, so there is no credential to present without a database behind it,
+and the one branch that costs is `/api/auth/me` answering 401 and clearing
+the cookie when the account went away under a live session. A test
+authentication scheme would reach it and would also replace the thing the
+guards suite is here to watch, so it is named rather than covered.
+
+403 is not held either, and cannot be: nothing in the project authorizes
+by role, so no route can produce one. The handler that would answer it is
+written beside the one for 401 and is the same two lines.
+
+**One thing it found, and it is fixed.** `GlobalExceptionHandler` set the
+response content type to `application/problem+json` and then called
+`WriteAsJsonAsync`, which set it back to `application/json` - so the line
+did nothing, and the uncaught path was the one of the three answering with
+a different type from the other two. Nothing was broken by it: the body is
+the same shape and the client reads the body. What was wrong is a line
+stating an intention the code did not carry out.
+
+It was found the dull way. A test said the third path answers like the
+other two, and it did not. The type is now handed to the write rather than
+set on the response beside it, and it is said once, in `ApiProblem`, since
+two places writing that string are two places that can stop agreeing. All
+three paths assert it.
 
 
 ## How a test is named
