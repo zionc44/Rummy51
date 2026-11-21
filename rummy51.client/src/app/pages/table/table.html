@@ -31,12 +31,12 @@
         @if (hand(); as hand) {
           <!-- Both are on screen while the deck sweeps away: the cards need
                somewhere to fly to, and the pile is it. -->
-          @if (hand.phase === 'cutting' || collapsing()) {
+          @if (hand.phase === 'cutting' || journeys.deal.collapsing()) {
             <app-table-cut
               #theCut
               [hand]="hand"
-              [turned]="turned()"
-              [sweeping]="collapsing()"
+              [turned]="journeys.deal.turned()"
+              [sweeping]="journeys.deal.collapsing()"
               [yours]="canCut()"
               [cutter]="seating.cutter()"
               (chose)="moves.cut($event)"
@@ -51,15 +51,15 @@
                 [stock]="hand.stockSize"
                 [discardTop]="hand.discardTop"
                 [discardCount]="hand.discardCount"
-                [collapsing]="collapsing()"
+                [collapsing]="journeys.deal.collapsing()"
                 (drew)="moves.draw($event)"
                 (pressed)="pileClicked()"
               />
 
               <app-table-melds
                 [melds]="hand.melds"
-                [fits]="fits()"
-                [buys]="buys()"
+                [fits]="reading.fits()"
+                [buys]="reading.buys()"
                 [offered]="turn.canAdd()"
                 (chose)="addToMeld($event)"
                 (bought)="swapForJoker($event)"
@@ -69,13 +69,13 @@
                 [turn]="turn"
                 [arrangeable]="seating.seated() && myCards().length > 0"
                 [winner]="seating.winner()"
-                (sorted)="sortHand()"
-                [across]="across()"
-                (asked)="reading.set(true)"
+                (sorted)="arranged.sort()"
+                [across]="reckoning.across()"
+                (asked)="reckoning.open.set(true)"
                 [canForce]="asking.pairs().length > 0"
-                (offeredRedeal)="offerARedeal()"
-                (forced)="chooseHowToForce()"
-                (undid)="undo()"
+                (offeredRedeal)="moves.offerARedeal()"
+                (forced)="asking.chooseHowToForce()"
+                (undid)="moves.undo()"
               />
             </div>
           }
@@ -122,11 +122,11 @@
             />
             @if (seating.seated() && myCards().length > 0) {
               <app-table-tally
-                [worth]="worth()"
-                [points]="meldPoints()"
-                [clean]="hasCleanRun()"
-                [canGoDown]="canGoDown()"
-                [wentDown]="wentDown()"
+                [worth]="reading.worth()"
+                [points]="reading.meldPoints()"
+                [clean]="reading.hasCleanRun()"
+                [canGoDown]="reading.canGoDown()"
+                [wentDown]="reading.wentDown()"
               />
             }
           </div>
@@ -152,49 +152,49 @@
           [forced]="asking.forced()"
           [pairs]="asking.forcedWith()"
           [ended]="asking.ended()"
-          (answered)="answer($event)"
-          (closed)="readTheResult()"
+          (answered)="moves.answer($event)"
+          (closed)="asking.readTheResult()"
         />
       }
 
       @if (hand.phase === 'playing' && asking.choosing()) {
         <app-force-redeal
           [pairs]="asking.pairs()"
-          (forced)="forceARedeal($event)"
+          (forced)="asking.forceARedeal($event)"
           (cancelled)="asking.choosing.set(false)"
         />
       }
 
       <!-- Rules 8.3 and 9.3: how it came out, and the one question left. -->
-      @if (hand.phase === 'finished' && hand.scores.length && !done()) {
+      @if (hand.phase === 'finished' && hand.scores.length && !reckoning.done()) {
         <app-hand-result
-          [rows]="results()"
-          [winner]="winnerName()"
+          [rows]="reckoning.results()"
+          [winner]="reckoning.winnerName()"
           [doubling]="hand.doubling"
-          [across]="across()"
-          [asking]="askedToStay()"
-          [justOut]="justOut()"
-          [anotherHand]="anotherHand()"
-          [gameWinner]="gameWinner()"
-          [wonTheGame]="wonTheGame()"
+          [across]="reckoning.across()"
+          [asking]="reckoning.askedToStay()"
+          [justOut]="reckoning.justOut()"
+          [anotherHand]="reckoning.anotherHand()"
+          [gameWinner]="reckoning.gameWinner()"
+          [wonTheGame]="reckoning.wonTheGame()"
           [left]="asking.secondsLeft()"
-          (stayed)="stay($event)"
-          (wentOn)="wentOn($event)"
-          (closed)="readTheHand()"
+          (stayed)="reckoning.stay($event)"
+          (wentOn)="reckoning.wentOn($event)"
+          (closed)="reckoning.readTheHand()"
         />
       }
 
       <!-- Rule 9.4: asked for in the middle of a hand, and gone again. -->
-      @if (reading()) {
+      @if (reckoning.open()) {
         <app-table-standing
-          [rows]="standingRows()"
+          [rows]="reckoning.standingRows()"
           [limit]="table()?.limit ?? null"
-          (closed)="reading.set(false)"
+          (closed)="reckoning.open.set(false)"
         />
       }
 
       @if (hand.phase === 'keeping' && seating.seated() && !asking.chosen()) {
-        <app-keep-three [cards]="myCards()" [left]="asking.secondsLeft()" (kept)="keep($event)" />
+        <app-keep-three [cards]="myCards()" [left]="asking.secondsLeft()" (kept)="asking.keep($event)" />
       }
     }
 

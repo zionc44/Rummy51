@@ -1,5 +1,6 @@
 import { Signal, computed, signal } from '@angular/core';
 import { HandPhase, HandView, Redeal, TableSeat } from '../../core/lobby/lobby.models';
+import { Moves } from './moves';
 import { VoteRow } from './redeal-vote/redeal-vote';
 
 /**
@@ -9,7 +10,9 @@ import { VoteRow } from './redeal-vote/redeal-vote';
  *
  * The twin of `Turn`, which says what they may do. This says what they are
  * being waited for, and both exist so that the screen can ask one question
- * rather than reading a phase and working it out.
+ * rather than reading a phase and working it out. Answering is here as
+ * well, because every answer puts a window away as well as sending
+ * something, and the putting away is this screen's own.
  */
 export class Asking {
   constructor(
@@ -18,6 +21,7 @@ export class Asking {
     private readonly ownSeat: Signal<number>,
     private readonly redeal: Signal<Redeal>,
     private readonly ticking: Signal<number>,
+    private readonly moves: Moves,
   ) {}
 
   /** Who offered the redeal, by name, or empty while nobody has. */
@@ -76,6 +80,29 @@ export class Asking {
 
   /** Rule 12.10 being put to whoever may force, before anything is sent. */
   readonly choosing = signal(false);
+
+  /** Rule 12.9, which only opens the choice of what to force. */
+  chooseHowToForce(): void {
+    this.choosing.set(true);
+  }
+
+  /** Rule 12.10. */
+  forceARedeal(atOnce: boolean): void {
+    this.choosing.set(false);
+    this.moves.forceARedeal(atOnce);
+  }
+
+  /** Rule 12.4. */
+  readTheResult(): void {
+    this.read.set(true);
+    this.moves.readTheResult();
+  }
+
+  /** Rule 12.6. */
+  keep(cardIds: readonly number[]): void {
+    this.chosen.set(true);
+    this.moves.keep(cardIds);
+  }
 
   /** A window answered once is open again the moment the table asks anew. */
   settle(phase: HandPhase | null): void {
