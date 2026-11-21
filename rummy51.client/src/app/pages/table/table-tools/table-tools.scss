@@ -4,34 +4,13 @@
   display: contents;
 }
 
-// Beside each other at the foot of the board: one takes a move back and the
-// other only tidies a hand, which is why that one is there whosever turn it
-// is and this one comes and goes.
+// Four of the same button: a bordered circle with an icon in it, laid
+// against a corner or a foot of the board. Only where each sits differs.
+.board__sort,
 .board__undo,
-.board__sort {
-  position: absolute;
-  inset-block-end: 0;
-  inset-inline-start: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: transparent;
-  padding: 0.125rem 0.5rem;
-  color: var(--text-muted);
-  font-size: 0.6875rem;
-  cursor: pointer;
-
-  &:hover {
-    border-color: var(--felt-500);
-    color: var(--felt-500);
-  }
-}
-
-// In the corner of the board and on its own. Everything else sits along
-// the foot, and a reading of the game is not a move in the hand.
+.board__redeal,
 .board__standing {
   position: absolute;
-  inset-block-start: 0;
-  inset-inline-end: 0;
   display: grid;
   place-items: center;
   inline-size: 1.5rem;
@@ -49,49 +28,51 @@
   }
 }
 
-// The sort sits inside the undo's place, so the two never collide whether
-// or not there is anything to take back.
-.board__sort {
-  display: grid;
-  place-items: center;
-  inline-size: 1.5rem;
-  block-size: 1.5rem;
-  padding: 0;
+// Beside each other at the foot of the board: one takes a move back and the
+// other only tidies a hand, which is why that one is there whosever turn it
+// is and this one comes and goes. The sort keeps the corner so the two
+// never collide whether or not there is anything to take back.
+.board__sort,
+.board__undo {
+  inset-block-end: 0;
+  inset-inline-start: 0;
 }
 
 .board__undo {
   inset-inline-start: 1.875rem;
 }
 
-.board__force,
+// In the corner of the board and on its own. Everything else sits along
+// the foot, and a reading of the game is not a move in the hand.
+.board__standing {
+  inset-block-start: 0;
+  inset-inline-end: 0;
+}
+
 .board__redeal {
-  position: absolute;
   inset-block-end: 0;
   inset-inline-end: 0;
   z-index: 1;
-  border: 1px solid var(--border);
+}
+
+// The one of these still carrying a word, because forcing a deal is a move
+// nobody makes twice and the word is what says what it costs. Above the
+// offer rather than beside it, since a player may be holding four pairs on
+// the very turn they could have offered a redeal anyway.
+.board__force {
+  position: absolute;
+  inset-block-end: 1.625rem;
+  inset-inline-end: 0;
+  z-index: 1;
+  border: 1px solid var(--danger);
   border-radius: var(--radius-pill);
   background: transparent;
   padding: 0.125rem 0.5rem;
-  color: var(--text-muted);
+  color: var(--danger);
   font-size: 0.6875rem;
   cursor: pointer;
 
   &:hover {
-    border-color: var(--felt-500);
-    color: var(--felt-500);
-  }
-}
-
-// Above the offer rather than beside it, because a player may be holding
-// four pairs on the turn they could have offered a redeal anyway.
-.board__force {
-  inset-block-end: 1.625rem;
-  border-color: var(--danger);
-  color: var(--danger);
-
-  &:hover {
-    border-color: var(--danger);
     color: var(--text);
   }
 }

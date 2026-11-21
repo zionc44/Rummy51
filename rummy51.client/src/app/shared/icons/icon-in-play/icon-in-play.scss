@@ -1,0 +1,13 @@
+// Not a glyph like its neighbours in here, so it takes neither their size
+// nor their colour. It is a sign, drawn at the size of the way in it is
+// standing in for, in the red the lobby already says "in a game" in.
+:host {
+  display: inline-flex;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+
+  > svg {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+}

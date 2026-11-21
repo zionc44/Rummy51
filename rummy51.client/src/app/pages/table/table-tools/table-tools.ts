@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { IconStanding } from '../../../shared/icons/icon-standing/icon-standing';
 import { TranslatePipe } from '@ngx-translate/core';
+import { IconRedeal } from '../../../shared/icons/icon-redeal/icon-redeal';
 import { IconSort } from '../../../shared/icons/icon-sort/icon-sort';
+import { IconUndo } from '../../../shared/icons/icon-undo/icon-undo';
 import { Turn } from '../turn';
 
 /**
@@ -12,7 +14,7 @@ import { Turn } from '../turn';
  */
 @Component({
   selector: 'app-table-tools',
-  imports: [TranslatePipe, IconSort, IconStanding],
+  imports: [TranslatePipe, IconRedeal, IconSort, IconStanding, IconUndo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-tools.html',
   styleUrl: './table-tools.scss',

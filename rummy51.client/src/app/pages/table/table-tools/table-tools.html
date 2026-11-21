@@ -22,8 +22,14 @@
 }
 
 @if (turn().canOfferRedeal()) {
-  <button type="button" class="board__redeal" (click)="offeredRedeal.emit()">
-    {{ 'table.redeal' | translate }}
+  <button
+    type="button"
+    class="board__redeal"
+    [attr.aria-label]="'table.redeal' | translate"
+    [attr.title]="'table.redeal' | translate"
+    (click)="offeredRedeal.emit()"
+  >
+    <app-icon-redeal />
   </button>
 }
 
@@ -34,8 +40,14 @@
 }
 
 @if (turn().canUndo()) {
-  <button type="button" class="board__undo" (click)="undid.emit()">
-    {{ 'table.undo' | translate }}
+  <button
+    type="button"
+    class="board__undo"
+    [attr.aria-label]="'table.undo' | translate"
+    [attr.title]="'table.undo' | translate"
+    (click)="undid.emit()"
+  >
+    <app-icon-undo />
   </button>
 }
 

@@ -1,0 +1,5 @@
+@use 'icon' as *;
+
+:host {
+  @include icon-host;
+}

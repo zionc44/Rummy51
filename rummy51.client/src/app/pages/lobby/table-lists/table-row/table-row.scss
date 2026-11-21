@@ -108,16 +108,12 @@
   }
 }
 
+// A sign where the way in would be, and the sign brings its own size. A
+// word here was as wide as whatever language was asked for, which is room
+// taken from the seats, and the seats are what the row is.
 .row__state {
+  display: inline-flex;
   flex: none;
-  padding-inline: 0.375rem;
-  color: var(--text-faint);
-  font-size: 0.6875rem;
-}
-
-.row__state--mine {
-  color: var(--felt-500);
-  font-weight: 500;
 }
 
 // Outlined rather than filled: joining is an offer the list makes you and

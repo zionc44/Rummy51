@@ -40,7 +40,14 @@
       <app-icon-return />
     </button>
   } @else if (table().started) {
-    <span class="row__state">{{ 'lobby.inPlay' | translate }}</span>
+    <!-- Where the way in would be, so the row keeps its shape either way. -->
+    <span
+      class="row__state"
+      [attr.aria-label]="'lobby.inPlay' | translate"
+      [attr.title]="'lobby.inPlay' | translate"
+    >
+      <app-icon-in-play />
+    </span>
   } @else {
     <button
       type="button"
