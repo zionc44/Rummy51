@@ -97,6 +97,25 @@ public class TheDeal
             hand.Hands[hand.TurnSeat].Select(held => held.Card.Code));
     }
 
+    /// <summary>
+    /// Not a rule - the rules say nothing about this - but the one contract
+    /// in the domain kept by throwing rather than by refusing. Rule 9.4
+    /// thins a survival game as it goes, and a game thinned to one player
+    /// is a game that is over; reaching here with one is a defect upstream,
+    /// and a deal that quietly produced nothing would hide it.
+    /// </summary>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    public void A_hand_is_dealt_to_two_players_or_three_or_four(int playing)
+    {
+        var deck = Enumerable.Repeat(Cards.C(2), 108).ToArray();
+        var seats = Enumerable.Repeat(true, playing).ToArray();
+
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => Dealing.Deal(deck, seats, dealerSeat: 0, alreadyHeld: 0, Dealing.FirstDeal));
+    }
+
     private static IEnumerable<string> Codes(Hand hand, int seat) =>
         hand.Hands[seat].Select(held => held.Card.Code);
 }

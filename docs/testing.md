@@ -50,10 +50,10 @@ Measured, and ordered by what is at risk rather than by size.
 
 | | lines | suite | sitting | stands at |
 |---|---|---|---|---|
-| 1 | 2,377 | `Tests/Rummy51.Domain.Tests` | the rules | 157 tests |
+| 1 | 2,377 | `Tests/Rummy51.Domain.Tests` | the rules | 159 tests |
 | 2 | 1,855 | client, `core/` | the twins, and what the screen works out | 125 tests |
 | 3 | 2,918 | `Tests/Rummy51.Infrastructure.Tests` | tables, clocks, presence | 89 tests |
-| 4 | 1,184 | `Tests/Rummy51.Server.Tests` | the pipeline and the error contract | 30 tests |
+| 4 | 1,184 | `Tests/Rummy51.Server.Tests` | the pipeline and the error contract | 31 tests |
 
 **Domain first** because it is the product. It has no dependencies at all -
 no database, no clock, no HTTP - so a suite against it needs no scaffolding
@@ -95,7 +95,7 @@ on every refusal `InMemoryTables` has.
 
 ## Where it got to
 
-**1. `Tests/Rummy51.Domain.Tests` - landed.** 157 tests over ten suites
+**1. `Tests/Rummy51.Domain.Tests` - landed.** 159 tests over ten suites
 and two fixtures, 1,844 lines in all, against the domain's 2,377. Every
 suite lives under `Tests/`, one folder per project held, so the four of
 them sit together rather than each beside what it is about. The whole
@@ -212,8 +212,8 @@ pause between hands and the question about another game, each given a
 length of its own so that passing means something.
 
 
-**4. `Tests/Rummy51.Server.Tests` - landed.** 30 tests over three suites
-and three fixtures, 469 lines, against the server's 1,212. They run in
+**4. `Tests/Rummy51.Server.Tests` - landed.** 31 tests over three suites
+and four fixtures, 608 lines, against the server's 1,212. They run in
 about five seconds, which is almost all of it the host booting: these are
 the only tests here that start anything.
 
@@ -229,6 +229,24 @@ The host runs as Testing rather than Development, which matters more than
 it reads. In Development the framework puts its own exception page in
 front of everything, and what a client is handed instead of an exception
 is one of the three things this sitting exists to ask.
+
+Two more things are replaced and neither is a double. The first is the
+data protection key ring. The cookie wants a protector and the keys live in a table, so the
+pipeline reaches the database by itself whatever the controllers do -
+which it cannot here, and spent seconds per run saying so in stack traces
+long enough to look like failures. An ephemeral provider ends it.
+
+The second is where the log goes. A run that throws on purpose cannot be
+told from a run that broke while both are writing stack traces to the
+console, which is not a theory: it happened, the nine the key ring wrote
+went unread for a sitting, and the owner reading the output reasonably
+concluded the suite was failing when every one of its tests passed. So
+nothing reaches the console. What the host writes down is kept, and two
+tests hold it - that the handler wrote the exception it was given, which
+is the half of the contract that says a traceId leads somewhere, and that
+a request which went well wrote nothing down at all. The second of those
+is what turns an error nobody asked for from a line somebody has to
+notice into a test that fails and names it.
 
 Held to: all three paths of the error contract, asserted out of the body
 rather than off the object a controller returned - a `Result` turned into
@@ -252,6 +270,12 @@ guards suite is here to watch, so it is named rather than covered.
 403 is not held either, and cannot be: nothing in the project authorizes
 by role, so no route can produce one. The handler that would answer it is
 written beside the one for 401 and is the same two lines.
+
+Nor is signing in through Google, which is the third way in. No provider
+is configured in this host, so that route answers 500 from inside the
+action - and a test reading that as "not 401" would pass for a reason
+with nothing to do with what it claims. It was written that way first and
+is not there now.
 
 **One thing it found, and it is fixed.** `GlobalExceptionHandler` set the
 response content type to `application/problem+json` and then called

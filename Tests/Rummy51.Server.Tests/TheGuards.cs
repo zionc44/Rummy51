@@ -45,13 +45,18 @@ public class TheGuards(TheServer server) : IClassFixture<TheServer>
     }
 
     /// <summary>
-    /// The three ways in. A guard on any of them is a door that cannot be
+    /// The way in. A guard on either of these is a door that cannot be
     /// opened from outside, and no test but this would say so.
+    ///
+    /// Signing in through Google is the third and is not here. Nothing
+    /// configures a provider in this host, so the route answers 500 from
+    /// inside the action rather than anything about its guard - and a test
+    /// reading that as "not 401" would be passing for a reason that has
+    /// nothing to do with what it claims.
     /// </summary>
     [Theory]
     [InlineData("POST", "/api/auth/login")]
     [InlineData("POST", "/api/auth/register")]
-    [InlineData("GET", "/api/auth/google/start")]
     public async Task But_the_way_in_is_open(string method, string path)
     {
         var answer = await Asking(method, path);

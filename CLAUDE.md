@@ -526,8 +526,8 @@ CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
 
-All four suites are written, a sitting at a time. `dotnet test` runs 276
-of them - 157 over the rules, 89 over the tables and 30 over the pipeline
+All four suites are written, a sitting at a time. `dotnet test` runs 279
+of them - 159 over the rules, 89 over the tables and 31 over the pipeline
 - and `npm test` 125 more over the client's `core/`. Every test is named
 after the rule it holds the code to. The server's suites live under
 `Tests/`, one folder per project held; the client's live beside what they
@@ -548,7 +548,10 @@ asks about, and it runs as Testing rather than Development so that the
 framework's own exception page is not what answers. Only the account
 service is a double, being the one thing behind the wire that wants a
 database, and that is also what it cannot reach: no test there is signed
-in, because the cookie is real.
+in, because the cookie is real. Its log goes to a recorder rather than
+the console, so that the exception one test throws on purpose is told
+apart from one nobody asked for - the second being a failing test there
+rather than a line somebody has to notice.
 [`docs/testing.md`](docs/testing.md) holds the decision, which project is
 taken in which order and why, where it has got to, and what none of it will
 catch.

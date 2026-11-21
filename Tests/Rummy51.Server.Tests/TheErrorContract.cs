@@ -1,3 +1,5 @@
+using Rummy51.Server.Errors;
+
 namespace Rummy51.Server.Tests;
 
 /// <summary>
@@ -9,6 +11,7 @@ namespace Rummy51.Server.Tests;
 public class TheErrorContract(TheServer server) : IClassFixture<TheServer>
 {
     private const string ProblemJson = "application/problem+json";
+    private const string OnFire = "the database is on fire";
 
     [Fact]
     public async Task A_result_that_failed_comes_back_as_the_one_shape()
@@ -41,22 +44,13 @@ public class TheErrorContract(TheServer server) : IClassFixture<TheServer>
     [Fact]
     public async Task And_so_does_something_nothing_expected()
     {
-        server.Accounts.Throwing = new InvalidOperationException("the database is on fire");
+        var answer = await Breaking();
 
-        try
-        {
-            var answer = await LoggingIn();
-
-            Assert.Equal(HttpStatusCode.InternalServerError, answer.Status);
-            Assert.Equal(ProblemJson, answer.MediaType);
-            Assert.Equal("UnexpectedError", answer.Title);
-            Assert.Equal(["UnexpectedError"], answer.Codes);
-            Assert.NotNull(answer.TraceId);
-        }
-        finally
-        {
-            server.Accounts.Throwing = null;
-        }
+        Assert.Equal(HttpStatusCode.InternalServerError, answer.Status);
+        Assert.Equal(ProblemJson, answer.MediaType);
+        Assert.Equal("UnexpectedError", answer.Title);
+        Assert.Equal(["UnexpectedError"], answer.Codes);
+        Assert.NotNull(answer.TraceId);
     }
 
     /// <summary>
@@ -66,7 +60,8 @@ public class TheErrorContract(TheServer server) : IClassFixture<TheServer>
     [Fact]
     public async Task And_nothing_of_the_exception_crosses_the_wire()
     {
-        server.Accounts.Throwing = new InvalidOperationException("the database is on fire");
+        server.Logged.Forget();
+        server.Accounts.Throwing = new InvalidOperationException(OnFire);
 
         try
         {
@@ -79,6 +74,39 @@ public class TheErrorContract(TheServer server) : IClassFixture<TheServer>
         {
             server.Accounts.Throwing = null;
         }
+    }
+
+    /// <summary>
+    /// The other end of that thread. Nothing of it reaches the client, so
+    /// the log is the whole of where it went, and a handler that answered
+    /// correctly and wrote nothing down would be failing half its job.
+    /// </summary>
+    [Fact]
+    public async Task But_the_log_has_all_of_it()
+    {
+        await Breaking();
+
+        var written = Assert.Single(server.Logged.Errors);
+
+        Assert.Equal(typeof(GlobalExceptionHandler).FullName, written.Category);
+        Assert.Equal(OnFire, written.Thrown?.Message);
+    }
+
+    /// <summary>
+    /// And the other half of holding it: an error nobody asked for is a
+    /// failure here rather than a line somebody has to notice. A key ring
+    /// quietly failing to reach a database wrote nine of them a run, and
+    /// the only thing that ever said so was somebody reading the console.
+    /// </summary>
+    [Fact]
+    public async Task And_a_request_that_went_well_writes_nothing_down()
+    {
+        server.Logged.Forget();
+        server.Accounts.Succeeding();
+
+        await LoggingIn();
+
+        Assert.Empty(server.Logged.Errors.Select(entry => $"{entry.Category}: {entry.Message}"));
     }
 
     /// <summary>
@@ -158,6 +186,22 @@ public class TheErrorContract(TheServer server) : IClassFixture<TheServer>
 
         Assert.Equal(status, answer.Status);
         Assert.Equal(title, answer.Title);
+    }
+
+    /// <summary>The one failure nobody expected, and it is expected here.</summary>
+    private async Task<Answered> Breaking()
+    {
+        server.Logged.Forget();
+        server.Accounts.Throwing = new InvalidOperationException(OnFire);
+
+        try
+        {
+            return await LoggingIn();
+        }
+        finally
+        {
+            server.Accounts.Throwing = null;
+        }
     }
 
     private async Task<Answered> LoggingIn()

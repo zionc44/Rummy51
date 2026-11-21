@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Rummy51.Server.Tests;
 
@@ -15,6 +17,8 @@ public sealed class TheServer : WebApplicationFactory<Program>
 {
     public Accounts Accounts { get; } = new();
 
+    public Logged Logged { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Not Development, where the framework puts its own exception page in
@@ -24,11 +28,28 @@ public sealed class TheServer : WebApplicationFactory<Program>
 
         // Read while the host is being built and thrown over when missing,
         // which is earlier than anything a test could add afterwards. Nothing
-        // here reaches a database, so what it says does not matter.
+        // reaches it, which is only true because of the key ring below.
         builder.UseSetting("ConnectionStrings:Rummy51Db", "Host=nowhere");
 
         builder.ConfigureTestServices(services =>
-            services.AddScoped<IPlayerAccountService>(_ => Accounts));
+        {
+            services.AddScoped<IPlayerAccountService>(_ => Accounts);
+
+            // The one thing in the pipeline that goes to the database by
+            // itself: the cookie wants a protector, and the keys are kept in
+            // a table. Without this every run spends seconds failing to
+            // resolve a host that is not there, and says so at length.
+            services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
+
+            // Nothing reaches the console. An error written here is one a
+            // test can be held to, which is the only way to tell the one
+            // thrown on purpose from one nobody asked for.
+            services.AddLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddProvider(Logged);
+            });
+        });
     }
 
     /// <summary>Following one would hide the redirect this project replaced.</summary>
