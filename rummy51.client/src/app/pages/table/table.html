@@ -28,7 +28,7 @@
 
       <!-- Everything left over, which is where the melds will be laid. -->
       <div class="table__felt">
-        @if (hand(); as hand) {
+        @if (seating.playing(); as hand) {
           <!-- Both are on screen while the deck sweeps away: the cards need
                somewhere to fly to, and the pile is it. -->
           @if (hand.phase === 'cutting' || journeys.deal.collapsing()) {
@@ -67,7 +67,7 @@
 
               <app-table-tools
                 [turn]="turn"
-                [arrangeable]="seating.seated() && myCards().length > 0"
+                [arrangeable]="arrangeable()"
                 [winner]="seating.winner()"
                 (sorted)="arranged.sort()"
                 [across]="reckoning.across()"
@@ -79,7 +79,7 @@
               />
             </div>
           }
-        } @else if (!current.started) {
+        } @else if (seating.filling()) {
           <p class="table__waiting">
             <span class="table__turning" aria-hidden="true"></span>
             {{ 'table.waiting' | translate }}
@@ -101,7 +101,7 @@
             [places]="seating.placesAt(seating.nearSeat())"
             [firstLine]="arranged.firstLine()"
             [picked]="arranged.picked()"
-            [arrangeable]="seating.seated() && myCards().length > 0"
+            [arrangeable]="arrangeable()"
             (moved)="moveCard($event)"
             (tapped)="arranged.pick($event)"
             (released)="cardReleased($event)"
@@ -120,7 +120,7 @@
               [left]="asking.secondsLeft()"
               [compact]="true"
             />
-            @if (seating.seated() && myCards().length > 0) {
+            @if (arrangeable()) {
               <app-table-tally
                 [worth]="reading.worth()"
                 [points]="reading.meldPoints()"

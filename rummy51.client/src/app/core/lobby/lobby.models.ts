@@ -139,6 +139,9 @@ export interface Standing {
 
   readonly out: readonly boolean[];
 
+  /** Who has read what the hand came to, which is what shuts their window. */
+  readonly read: readonly boolean[];
+
   /** Rule 9.5: the seat the game went to, and -1 until there is one. */
   readonly won: number;
 }

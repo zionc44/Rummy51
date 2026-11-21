@@ -10,6 +10,11 @@ namespace Rummy51.Application.Tables;
 /// worth reading in the middle of a hand and the hand it followed is gone
 /// by then. Nought for a seat that was not in it.
 /// </param>
+/// <param name="Read">
+/// Who has read what the hand came to and is waiting on nobody. A seat
+/// answers for itself, so the window that showed it needs no memory of
+/// its own and nothing to put back at the start of a game.
+/// </param>
 /// <param name="Won">
 /// Rule 9.5: the seat the game itself went to, which is not the seat that
 /// took any one hand. Minus one until there is a game to have been won.
@@ -19,4 +24,5 @@ public sealed record Standing(
     IReadOnlyList<int> Hands,
     IReadOnlyList<int> Last,
     IReadOnlyList<bool> Out,
+    IReadOnlyList<bool> Read,
     int Won);

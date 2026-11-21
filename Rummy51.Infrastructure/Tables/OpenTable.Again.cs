@@ -59,13 +59,26 @@ internal sealed partial class OpenTable
             GiveUp(seat);
         }
 
-        if (staying.All(said => said is not null))
+        if (EverybodyStillHereHasSaid())
         {
             Settle();
         }
 
         return true;
     }
+
+    /// <summary>
+    /// Rule 9.3 is put to players and not to chairs. Rule 9.6 empties one in
+    /// the middle of a game, and an empty one can never answer: a table that
+    /// waited for it would sit out the whole of rule 10.8's clock with
+    /// everybody who is there already agreed.
+    ///
+    /// Somebody seated but not looking is waited for all the same. Not
+    /// answering costs them the chair, and 10.8 gives them the time.
+    /// </summary>
+    private bool EverybodyStillHereHasSaid() =>
+        Enumerable.Range(0, seats.Length)
+            .All(seat => seats[seat] is null || staying![seat] is not null);
 
     /// <summary>Rule 10.8: not answering is giving the seat up.</summary>
     private bool NobodyElseIsStaying()

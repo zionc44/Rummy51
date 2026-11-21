@@ -154,6 +154,11 @@ export class Table implements OnDestroy {
     this.arranged.cards,
   );
 
+  /** A hand in front of this player to sort, to drag and to be told about. */
+  protected readonly arrangeable = computed(
+    () => !this.seating.filling() && this.seating.seated() && this.myCards().length > 0,
+  );
+
   protected readonly canCut = computed(() => {
     const hand = this.hand();
 
@@ -223,6 +228,7 @@ export class Table implements OnDestroy {
       }
 
       this.asking.settle(phase);
+      this.reckoning.settle(phase);
 
       const hand = this.hand();
 

@@ -1,10 +1,13 @@
 import { Signal, computed } from '@angular/core';
 import { HeldCard } from '../../core/cards/card';
-import { HandView, LobbyTable } from '../../core/lobby/lobby.models';
+import { HandView, LobbyTable, TableSeat } from '../../core/lobby/lobby.models';
 import { Dealing } from './dealing';
 
 /** Shared, so a seat holding nothing is not handed a new array every pass. */
 const Nothing: readonly HeldCard[] = [];
+
+/** A chair with nobody in it, which is what a seat is before anybody sits. */
+const Empty: TableSeat = { playerId: null, displayName: null, avatarUrl: null, away: false };
 
 /**
  * Who is at this table as this viewer sees it, and what each of their places
@@ -30,7 +33,48 @@ export class Seating {
 
   readonly seats = computed(() => this.table()?.seats ?? []);
 
-  readonly taken = computed(() => this.seats().filter((seat) => seat.playerId).length);
+  /**
+   * Rule 9.3: this viewer has said whether they want another game. The one
+   * they were in is behind them from that moment, and what is in front of
+   * them is a table filling up - so from here the places are read as the
+   * next table's and not as the last one's.
+   */
+  readonly answered = computed(() => {
+    const staying = this.hand()?.staying ?? [];
+    const seat = this.ownSeat();
+
+    return seat !== -1 && staying.length > 0 && (staying[seat] ?? null) !== null;
+  });
+
+  /** Rules 10.4 and 9.3: a table being filled rather than played. */
+  readonly filling = computed(() => this.table()?.started !== true || this.answered());
+
+  /**
+   * The hand the places are drawn from. A dealer, a clock and a pile of
+   * cards all belong to the hand that finished, and drawn beside a chair
+   * nobody has taken they say a game is going on that is not.
+   */
+  readonly playing = computed(() => (this.filling() ? null : this.hand()));
+
+  /**
+   * A chair carries its player once they have said they are keeping it.
+   * They hold it until then and rule 10.8 gives them all of their time,
+   * but the table being made is made of answers.
+   */
+  private readonly keeping = computed(() => {
+    const seats = this.seats();
+    const staying = this.hand()?.staying ?? [];
+
+    // Not to anybody still being asked: they are looking at the hand that
+    // was played, and the places around it are the places that played it.
+    if (!this.filling() || staying.length === 0) {
+      return seats;
+    }
+
+    return seats.map((seat, at) => (staying[at] === true ? seat : Empty));
+  });
+
+  readonly taken = computed(() => this.keeping().filter((seat) => seat.playerId).length);
 
   /** -1 while the viewer is not sitting at this table. */
   readonly ownSeat = computed(() => {
@@ -48,7 +92,7 @@ export class Seating {
    */
   readonly doubted = computed(() => this.away()[this.ownSeat()] ?? false);
 
-  readonly away = computed(() => this.hand()?.away ?? []);
+  readonly away = computed(() => this.playing()?.away ?? []);
 
   /** Chapter 10, read from the hand because that is what arrives on a change. */
   awayAt(seat: number): boolean {
@@ -64,7 +108,7 @@ export class Seating {
    * the row across from them reads in the order play will take.
    */
   readonly others = computed(() => {
-    const seats = this.seats();
+    const seats = this.keeping();
     const from = Math.max(0, this.ownSeat());
 
     return Array.from({ length: Math.max(0, seats.length - 1) }, (_, step) => {
@@ -80,12 +124,12 @@ export class Seating {
   }
 
   /** -1 until a hand has begun, which no seat ever matches. */
-  readonly dealerSeat = computed(() => this.hand()?.dealerSeat ?? -1);
+  readonly dealerSeat = computed(() => this.playing()?.dealerSeat ?? -1);
 
-  readonly cutterSeat = computed(() => this.hand()?.cutterSeat ?? -1);
+  readonly cutterSeat = computed(() => this.playing()?.cutterSeat ?? -1);
 
   readonly cutter = computed(() => {
-    const hand = this.hand();
+    const hand = this.playing();
 
     return hand ? this.seats()[hand.cutterSeat]?.displayName ?? '' : '';
   });
@@ -95,7 +139,7 @@ export class Seating {
    * until somebody has: that is every moment of a hand but its last.
    */
   readonly winner = computed(() => {
-    const at = this.hand()?.winnerSeat ?? -1;
+    const at = this.playing()?.winnerSeat ?? -1;
 
     return at === -1
       ? null
@@ -107,7 +151,7 @@ export class Seating {
    * every seat but the one being waited for, which is most of them.
    */
   clockFor(seat: number): { readonly left: number; readonly of: number } | null {
-    const waiting = this.hand()?.waiting ?? null;
+    const waiting = this.playing()?.waiting ?? null;
 
     return waiting === null || waiting.seat !== seat
       ? null
@@ -119,6 +163,10 @@ export class Seating {
    * anybody else's only the jokers the cut gave them.
    */
   private faceUpCards(seat: number): readonly HeldCard[] {
+    if (this.filling()) {
+      return Nothing;
+    }
+
     if (this.mine(seat)) {
       return this.myHand();
     }
@@ -127,14 +175,14 @@ export class Seating {
     // longer. By the time play begins the whole table has had a hand's
     // worth of time to see it, and a card shown for ever is one more thing
     // to carry through every sort, every drag and every move after it.
-    const dealing = this.hand()?.phase === 'dealing';
+    const dealing = this.playing()?.phase === 'dealing';
 
     return dealing && seat === this.cutterSeat() ? this.cutJokers() : Nothing;
   }
 
   /** The jokers the cut gave the cutter, which nobody rearranges. */
   private readonly cutJokers = computed<readonly HeldCard[]>(() =>
-    (this.hand()?.revealedAtCut ?? []).map((code, id) => ({ id, code })),
+    (this.playing()?.revealedAtCut ?? []).map((code, id) => ({ id, code })),
   );
 
   /** Those cards, with a gap kept for each one still on its way. */
@@ -161,7 +209,7 @@ export class Seating {
    * holding anything and the answer would only be a nought.
    */
   holdingAt(seat: number): number | null {
-    const hand = this.hand();
+    const hand = this.playing();
 
     if (hand === null || hand.phase === 'cutting') {
       return null;
@@ -184,6 +232,6 @@ export class Seating {
    * not move the cards in it while the rest are still landing.
    */
   placesAt(seat: number): number {
-    return this.hand()?.cardsPerSeat[seat] ?? 0;
+    return this.playing()?.cardsPerSeat[seat] ?? 0;
   }
 }

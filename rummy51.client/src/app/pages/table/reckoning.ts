@@ -1,5 +1,5 @@
 import { Signal, computed, signal } from '@angular/core';
-import { HandView, LobbyTable, TableSeat } from '../../core/lobby/lobby.models';
+import { HandPhase, HandView, LobbyTable, TableSeat } from '../../core/lobby/lobby.models';
 import { ResultRow } from './hand-result/hand-result';
 import { Moves } from './moves';
 
@@ -105,15 +105,35 @@ export class Reckoning {
   readonly open = signal(false);
 
   /**
-   * Whether the result window has been put away. It says which result was
-   * put away rather than that one was, because everything about a table
-   * arrives again every time anybody else moves: a flag would be cleared
-   * by somebody else pressing their own button, and the window would come
-   * back in front of whoever had just closed it.
+   * Whether the result window has been put away. The table is asked rather
+   * than remembered - a seat says for itself whether it has read the hand,
+   * and the table puts that back when the next one is dealt and again when
+   * a game begins. Nothing here counts anything, so there is nothing left
+   * counting from the game before.
    */
-  readonly done = computed(
-    () => this.resultNumber() > 0 && this.readAway() === this.resultNumber(),
-  );
+  readonly done = computed(() => {
+    const hand = this.hand();
+    const seat = this.ownSeat();
+
+    if (hand === null) {
+      return false;
+    }
+
+    // Somebody watching a table they are not sitting at is in none of its
+    // arrays and never will be, so what they have put away is their own.
+    if (seat === -1) {
+      return this.putAway();
+    }
+
+    return hand.standing.read[seat] === true || (hand.staying[seat] ?? null) !== null;
+  });
+
+  /** A window put away is open again the moment there is another result. */
+  settle(phase: HandPhase | null): void {
+    if (phase !== 'finished') {
+      this.putAway.set(false);
+    }
+  }
 
   /**
    * Rule 9.6: out of the game, and this is the hand that did it. Asked once
@@ -158,14 +178,14 @@ export class Reckoning {
    * so; the table deals as soon as everybody watching has.
    */
   readTheHand(): void {
-    this.readAway.set(this.resultNumber());
+    this.putAway.set(true);
     this.moves.readTheHand();
   }
 
-  /** Rule 9.6. */
+  /** Rule 9.6, where staying to watch is reading it and nothing more. */
   wentOn(leaving: boolean): void {
     if (!leaving) {
-      this.readAway.set(this.resultNumber());
+      this.readTheHand();
 
       return;
     }
@@ -185,18 +205,8 @@ export class Reckoning {
     }
   }
 
-  /**
-   * Which result is on the screen, counted in the hands behind it, and
-   * nought before there is one.
-   */
-  private readonly resultNumber = computed(() => {
-    const hands = this.hand()?.standing.hands ?? [];
-
-    return hands.length > 0 ? Math.max(...hands) : 0;
-  });
-
-  /** The last result this player read and put away. */
-  private readonly readAway = signal(0);
+  /** The one thing here a watcher has to be remembered by, and only them. */
+  private readonly putAway = signal(false);
 }
 
 /**

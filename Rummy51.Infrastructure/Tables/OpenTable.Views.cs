@@ -86,7 +86,13 @@ internal sealed partial class OpenTable
                 // Copied, not handed over: these arrays belong to the game
                 // and go on changing, and a view is what was true when it
                 // was asked for.
-                new Standing([.. Totals], [.. HandsPlayed], [.. LastHand], [.. OutOfIt], WonSeat),
+                new Standing(
+                    [.. Totals],
+                    [.. HandsPlayed],
+                    [.. LastHand],
+                    [.. OutOfIt],
+                    [.. ReadIt],
+                    WonSeat),
                 staying ?? [],
                 Absent,
                 hand.HasDrawn,

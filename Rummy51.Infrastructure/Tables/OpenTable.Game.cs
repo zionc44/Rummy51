@@ -42,6 +42,8 @@ internal sealed partial class OpenTable
 
     public IReadOnlyList<int> LastHand => lastHand;
 
+    public IReadOnlyList<bool> ReadIt => readIt;
+
     /// <summary>Rule 9.5, and -1 until there is a game to have been won.</summary>
     public int WonSeat => staying is null ? -1 : WonTheGame();
 
