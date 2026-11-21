@@ -16,6 +16,13 @@ internal sealed partial class OpenTable
 
     private Guid gameId;
     private DateTimeOffset gameStartedAt;
+
+    /// <summary>
+    /// Who sat where when this game began. Kept because rule 9.6 empties
+    /// the chair of a player who is out, so by the time the game ends the
+    /// seats no longer hold everybody the game was played by.
+    /// </summary>
+    private Guid?[] playedBy = [];
     private string? dealtFinishingCard;
     private bool handWritten;
 
@@ -39,6 +46,8 @@ internal sealed partial class OpenTable
     {
         gameId = Guid.CreateVersion7();
         gameStartedAt = clock.GetUtcNow();
+
+        playedBy = [.. seats.Select(player => player?.PlayerId)];
 
         pending.Add(new GameBegan(
             gameId,
@@ -76,6 +85,7 @@ internal sealed partial class OpenTable
             Codes(ended.Deck.Order),
             ended.AgreedRedeals,
             ended.ForcedRedeals,
+            ended.Restocks.Count == 0 ? null : string.Join('\n', ended.Restocks),
             gameStartedAt,
             at,
             // Rule 9.4: only the seats this hand was dealt to. A seat that
@@ -98,7 +108,14 @@ internal sealed partial class OpenTable
 
         pending.Add(new GameEnded(
             gameId,
-            won == -1 ? null : seats[won]?.PlayerId,
+            won == -1 ? null : playedBy.ElementAtOrDefault(won),
+            [.. Enumerable.Range(0, playedBy.Length).Where(seat => playedBy[seat] is not null)
+                .Select(seat => new PlayerStanding(
+                    playedBy[seat]!.Value,
+                    handsPlayed[seat],
+                    totals[seat],
+                    OutAfterHand[seat] == 0 ? null : OutAfterHand[seat],
+                    Places[seat]))],
             clock.GetUtcNow()));
     }
 

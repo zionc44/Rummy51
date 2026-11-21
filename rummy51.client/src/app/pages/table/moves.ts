@@ -101,6 +101,11 @@ export class Moves {
     this.send(this.tables.giveUpTheChair(this.tableId()));
   }
 
+  /** Rule 3.5. */
+  seeTheRestock(): void {
+    this.send(this.tables.seeTheRestock(this.tableId()));
+  }
+
   /** Rule 12.6. */
   keep(cardIds: readonly number[]): void {
     this.send(this.tables.keep(this.tableId(), cardIds));

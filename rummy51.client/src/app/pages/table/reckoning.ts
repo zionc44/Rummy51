@@ -45,8 +45,12 @@ export class Reckoning {
 
     const standing = hand.standing;
     const played = Math.max(...standing.hands);
+    // Rule 8.3 places a hand and rule 9.5 places a game, and a game of
+    // several is read for where it stands rather than for what its last
+    // hand came to. Both come from the table: a placing worked out twice
+    // is a placing that will be changed once.
     const rows = hand.scores.map((score, seat) => ({
-      place: hand.places[seat],
+      place: (this.across() ? standing.places[seat] : hand.places[seat]) ?? 0,
       name: seats[seat]?.displayName ?? '',
       score,
       won: seat === hand.winnerSeat,
@@ -59,7 +63,7 @@ export class Reckoning {
       staying: hand.staying[seat] ?? null,
     }));
 
-    return this.across() ? byStanding(rows) : rows.sort((one, other) => one.place - other.place);
+    return [...rows].sort(byPlace);
   });
 
   /**
@@ -75,15 +79,15 @@ export class Reckoning {
       return [];
     }
 
-    const { totals, hands, last, out } = hand.standing;
+    const { totals, hands, last, out, places } = hand.standing;
     const played = Math.max(...hands);
 
-    return byStanding(
-      seats.flatMap((who, seat) =>
+    return seats
+      .flatMap((who, seat) =>
         who.playerId
           ? [
               {
-                place: 0,
+                place: places[seat] ?? 0,
                 name: who.displayName ?? '',
                 score: last[seat] ?? 0,
                 won: false,
@@ -97,8 +101,8 @@ export class Reckoning {
               },
             ]
           : [],
-      ),
-    );
+      )
+      .sort(byPlace);
   });
 
   /** Open only while somebody is reading it. */
@@ -209,13 +213,7 @@ export class Reckoning {
   private readonly putAway = signal(false);
 }
 
-/**
- * Rule 9.4: whoever is furthest from the number comes first, and whoever
- * is out of it sits under the rest whatever they have. The place is where
- * that order put them and not what any one hand came to.
- */
-function byStanding(rows: readonly ResultRow[]): readonly ResultRow[] {
-  return [...rows]
-    .sort((one, other) => Number(one.out) - Number(other.out) || one.total - other.total)
-    .map((row, at) => ({ ...row, place: at + 1 }));
+/** Nought is no place at all, so it comes last rather than ahead of first. */
+function byPlace(one: ResultRow, other: ResultRow): number {
+  return (one.place || Infinity) - (other.place || Infinity);
 }

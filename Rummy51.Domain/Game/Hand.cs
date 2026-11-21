@@ -14,6 +14,9 @@ public enum HandPhase
 
     Keeping,
 
+    /// <summary>Rule 3.5.</summary>
+    Restocking,
+
     Finished
 }
 
@@ -53,6 +56,20 @@ public sealed partial class Hand
     private readonly bool[] wasDown;
     private readonly bool[] wentRummy;
     private readonly bool[] tookTheFinishingCard;
+
+    /// <summary>Rule 3.5, by seat, and put back once the stock has been filled.</summary>
+    private readonly bool[] seenTheRestock;
+
+    /// <summary>
+    /// Rule 3.5's shuffle, running on from the deal's own seed. A seed does
+    /// not reproduce a restock whatever it is - what goes into one is
+    /// whatever the table happened to throw - so the order each one came out
+    /// in is kept instead, and this only has to be a shuffle nobody chose.
+    /// </summary>
+    private readonly Random shuffling;
+
+    /// <summary>Rule 3.5: what each restock came out as, in the order they happened.</summary>
+    private readonly List<string> restocks = [];
     private bool downBeforeThisTurn;
 
     /// <summary>
@@ -91,12 +108,14 @@ public sealed partial class Hand
         wasDown = new bool[seats];
         wentRummy = new bool[seats];
         tookTheFinishingCard = new bool[seats];
+        seenTheRestock = new bool[seats];
         hasOffered = new bool[seats];
         hasPlayed = new bool[seats];
         keeping = new int[seats][];
         DealerSeat = dealerSeat;
         CutterSeat = Dealing.Before(dealerSeat, this.playing);
         Deck = deck;
+        shuffling = new Random(deck.Seed);
 
         if (was is null)
         {
@@ -157,6 +176,12 @@ public sealed partial class Hand
 
     /// <summary>Rule 6.6.</summary>
     public IReadOnlyList<bool> WentRummy => wentRummy;
+
+    /// <summary>Rule 3.5: who has said they have seen the stock filled.</summary>
+    public IReadOnlyList<bool> SeenTheRestock => seenTheRestock;
+
+    /// <summary>Rule 3.5, which rule 11.5 needs to deal this hand again.</summary>
+    public IReadOnlyList<string> Restocks => restocks;
 
     /// <summary>Rule 7.1, which only one player a hand can ever have done.</summary>
     public IReadOnlyList<bool> TookTheFinishingCard => tookTheFinishingCard;

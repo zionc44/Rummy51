@@ -79,4 +79,52 @@ public class Scoring
         Assert.Equal(0, places[1]);
         Assert.Equal(1, places[0]);
     }
+
+    // ------------------------------------------------- and where a game did
+
+    /// <summary>Everybody who sat down, which is the usual case.</summary>
+    private static IReadOnlyList<bool> All(int seats) => [.. Enumerable.Repeat(true, seats)];
+
+    [Fact]
+    public void Rule_9_5_whoever_lasted_longest_comes_first() =>
+        Assert.Equal([1, 3, 2], Placing.InTheGame([5, 2, 4], [120, 210, 230], All(3)));
+
+    [Fact]
+    public void Rule_9_5_and_a_lower_total_does_not_buy_a_place()
+    {
+        // Out in the second hand with 205 against out in the fifth with
+        // 230. Lasting is the whole of it, so the 230 comes first.
+        var places = Placing.InTheGame([5, 2], [230, 205], All(2));
+
+        Assert.Equal([1, 2], places);
+    }
+
+    [Fact]
+    public void Rule_9_5_two_out_in_the_same_hand_are_split_by_what_they_had() =>
+        Assert.Equal([1, 3, 2], Placing.InTheGame([4, 3, 3], [90, 240, 210], All(3)));
+
+    [Fact]
+    public void Rule_9_5_two_alike_in_both_share_a_place() =>
+        Assert.Equal([1, 2, 2, 4], Placing.InTheGame([6, 3, 3, 1], [80, 220, 220, 260], All(4)));
+
+    [Fact]
+    public void Rule_9_5_the_last_one_in_is_first_without_being_put_there()
+    {
+        // The winner is the only seat under the number and the only one to
+        // have played every hand, so both keys have them first already.
+        var places = Placing.InTheGame([7, 7, 4], [150, 205, 240], All(3));
+
+        Assert.Equal(1, places[0]);
+    }
+
+    [Fact]
+    public void Rule_9_6_a_chair_given_up_is_still_placed_by_how_long_it_lasted() =>
+        Assert.Equal([2, 0, 1], Placing.InTheGame([3, 0, 5], [220, 0, 140], [true, false, true]));
+
+    [Fact]
+    public void Rule_9_2_a_game_of_one_hand_places_by_that_hand() =>
+        Assert.Equal([2, 1, 3], Placing.InTheGame([1, 1, 1], [40, -30, 100], All(3)));
+
+    [Fact]
+    public void Rule_9_5_nothing_to_place() => Assert.Empty(Placing.InTheGame([], [], []));
 }

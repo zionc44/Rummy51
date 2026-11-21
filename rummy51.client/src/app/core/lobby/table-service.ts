@@ -114,6 +114,11 @@ export class TableService {
   }
 
   /** Rule 12.6. */
+  /** Rule 3.5. */
+  seeTheRestock(tableId: string): Observable<HandView> {
+    return this.http.post<HandView>(`${API}/${tableId}/restock`, {}).pipe(failWithApiErrors());
+  }
+
   keep(tableId: string, cardIds: readonly number[]): Observable<HandView> {
     return this.http
       .post<HandView>(`${API}/${tableId}/redeal/keep`, { cardIds })

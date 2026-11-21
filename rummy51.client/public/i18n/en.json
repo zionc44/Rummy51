@@ -172,7 +172,9 @@
     "standing": "Where it stands",
     "lastHand": "Last hand",
     "wonTheGame": "{{0}} won the game",
-    "youWonTheGame": "You won the game!"
+    "youWonTheGame": "You won the game!",
+    "stockGone": "The stock has run out",
+    "stockGoneWhy": "The discards are shuffled and become the stock. The card last thrown stays on the pile."
   },
   "profile": {
     "open": "Account menu",

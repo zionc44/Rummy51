@@ -4,9 +4,9 @@ import { Moves } from './moves';
 import { VoteRow } from './redeal-vote/redeal-vote';
 
 /**
- * What the table is asking this player, which is chapter 12 and nothing
- * else: a redeal put to them, the answers they have earned the right to
- * see, and the three cards they are choosing.
+ * What the table is asking this player: a redeal put to them under chapter
+ * 12, the answers they have earned the right to see, the three cards they
+ * are choosing, and rule 3.5's one question that is not a question at all.
  *
  * The twin of `Turn`, which says what they may do. This says what they are
  * being waited for, and both exist so that the screen can ask one question
@@ -80,6 +80,29 @@ export class Asking {
 
   /** Rule 12.10 being put to whoever may force, before anything is sent. */
   readonly choosing = signal(false);
+
+  /**
+   * Rule 3.5: the stock has gone and the pile is about to be it. Nobody is
+   * being asked to agree, only to have seen it, so this is gone the moment
+   * they say so and not when the table settles.
+   */
+  readonly theStockHasGone = computed(() => this.hand()?.phase === 'restocking');
+
+  /**
+   * And this player has said so, which leaves them watching for the rest.
+   * Somebody watching a table they do not sit at is never waited for, so
+   * there is nothing for them to say either.
+   */
+  readonly seenTheRestock = computed(() => {
+    const seat = this.ownSeat();
+
+    return seat === -1 || this.hand()?.seenTheRestock[seat] === true;
+  });
+
+  /** Rule 3.5, seen. */
+  seeTheRestock(): void {
+    this.moves.seeTheRestock();
+  }
 
   /** Rule 12.9, which only opens the choice of what to force. */
   chooseHowToForce(): void {

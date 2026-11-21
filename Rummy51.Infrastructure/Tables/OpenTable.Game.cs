@@ -16,8 +16,12 @@ internal sealed partial class OpenTable
     /// <summary>Rule 9.5: how long each of them lasted, which is the standing.</summary>
     private readonly int[] handsPlayed;
 
-    /// <summary>Rule 9.4.</summary>
-    private readonly bool[] outOfIt;
+    /// <summary>
+    /// Rule 9.4, as the number of the hand that put each of them out, and
+    /// nought while they are still in it. The hand is kept and not just the
+    /// fact, because 9.5 places them by the order they went out in.
+    /// </summary>
+    private readonly int[] outAfterHand;
 
     /// <summary>What the hand before this one came to, which outlives it.</summary>
     private readonly int[] lastHand;
@@ -38,7 +42,17 @@ internal sealed partial class OpenTable
 
     public IReadOnlyList<int> HandsPlayed => handsPlayed;
 
-    public IReadOnlyList<bool> OutOfIt => outOfIt;
+    public IReadOnlyList<bool> OutOfIt => [.. outAfterHand.Select(hand => hand > 0)];
+
+    public IReadOnlyList<int> OutAfterHand => outAfterHand;
+
+    /// <summary>Rule 9.5: who there is to place, which is whoever was in it.</summary>
+    private IReadOnlyList<bool> InTheGame =>
+        [.. Enumerable.Range(0, seats.Length)
+            .Select(seat => seats[seat] is not null || handsPlayed[seat] > 0)];
+
+    /// <summary>Rule 9.5, and nought for a chair that was never in the game.</summary>
+    public IReadOnlyList<int> Places => Placing.InTheGame(handsPlayed, totals, InTheGame);
 
     public IReadOnlyList<int> LastHand => lastHand;
 
@@ -49,7 +63,7 @@ internal sealed partial class OpenTable
 
     /// <summary>Who the next hand is dealt to, which rule 9.4 thins as it goes.</summary>
     private IReadOnlyList<bool> StillIn =>
-        [.. Enumerable.Range(0, seats.Length).Select(seat => !outOfIt[seat])];
+        [.. Enumerable.Range(0, seats.Length).Select(seat => outAfterHand[seat] == 0)];
 
     /// <summary>
     /// Rule 9.4, and rule 9.2 for the other two: a single hand is the whole
@@ -134,7 +148,7 @@ internal sealed partial class OpenTable
     /// <summary>Rule 9.6: out of the game, and giving the chair up with it.</summary>
     public bool GiveUpTheChair(int seat)
     {
-        if (seat < 0 || seat >= seats.Length || !outOfIt[seat] || seats[seat] is null)
+        if (seat < 0 || seat >= seats.Length || outAfterHand[seat] == 0 || seats[seat] is null)
         {
             return false;
         }
@@ -173,7 +187,11 @@ internal sealed partial class OpenTable
 
         for (var seat = 0; seat < seats.Length; seat++)
         {
-            outOfIt[seat] = outOfIt[seat] || totals[seat] >= limit;
+            if (outAfterHand[seat] == 0 && totals[seat] >= limit)
+            {
+                // Counted first, so this is the hand that put them there.
+                outAfterHand[seat] = handsSoFar;
+            }
         }
     }
 
@@ -189,7 +207,9 @@ internal sealed partial class OpenTable
             return hand?.WinnerSeat ?? -1;
         }
 
-        var left = Enumerable.Range(0, seats.Length).Where(seat => !outOfIt[seat]).ToList();
+        var left = Enumerable.Range(0, seats.Length)
+            .Where(seat => outAfterHand[seat] == 0)
+            .ToList();
 
         if (left.Count == 1)
         {
@@ -207,7 +227,7 @@ internal sealed partial class OpenTable
     {
         Array.Clear(totals);
         Array.Clear(handsPlayed);
-        Array.Clear(outOfIt);
+        Array.Clear(outAfterHand);
         Array.Clear(lastHand);
         Array.Clear(readIt);
         handsSoFar = 0;

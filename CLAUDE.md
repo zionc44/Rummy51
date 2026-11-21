@@ -488,7 +488,12 @@ somebody takes it. That is also the first thing here that reads
 
 What a hand produced outlives the table it was played at: six tables hold
 the games, who sat where, the deals, what each player came to, and every
-redeal put to the table with what each of them said to it.
+redeal put to the table with what each of them said to it. A game also
+keeps what it came to for each player - how many hands they lasted, what
+they came to, which hand put them out under 9.4 and where 9.5 placed them
+- which could be added up again out of the hands and is written down all
+the same, because a game already played must keep the standing it was
+played to.
 
 Still open in the game: nothing sequences hands, so a game is one deal and
 stops — the other two modes in 9.2 are chosen, checked and then played as
@@ -496,11 +501,19 @@ though they were the first. Tables still live in memory, so a restart loses
 every table in play, though no longer the results of what was played in
 them.
 
-Two rules are written and held to by nobody, and both on purpose. 3.5
-reshuffles the discard pile into a stock that has run out, and this stock
-does not run out. 7.5 says nobody has to take the finishing card, which is
-a permission and has nothing to enforce. They are what `rule-links.js`
-names, and they are the whole of that list.
+3.5 fills a stock that has run out from the pile of what everybody threw.
+It went unenforced for a long time on the grounds that this stock does not
+run out, which was true of a hand somebody plays and not of one the server
+plays by itself: four windows left idle take a turn every five seconds
+under 3.6, each one drawing, and fifty cards are gone in four minutes. So
+it is enforced now. The card last thrown stays where it lies, the table is
+told before anything moves, and what the shuffle came out as is written
+down - no seed reaches a restock, since what goes into one is whatever the
+table happened to throw.
+
+That leaves one rule held to by nobody, and on purpose. 7.5 says nobody
+has to take the finishing card, which is a permission and has nothing to
+enforce. It is the whole of what `rule-links.js` names.
 
 Still open around it: the Google link on the account page; rate limiting and
 CAPTCHA on registration — it cannot require a credential, so those are its

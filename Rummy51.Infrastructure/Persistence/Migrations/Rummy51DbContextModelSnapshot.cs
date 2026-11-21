@@ -268,9 +268,25 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("player_id");
 
+                    b.Property<int>("HandsPlayed")
+                        .HasColumnType("integer")
+                        .HasColumnName("hands_played");
+
+                    b.Property<int?>("OutAfterHand")
+                        .HasColumnType("integer")
+                        .HasColumnName("out_after_hand");
+
+                    b.Property<int>("Place")
+                        .HasColumnType("integer")
+                        .HasColumnName("place");
+
                     b.Property<int>("Seat")
                         .HasColumnType("integer")
                         .HasColumnName("seat");
+
+                    b.Property<int>("Total")
+                        .HasColumnType("integer")
+                        .HasColumnName("total");
 
                     b.HasKey("GameId", "PlayerId")
                         .HasName("pk_game_players");
@@ -449,6 +465,10 @@ namespace Rummy51.Infrastructure.Persistence.Migrations
                     b.Property<int>("Number")
                         .HasColumnType("integer")
                         .HasColumnName("number");
+
+                    b.Property<string>("Restocks")
+                        .HasColumnType("text")
+                        .HasColumnName("restocks");
 
                     b.Property<int>("Seed")
                         .HasColumnType("integer")

@@ -165,6 +165,13 @@ public sealed partial class InMemoryTables(
     public Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds) =>
         Move(tableId, playerId, (table, seat) => table.Keep(seat, cardIds), Refused("CannotKeep"));
 
+    public Result<HandView> SeeTheRestock(Guid tableId, Guid playerId) =>
+        Move(
+            tableId,
+            playerId,
+            (table, seat) => table.SeeTheRestock(seat),
+            Refused("CannotSeeTheRestock"));
+
     public RedealView RedealAsSeenBy(Guid tableId, Guid playerId)
     {
         lock (gate)

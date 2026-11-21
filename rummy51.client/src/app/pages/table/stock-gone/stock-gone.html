@@ -1,0 +1,16 @@
+<div class="gone">
+  <div class="gone__panel" role="alertdialog" aria-modal="true">
+    <p class="gone__said">{{ 'table.stockGone' | translate }}</p>
+    <p class="gone__body">{{ 'table.stockGoneWhy' | translate }}</p>
+
+    @if (waiting()) {
+      <p class="gone__waiting">{{ 'table.waitingForTheRest' | translate }}</p>
+    } @else {
+      <button type="button" class="btn-primary" (click)="seen.emit()">
+        {{ 'common.ok' | translate }}
+      </button>
+    }
+
+    <p class="gone__left" [class.gone__left--urgent]="left() <= 3">{{ left() }}</p>
+  </div>
+</div>

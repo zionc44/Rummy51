@@ -38,6 +38,12 @@ public sealed class TurnSettings
     public int KeepSeconds { get; init; } = 30;
 
     /// <summary>
+    /// Rule 3.5: long enough to read that the pile has gone back into the
+    /// deck. There is nothing to decide, so this is reading and no more.
+    /// </summary>
+    public int RestockSeconds { get; init; } = 10;
+
+    /// <summary>
     /// The server dealt them the moment the deck was cut, but on the screen
     /// they are still going out, and the first player's time should not be
     /// spent watching that.

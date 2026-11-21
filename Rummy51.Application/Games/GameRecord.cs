@@ -38,6 +38,9 @@ public sealed record HandEnded(
     string DeckOrder,
     int AgreedRedeals,
     int ForcedRedeals,
+
+    /// <summary>Rule 3.5, one restock to a line, and null where there was none.</summary>
+    string? Restocks,
     DateTimeOffset StartedAt,
     DateTimeOffset EndedAt,
     IReadOnlyList<PlayerResult> Results,
@@ -79,4 +82,20 @@ public sealed record PlayerResult(
     int Score);
 
 /// <summary>Rule 9.2: whichever of the three endings arrived.</summary>
-public sealed record GameEnded(Guid GameId, Guid? WinnerId, DateTimeOffset At) : GameRecord;
+public sealed record GameEnded(
+    Guid GameId,
+    Guid? WinnerId,
+    IReadOnlyList<PlayerStanding> Standing,
+    DateTimeOffset At) : GameRecord;
+
+/// <summary>
+/// Rules 9.4 and 9.5: where the game left one player. It covers whoever
+/// was in it and not whoever is still sitting there, because 9.6 empties
+/// the chair of somebody who is out while the game plays on without them.
+/// </summary>
+public sealed record PlayerStanding(
+    Guid PlayerId,
+    int HandsPlayed,
+    int Total,
+    int? OutAfterHand,
+    int Place);

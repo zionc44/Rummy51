@@ -83,6 +83,7 @@ export type HandPhase =
   | 'offering'
   | 'answered'
   | 'keeping'
+  | 'restocking'
   | 'finished';
 
 /** One pass of the deal: how many cards landed at which seat. */
@@ -142,6 +143,9 @@ export interface Standing {
   /** Who has read what the hand came to, which is what shuts their window. */
   readonly read: readonly boolean[];
 
+  /** Rule 9.5, and nought for a chair that was never in the game. */
+  readonly places: readonly number[];
+
   /** Rule 9.5: the seat the game went to, and -1 until there is one. */
   readonly won: number;
 }
@@ -188,6 +192,9 @@ export interface HandView {
 
   /** Rule 11.3. */
   readonly wentDown: readonly boolean[];
+
+  /** Rule 3.5: who has said they have seen the stock filled from the pile. */
+  readonly seenTheRestock: readonly boolean[];
 
   /** Rules 8.1 and 8.2, by seat, and empty until the hand is over. */
   readonly scores: readonly number[];

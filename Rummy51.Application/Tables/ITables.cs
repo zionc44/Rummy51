@@ -60,6 +60,9 @@ public interface ITables
     /// <summary>Rule 12.6.</summary>
     Result<HandView> Keep(Guid tableId, Guid playerId, IReadOnlyList<int> cardIds);
 
+    /// <summary>Rule 3.5.</summary>
+    Result<HandView> SeeTheRestock(Guid tableId, Guid playerId);
+
     /// <summary>Rules 5.7, 5.9, 5.10.</summary>
     Result<HandView> AddToMeld(Guid tableId, Guid playerId, AddRequest join);
 

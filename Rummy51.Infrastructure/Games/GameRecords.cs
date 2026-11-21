@@ -88,6 +88,7 @@ public sealed class GameRecords(IServiceScopeFactory scopes) : IGameRecords
             Seed = ended.Seed,
             DeckOrder = ended.DeckOrder,
             AgreedRedeals = ended.AgreedRedeals,
+            Restocks = ended.Restocks,
             ForcedRedeals = ended.ForcedRedeals,
             StartedAt = ended.StartedAt,
             EndedAt = ended.EndedAt,
@@ -153,5 +154,37 @@ public sealed class GameRecords(IServiceScopeFactory scopes) : IGameRecords
         db.Games.Attach(game);
         db.Entry(game).Property(g => g.WinnerId).IsModified = true;
         db.Entry(game).Property(g => g.FinishedAt).IsModified = true;
+
+        foreach (var player in over.Standing)
+        {
+            Placed(db, over.GameId, player);
+        }
+    }
+
+    /// <summary>
+    /// Rules 9.4 and 9.5 onto the row the game began with. The seat is left
+    /// alone: it was written when they sat down and nothing since has moved
+    /// anybody.
+    /// </summary>
+    private static void Placed(Rummy51DbContext db, Guid gameId, PlayerStanding player)
+    {
+        var seated = new GamePlayer
+        {
+            GameId = gameId,
+            PlayerId = player.PlayerId,
+            HandsPlayed = player.HandsPlayed,
+            Total = player.Total,
+            OutAfterHand = player.OutAfterHand,
+            Place = player.Place,
+        };
+
+        db.GamePlayers.Attach(seated);
+
+        var row = db.Entry(seated);
+
+        row.Property(one => one.HandsPlayed).IsModified = true;
+        row.Property(one => one.Total).IsModified = true;
+        row.Property(one => one.OutAfterHand).IsModified = true;
+        row.Property(one => one.Place).IsModified = true;
     }
 }

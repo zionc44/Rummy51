@@ -48,7 +48,7 @@ internal sealed partial class OpenTable
         here = new bool[request.Seats];
         totals = new int[request.Seats];
         handsPlayed = new int[request.Seats];
-        outOfIt = new bool[request.Seats];
+        outAfterHand = new int[request.Seats];
         lastHand = new int[request.Seats];
         readIt = new bool[request.Seats];
     }
@@ -160,6 +160,9 @@ internal sealed partial class OpenTable
     public bool Keep(int seat, IReadOnlyList<int> cardIds) =>
         Moved(() => hand?.Keep(seat, cardIds) == true);
 
+    /// <summary>Rule 3.5, seen.</summary>
+    public bool SeeTheRestock(int seat) => Moved(() => hand?.SeeTheRestock(seat) == true);
+
     /// <summary>
     /// A move of a redeal, which is the one kind that moves the hand from
     /// one stage to another - so unlike the moves inside a turn, each one
@@ -208,6 +211,7 @@ internal sealed partial class OpenTable
             HandPhase.Offering => turns.OfferSeconds,
             HandPhase.Answered => turns.ResultSeconds,
             HandPhase.Keeping => turns.KeepSeconds,
+            HandPhase.Restocking => turns.RestockSeconds,
             _ => turns.TurnSeconds,
         });
 
@@ -276,12 +280,14 @@ internal sealed partial class OpenTable
             return BeginPlay();
         }
 
-        if (hand.Phase is HandPhase.Offering or HandPhase.Answered or HandPhase.Keeping)
+        if (hand.Phase is HandPhase.Offering or HandPhase.Answered
+            or HandPhase.Keeping or HandPhase.Restocking)
         {
             return Moved(() => hand.Phase switch
             {
                 HandPhase.Offering => hand.TakeSilenceAsAgreement(),
                 HandPhase.Answered => hand.StopShowingTheResult(clock.GetUtcNow()),
+                HandPhase.Restocking => hand.RestockForWhoeverHasNot(),
                 _ => hand.KeepForWhoeverHasNot(),
             });
         }

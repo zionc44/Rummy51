@@ -55,6 +55,24 @@ public sealed class Board
 
     public void Throw(Card card) => discards.Add(card);
 
+    /// <summary>
+    /// Rule 3.5: everything under the card last thrown, which stays lying
+    /// where it is so that the pile is never one a player cannot draw from.
+    /// </summary>
+    public IReadOnlyList<Card> TakeTheDiscardsUnderTheTop()
+    {
+        if (discards.Count <= 1)
+        {
+            return [];
+        }
+
+        var taken = discards.GetRange(0, discards.Count - 1);
+
+        discards.RemoveRange(0, discards.Count - 1);
+
+        return taken;
+    }
+
     public void Lay(Meld meld) => melds.Add(meld);
 
     public void Grow(int at, MeldEnd end, HeldCard card)

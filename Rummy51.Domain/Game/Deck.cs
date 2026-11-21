@@ -134,10 +134,13 @@ public sealed class Deck
     ];
 
     /// <summary>By a seed rather than by chance, so a hand can be dealt again.</summary>
-    private static IReadOnlyList<T> Shuffle<T>(IReadOnlyList<T> cards, int seed)
+    /// <summary>
+    /// The one shuffle in the game, so that rule 3.5's is the same shuffle
+    /// as rule 1.1's and not a second one written beside it.
+    /// </summary>
+    public static IReadOnlyList<T> Shuffled<T>(IReadOnlyList<T> cards, Random random)
     {
         var shuffled = cards.ToArray();
-        var random = new Random(seed);
 
         // Fisher-Yates: every ordering equally likely, which the obvious
         // sort-by-random-key does not quite manage.
@@ -149,6 +152,9 @@ public sealed class Deck
 
         return shuffled;
     }
+
+    private static IReadOnlyList<T> Shuffle<T>(IReadOnlyList<T> cards, int seed) =>
+        Shuffled(cards, new Random(seed));
 
     /// <summary>Half of one pack's and half of the other's, whatever is left.</summary>
     private static IReadOnlyList<int> BacksFor(int count) =>

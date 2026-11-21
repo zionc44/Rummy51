@@ -135,5 +135,12 @@ public sealed partial class Hand
         HasDrawn = false;
         downBeforeThisTurn = wasDown[TurnSeat];
         Forget();
+
+        // Rule 3.5 at the end of the turn that emptied it, so that nothing
+        // interrupts the player who is in the middle of one.
+        if (TheStockHasRunOut)
+        {
+            Phase = HandPhase.Restocking;
+        }
     }
 }

@@ -35,6 +35,15 @@ public class PlayedHand
     /// <summary>The shuffle as it came out, by card codes in order.</summary>
     public required string DeckOrder { get; set; }
 
+    /// <summary>
+    /// Rule 3.5: what each refilling of the stock came out as, one to a
+    /// line, and null for a hand that never ran the stock down. It is kept
+    /// for the same reason <see cref="DeckOrder"/> is: a restock is made of
+    /// whatever the table happened to throw, so no seed reaches it, and
+    /// without the order this is the one hand that cannot be played again.
+    /// </summary>
+    public string? Restocks { get; set; }
+
     /// <summary>Rule 8.2 doubles on these.</summary>
     public int AgreedRedeals { get; set; }
 

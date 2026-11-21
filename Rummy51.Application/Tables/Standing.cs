@@ -15,6 +15,11 @@ namespace Rummy51.Application.Tables;
 /// answers for itself, so the window that showed it needs no memory of
 /// its own and nothing to put back at the start of a game.
 /// </param>
+/// <param name="Places">
+/// Rule 9.5, and nought for a chair that was never in the game. It is
+/// worked out here and not on the screen, because a placing worked out
+/// twice is a placing that will be changed once.
+/// </param>
 /// <param name="Won">
 /// Rule 9.5: the seat the game itself went to, which is not the seat that
 /// took any one hand. Minus one until there is a game to have been won.
@@ -25,4 +30,5 @@ public sealed record Standing(
     IReadOnlyList<int> Last,
     IReadOnlyList<bool> Out,
     IReadOnlyList<bool> Read,
+    IReadOnlyList<int> Places,
     int Won);

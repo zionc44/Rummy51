@@ -166,6 +166,13 @@ public class TablesController(
     public Task<IActionResult> ReadTheResult(Guid tableId) =>
         MoveAsync(tableId, playerId => tables.ReadTheResult(tableId, playerId));
 
+    /// <summary>Rule 3.5.</summary>
+    [HttpPost("{tableId:guid}/restock")]
+    [ProducesResponseType<HandView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<IActionResult> SeeTheRestock(Guid tableId) =>
+        MoveAsync(tableId, playerId => tables.SeeTheRestock(tableId, playerId));
+
     /// <summary>Rule 12.6.</summary>
     [HttpPost("{tableId:guid}/redeal/keep")]
     [ProducesResponseType<HandView>(StatusCodes.Status200OK)]

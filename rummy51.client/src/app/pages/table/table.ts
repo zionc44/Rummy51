@@ -33,6 +33,7 @@ import { TableTools } from './table-tools/table-tools';
 import { KeepThree } from './keep-three/keep-three';
 import { ForceRedeal } from './force-redeal/force-redeal';
 import { StillThere } from './still-there/still-there';
+import { StockGone } from './stock-gone/stock-gone';
 import { RedealVote } from './redeal-vote/redeal-vote';
 
 /** The refusal that says a card taken off the table is still in the hand. */
@@ -70,6 +71,7 @@ const CardOwed = 'TakenCardStillHeld';
     ForceRedeal,
     KeepThree,
     StillThere,
+    StockGone,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table.html',

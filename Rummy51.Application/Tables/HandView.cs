@@ -68,6 +68,7 @@ public sealed record HandView(
     int TurnSeat,
     int WinnerSeat,
     IReadOnlyList<bool> WentDown,
+    IReadOnlyList<bool> SeenTheRestock,
     IReadOnlyList<int> Scores,
     IReadOnlyList<int> Places,
     Doubling Doubling,

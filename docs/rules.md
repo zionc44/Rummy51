@@ -75,7 +75,13 @@ ends. A card taken from the discard pile has to go down that same turn, and
 so does anything else a player picks up from the table.
 
 **3.5** If the stock runs out, the discard pile is shuffled and becomes the
-stock.
+stock. The card last thrown stays where it lies, so there is always one to
+take from the pile. It happens at the end of the turn that emptied the
+stock and not in the middle of one, and the table is told and every player
+says they have seen it before the hand goes on. Nobody may refuse, there
+being no hand without a stock; what the saying-so is for is that a deck
+which changed while somebody was looking elsewhere is a deck they never
+saw.
 
 **3.6** A turn nobody takes is taken back. Everything that turn did is
 undone, last thing first — the runs and sets it laid, and the card it took
@@ -270,9 +276,10 @@ and reaching the number is enough: it does not have to be reached exactly.
 
 **9.5** They are placed by the order they went out in, last out first and
 the winner above all of them. Two who go out in the same hand are placed
-between them by what they have, the lower first. Nothing else is weighed,
-because lasting is the whole of what this kind of game asks: somebody who
-went out early with less has still gone out earlier.
+between them by what they have, the lower first, and two alike in both
+share a place as they do under 8.3. Nothing else is weighed, because
+lasting is the whole of what this kind of game asks: somebody who went out
+early with less has still gone out earlier.
 
 **9.6** A player who is out may stay and watch the rest of it or give the
 chair up, and the chair stays empty until the game ends either way. Nobody

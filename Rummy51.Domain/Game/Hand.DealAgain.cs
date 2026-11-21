@@ -121,9 +121,12 @@ public sealed partial class Hand
 
         Array.Fill(wasDown, false);
         Array.Fill(wentRummy, false);
+        Array.Fill(seenTheRestock, false);
         Array.Fill(tookTheFinishingCard, false);
         Array.Fill(hasOffered, false);
         Array.Fill(hasPlayed, false);
+
+        restocks.Clear();
 
         turnsTaken = 0;
         TurnSeat = -1;

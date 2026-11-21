@@ -193,6 +193,16 @@
         />
       }
 
+      <!-- Rule 3.5: the stock has gone, and the table is told before the
+           pile becomes the next one. -->
+      @if (asking.theStockHasGone()) {
+        <app-stock-gone
+          [left]="asking.secondsLeft()"
+          [waiting]="asking.seenTheRestock()"
+          (seen)="asking.seeTheRestock()"
+        />
+      }
+
       @if (hand.phase === 'keeping' && seating.seated() && !asking.chosen()) {
         <app-keep-three [cards]="myCards()" [left]="asking.secondsLeft()" (kept)="asking.keep($event)" />
       }
