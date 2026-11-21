@@ -119,7 +119,7 @@ public sealed partial class Hand
         Board = new Board();
         Passes = [];
 
-        Array.Fill(wentDown, false);
+        Array.Fill(wasDown, false);
         Array.Fill(wentRummy, false);
         Array.Fill(tookTheFinishingCard, false);
         Array.Fill(hasOffered, false);

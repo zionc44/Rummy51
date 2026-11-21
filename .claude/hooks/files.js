@@ -18,6 +18,7 @@ const Watched = [
   'Rummy51.Application',
   'Rummy51.Infrastructure',
   'Rummy51.Server',
+  'Tests',
 ];
 
 /** Not ours to judge: built output, installed packages, generated migrations. */
@@ -40,7 +41,7 @@ const skipped = (file) => asPosix(file).split('/').some((part) => Skipped.has(pa
 const watched = (file) =>
   Kinds.has(path.extname(file)) &&
   !skipped(file) &&
-  Watched.some((root) => asPosix(file).includes(root));
+  Watched.some((root) => named(file).startsWith(`${root}/`));
 
 function* filesUnder(dir = Root) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

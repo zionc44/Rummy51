@@ -58,8 +58,10 @@ public sealed partial class Hand
             return false;
         }
 
-        // Rule 5.8: the throw is what makes a showing final.
-        wentDown[seat] = wentDown[seat] || turn.Laying.Count > 0;
+        // Rule 5.8: standing as a showing is what puts a player down, and
+        // the throw is what settles it. Written here so that nothing after
+        // this turn can take it away again.
+        wasDown[seat] = IsDown(seat);
 
         Board.Throw(hands[seat][held].Card);
         hands[seat].RemoveAt(held);
@@ -131,7 +133,7 @@ public sealed partial class Hand
         turnsTaken += 1;
         TurnSeat = Dealing.After(TurnSeat, playing);
         HasDrawn = false;
-        downBeforeThisTurn = wentDown[TurnSeat];
+        downBeforeThisTurn = wasDown[TurnSeat];
         Forget();
     }
 }

@@ -48,12 +48,12 @@ the answer and they name the rules.
 
 Measured, and ordered by what is at risk rather than by size.
 
-| | lines | suite | sitting |
-|---|---|---|---|
-| 1 | 2,377 | `Rummy51.Domain.Tests` | the rules |
-| 2 | 1,753 | client, `core/` | the twins, and what the screen works out |
-| 3 | 2,918 | `Rummy51.Infrastructure.Tests` | tables, clocks, presence |
-| 4 | 1,184 | `Rummy51.Server.Tests` | the pipeline and the error contract |
+| | lines | suite | sitting | stands at |
+|---|---|---|---|---|
+| 1 | 2,377 | `Tests/Rummy51.Domain.Tests` | the rules | 136 tests |
+| 2 | 1,753 | client, `core/` | the twins, and what the screen works out | |
+| 3 | 2,918 | `Tests/Rummy51.Infrastructure.Tests` | tables, clocks, presence | |
+| 4 | 1,184 | `Tests/Rummy51.Server.Tests` | the pipeline and the error contract | |
 
 **Domain first** because it is the product. It has no dependencies at all -
 no database, no clock, no HTTP - so a suite against it needs no scaffolding
@@ -83,6 +83,31 @@ rather than a redirect.
 the rest is contracts and views. `Result<T>` is covered from the domain
 sitting, where it is actually exercised.
 
+## Where it got to
+
+**1. `Tests/Rummy51.Domain.Tests` - landed.** 136 tests over eleven files
+and 1,605 lines, against the domain's 2,377. Every suite lives under
+`Tests/`, one folder per project held, so the four of them sit together
+rather than each beside what it is about. The whole suite runs in about a
+tenth of a second, because nothing in it waits for anything.
+
+`Dealt.cs` is the fixture, and the fixture was most of the sitting.
+`Holding(cards)` lays a whole deck out so that the opener is dealt exactly
+the cards asked for - which is what reaches four pairs, a joker at the cut
+and a hand that can be gone out with by construction, rather than by trying
+seeds until one turns up. It finds where each card has to lie by calling
+`Dealing.Deal` and reading the passes it reports back, instead of working
+the positions out a second time: a fixture that duplicated the dealing
+arithmetic would agree with itself and with nothing else.
+
+Held to: the deck and what a card is worth, runs and sets and the joker in
+one, going down and the fifty-one, joining and buying, the turn and its
+undo, the finishing card and what closes it, the score and the places, both
+kinds of redeal, and the seats that sit out of a survival hand.
+
+Not held to: anything that needs a clock, a table or a wire. Those are
+sittings 3 and 4.
+
 ## How a test is named
 
 By the rule it holds the code to, and by nothing else:
@@ -97,6 +122,11 @@ tests that hold it there - which is the same bargain the code already
 makes. It also leaves `rule-links.js` a third thing it could one day
 count, turning it from a map of what is enforced into a map of what is
 covered.
+
+It already tells the two apart. A pointer from under `Tests/` is counted
+on its own, and a rule held to by a test and by nothing that ships gets a
+list of its own - because a rule like that is not enforced, however well it
+is checked. None is, today.
 
 ## What none of this will do
 

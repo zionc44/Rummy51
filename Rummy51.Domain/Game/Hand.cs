@@ -50,7 +50,7 @@ public sealed partial class Hand
     private readonly List<List<HeldCard>> hands;
     private readonly TurnSoFar turn = new();
     private readonly bool[] playing;
-    private readonly bool[] wentDown;
+    private readonly bool[] wasDown;
     private readonly bool[] wentRummy;
     private readonly bool[] tookTheFinishingCard;
     private bool downBeforeThisTurn;
@@ -88,7 +88,7 @@ public sealed partial class Hand
         Seats = seats;
         this.playing = [.. playing ?? was?.Playing ?? Enumerable.Repeat(true, seats)];
         hands = [.. Enumerable.Range(0, seats).Select(_ => new List<HeldCard>())];
-        wentDown = new bool[seats];
+        wasDown = new bool[seats];
         wentRummy = new bool[seats];
         tookTheFinishingCard = new bool[seats];
         hasOffered = new bool[seats];
@@ -152,8 +152,8 @@ public sealed partial class Hand
     /// <summary>How many are in it, which is what a round is counted in.</summary>
     public int Players => playing.Count(one => one);
 
-    /// <summary>Public: their melds are lying there for everybody to read.</summary>
-    public IReadOnlyList<bool> WentDown => wentDown;
+    /// <summary>Rule 11.3: their runs and sets are lying there to be read.</summary>
+    public IReadOnlyList<bool> WentDown => [.. Enumerable.Range(0, Seats).Select(IsDown)];
 
     /// <summary>Rule 6.6.</summary>
     public IReadOnlyList<bool> WentRummy => wentRummy;

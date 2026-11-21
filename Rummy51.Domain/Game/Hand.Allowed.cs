@@ -12,7 +12,17 @@ public sealed partial class Hand
     public bool CanEndTheTurn(int seat) =>
         HasPutBackWhatItTook(seat)
         && !MustStillGoOut(seat)
-        && (wentDown[seat] || turn.Laying.Count == 0 || Melding.IsAShowing(Showing));
+        && (IsDown(seat) || turn.Laying.Count == 0);
+
+    /// <summary>
+    /// Rule 5.8. Nothing here remembers it: a throw settles it, and until
+    /// one does it is only ever whatever is lying there now, so taking part
+    /// of a showing back takes the standing away with it.
+    /// </summary>
+    public bool IsDown(int seat) => wasDown[seat] || IsAShowingNow(seat);
+
+    private bool IsAShowingNow(int seat) =>
+        seat == TurnSeat && turn.Laying.Count > 0 && Melding.IsAShowing(Showing);
 
     /// <summary>Rule 6.4, counted in the seats that are in this hand.</summary>
     public bool CanFinish => turnsTaken >= Players - 1;
@@ -21,7 +31,7 @@ public sealed partial class Hand
     public bool CanTakeTheFinishingCard(int seat) =>
         IsTheirTurn(seat)
         && !HasDrawn
-        && !wentDown[seat]
+        && !IsDown(seat)
         && CanFinish
         && Deck.FinishingCard is not null;
 
@@ -58,9 +68,7 @@ public sealed partial class Hand
             : [];
 
     /// <summary>Rules 5.7, 5.8, 5.12, and 7.2 while the finishing card is held.</summary>
-    public bool CanAddToTheTable(int seat) =>
-        !PromisedToGoOut
-        && (wentDown[seat] || (turn.Laying.Count > 0 && Melding.IsAShowing(Showing)));
+    public bool CanAddToTheTable(int seat) => !PromisedToGoOut && IsDown(seat);
 
     /// <summary>Rule 5.6: one turn is one move.</summary>
     private IReadOnlyList<IReadOnlyList<Card>> Showing => [.. turn.Laying.Select(Lying)];

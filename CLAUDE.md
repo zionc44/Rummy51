@@ -83,6 +83,12 @@ cannot tell a rule that is unenforced from one that needs no enforcing: 7.5
 says nobody has to take the finishing card, and there is nothing to enforce
 about a permission.
 
+It reads a number and only a number. A comment naming a whole chapter used to
+stand for every rule in it, which reads well at the top of a file and hid an
+open rule three times in one day. And a pointer from under `Tests/` is counted
+apart, since a rule held to by a test and by nothing that ships is not a rule
+the game enforces.
+
 `line-report.js` is the one that is not about anything being wrong. It says
 where the lines are and what share of them is code, by layer and by file, so
 that two readings a month apart can be put beside each other and say which
@@ -142,6 +148,7 @@ Rummy51.Application     use cases, contracts       -> Domain
 Rummy51.Infrastructure  EF Core, Identity, impls   -> Application
 Rummy51.Server          controllers, DI, pipeline  -> Application, Infrastructure
 rummy51.client          Angular 22
+Tests/                  a suite per project        -> the project it holds
 ```
 
 References point inward. `Application` declares an interface; `Infrastructure`
@@ -179,6 +186,8 @@ email and a password.
 
 A build failing with MSB3027 means the server is running and holding its output.
 Stop it, or build with `-p:BaseOutputPath=<temp>/` to check compilation only.
+`dotnet test` builds before it runs and so meets the same wall; the same
+flag, or `BaseOutputPath` in the environment, gets past it.
 
 `Testing` in `appsettings.Development.json` holds aids for testing a game by
 hand. The section is bound only when the host is running in development, so
@@ -498,9 +507,13 @@ CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
 
-There is no test project yet, and there is going to be one for each of
-them, a sitting at a time. What has been checked so far was checked by harnesses built against
-the real code and thrown away afterwards, which is why nothing notices when
-one of them goes stale. [`docs/testing.md`](docs/testing.md) holds the
-decision, which project is taken in which order and why, how a test is
-named after the rule it holds the code to, and what none of it will catch.
+`Tests/Rummy51.Domain.Tests` is the first of the four suites this is
+getting, a sitting at a time: 136 tests over the rules, each named after the
+rule it holds the code to, run with `dotnet test`. Every suite lives under
+`Tests/`, one folder per project held. The other three are not written
+yet, and what has been checked in them so far was checked by harnesses
+built against the real code and thrown away afterwards, which is why
+nothing notices when one of them goes stale.
+[`docs/testing.md`](docs/testing.md) holds the decision, which project is
+taken in which order and why, where it has got to, and what none of it will
+catch.

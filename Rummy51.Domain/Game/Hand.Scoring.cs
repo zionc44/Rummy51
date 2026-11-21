@@ -10,7 +10,7 @@ public sealed partial class Hand
 {
     /// <summary>Rule 8.1, and what the screen reads while the hand is still running.</summary>
     public int WorthOf(int seat) =>
-        wentDown[seat] ? Worth.Held(hands[seat].Select(card => card.Card)) : Worth.NeverWentDown;
+        IsDown(seat) ? Worth.Held(hands[seat].Select(card => card.Card)) : Worth.NeverWentDown;
 
     /// <summary>
     /// Rule 8.1 for the whole table at once, because that is the shape it
