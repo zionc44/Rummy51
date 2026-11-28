@@ -183,6 +183,19 @@ public class AcrossHands
         Assert.Empty(table.Hand.Standing.EachHand);
     }
 
+    /// <summary>
+    /// Rule 9.4 as the screen has to read it: a seat watching a hand it is
+    /// out of is asked none of the questions the hand puts, and the only
+    /// way the screen can tell is for the view to say so.
+    /// </summary>
+    [Fact]
+    public void Rule_9_4_the_view_names_the_seats_the_hand_was_dealt_to()
+    {
+        var table = Opened.Arranged(mode: GameMode.Survival, limit: 500);
+
+        Assert.Equal([true, true], table.Hand.Playing);
+    }
+
     /// <summary>The wait between hands read out, dealt again, and played.</summary>
     private static Opened TheHandAfter(Opened table)
     {

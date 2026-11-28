@@ -156,6 +156,7 @@ public sealed partial class Hand
         if (agreed)
         {
             AgreedRedeals += 1;
+            SeatsThatAreOutKeepNothing();
             Phase = HandPhase.Keeping;
 
             return;

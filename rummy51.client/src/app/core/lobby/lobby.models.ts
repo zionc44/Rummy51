@@ -170,6 +170,9 @@ export interface HandView {
   readonly finishingCard: string | null;
   /** Rule 11.2. */
   readonly cardsPerSeat: readonly number[];
+
+  /** Rule 9.4: which seats this hand was dealt to. */
+  readonly playing: readonly boolean[];
   /** Rule 11.6. */
   readonly passes: readonly DealPass[];
   readonly stockSize: number;

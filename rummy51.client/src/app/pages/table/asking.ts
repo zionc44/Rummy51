@@ -38,8 +38,10 @@ export class Asking {
   readonly rows = computed<readonly VoteRow[]>(() => {
     const answers = this.redeal().answers;
 
-    return this.seats()
-      .map((seat, at) => ({ name: seat.displayName ?? '', answer: answers[at] ?? null }));
+    return this.seats().map((seat, at) => ({
+      name: seat.displayName ?? '',
+      answer: answers[at] ?? null,
+    }));
   });
 
   /** Still to answer, which is what keeps the other seats hidden. */
@@ -77,6 +79,12 @@ export class Asking {
   readonly read = signal(false);
 
   readonly chosen = signal(false);
+
+  /**
+   * Rule 12.6, put to the seats in the hand. A seat watching one it is out
+   * of was asked too, and that took the table down with it.
+   */
+  readonly toKeep = computed(() => this.hand()?.playing[this.ownSeat()] === true);
 
   /** Rule 12.10 being put to whoever may force, before anything is sent. */
   readonly choosing = signal(false);

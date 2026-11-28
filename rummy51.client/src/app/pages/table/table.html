@@ -206,7 +206,7 @@
         />
       }
 
-      @if (hand.phase === 'keeping' && seating.seated() && !asking.chosen()) {
+      @if (hand.phase === 'keeping' && asking.toKeep() && !asking.chosen()) {
         <app-keep-three
           [cards]="myCards()"
           [left]="asking.secondsLeft()"

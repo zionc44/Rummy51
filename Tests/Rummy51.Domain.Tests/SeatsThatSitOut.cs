@@ -109,6 +109,48 @@ public class SeatsThatSitOut
         Assert.Equal(HandPhase.Answered, hand.Phase);
     }
 
+    /// <summary>
+    /// Rule 12.6 asks the seats that are in the hand for three each, and a
+    /// seat that is in none of it keeps nothing. The redeal used to be
+    /// counting what it had been given by every chair, so the three who
+    /// answered in time took the table down with them.
+    /// </summary>
+    [Fact]
+    public void Rule_12_6_a_seat_that_is_out_keeps_nothing_and_holds_nothing_up()
+    {
+        var hand = Agreed();
+
+        foreach (var seat in new[] { 0, 1, 3 })
+        {
+            Assert.True(hand.Keep(seat, [.. hand.Hands[seat].Take(3).Select(held => held.Id)]));
+        }
+
+        Assert.Equal(HandPhase.Cutting, hand.Phase);
+        Assert.Empty(hand.Hands[2]);
+    }
+
+    [Fact]
+    public void Rule_12_6_and_is_asked_for_nothing_when_the_clock_runs_out()
+    {
+        var hand = Agreed();
+
+        Assert.False(hand.Keep(2, []));
+        Assert.True(hand.KeepForWhoeverHasNot());
+        Assert.Empty(hand.Hands[2]);
+    }
+
+    private static Hand Agreed()
+    {
+        var hand = Dealt();
+        var by = hand.TurnSeat;
+
+        hand.OfferARedeal(by, DateTimeOffset.UnixEpoch);
+        hand.TakeSilenceAsAgreement();
+        hand.StopShowingTheResult(DateTimeOffset.UnixEpoch.AddSeconds(9));
+
+        return hand;
+    }
+
     [Fact]
     public void A_full_table_is_what_it_always_was()
     {

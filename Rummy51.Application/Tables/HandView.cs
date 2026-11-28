@@ -27,6 +27,10 @@ public sealed record Waiting(int Seat, double SecondsLeft, double Seconds);
 /// has. What each seat may see of the answers is not here: rule 12.4 shows
 /// a different thing to each of them, so it goes where the cards go.
 /// </param>
+/// <param name="Playing">
+/// Rule 9.4: which seats this hand was dealt to, a survival game thinning
+/// them as it goes. The screen needs it before it puts 12.6 to anybody.
+/// </param>
 /// <param name="Away">
 /// Chapter 10: which seats are holding a chair without watching it. It is
 /// here as well as on the lobby's list because this is the message a table
@@ -63,6 +67,7 @@ public sealed record HandView(
     IReadOnlyList<string> RevealedAtCut,
     string? FinishingCard,
     IReadOnlyList<int> CardsPerSeat,
+    IReadOnlyList<bool> Playing,
     IReadOnlyList<DealPass> Passes,
     int StockSize,
     int TurnSeat,

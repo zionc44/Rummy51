@@ -18,6 +18,23 @@ public sealed partial class Hand
     private bool EverybodyHasKept =>
         Enumerable.Range(0, Seats).All(seat => !playing[seat] || keeping[seat] is not null);
 
+    /// <summary>
+    /// Rule 12.6 is put to the seats that are in the hand, so the rest
+    /// answer it here and answer nothing. Said as the phase begins and not
+    /// by whoever deals, because the deal counts what every chair gave it
+    /// and a chair that was never asked has given it null.
+    /// </summary>
+    private void SeatsThatAreOutKeepNothing()
+    {
+        for (var seat = 0; seat < Seats; seat++)
+        {
+            if (!playing[seat])
+            {
+                keeping[seat] = [];
+            }
+        }
+    }
+
     /// <summary>Rule 12.6: exactly three, and their own.</summary>
     public bool Keep(int seat, IReadOnlyList<int> cardIds)
     {
@@ -64,13 +81,6 @@ public sealed partial class Hand
 
         for (var seat = 0; seat < Seats; seat++)
         {
-            if (!playing[seat])
-            {
-                keeping[seat] = [];
-
-                continue;
-            }
-
             keeping[seat] ??=
             [
                 .. hands[seat]

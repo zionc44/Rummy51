@@ -75,6 +75,7 @@ internal sealed partial class OpenTable
                 [.. hand.Deck.RevealedAtCut.Select(card => card.Code)],
                 hand.Deck.FinishingCard?.Code,
                 [.. hand.Hands.Select(cards => cards.Count)],
+                hand.Playing,
                 hand.Passes,
                 hand.Board.Stock.Count,
                 hand.TurnSeat,
