@@ -51,6 +51,13 @@
   --meld-4: #ec4899;
   --meld-5: #0ea5e9;
 
+  // A series hand that counts for more. Warm and rising for the ones the
+  // series fixed, and cool for one a redeal sent there, so the two read
+  // apart before anybody looks at the shape.
+  --series-double: #fbbf24;
+  --series-fourfold: #fb923c;
+  --series-redeal: #7dd3fc;
+
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-pill: 9999px;

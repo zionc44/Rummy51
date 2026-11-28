@@ -1,0 +1,10 @@
+@if (fixed() > 1) {
+  <span
+    class="weight weight--fixed"
+    [class.weight--four]="fixed() === 4"
+    [title]="'table.seriesDoubled' | translate"
+    >&times;{{ fixed() }}</span
+  >
+} @else if (redealt()) {
+  <span class="weight weight--redealt" [title]="'table.redealDoubled' | translate">&times;2</span>
+}

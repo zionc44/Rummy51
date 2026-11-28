@@ -56,19 +56,6 @@
   border-radius: var(--radius-pill);
 }
 
-// Only where no heading carries it. It takes what it needs and never the
-// slack: demanding the slack is what left four seats and a button with no
-// room between them.
-.row__detail {
-  flex: 0 1 auto;
-  min-inline-size: 0;
-  overflow: hidden;
-  color: var(--text-muted);
-  font-size: 0.6875rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .row__jokers {
   display: flex;
   flex: 0 0 auto;

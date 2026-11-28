@@ -4,7 +4,7 @@ using Rummy51.Domain.Game;
 namespace Rummy51.Infrastructure.Tables;
 
 /// <summary>
-/// Rules 9.1 to 9.6: the game a hand belongs to. A hand knows nothing of
+/// Rules 9.1 to 9.8: the game a hand belongs to. A hand knows nothing of
 /// it - it is dealt, played and scored the same way whichever game it is
 /// one of - so what runs across hands is counted here instead.
 /// </summary>
@@ -61,20 +61,24 @@ internal sealed partial class OpenTable
 
     public IReadOnlyList<bool> ReadIt => readIt;
 
-    /// <summary>Rule 9.5, and -1 until there is a game to have been won.</summary>
-    public int WonSeat => staying is null ? -1 : WonTheGame();
+    /// <summary>Rules 9.5 and 9.8, and nobody until there is a game to have been won.</summary>
+    public IReadOnlyList<int> Won => staying is null ? [] : PlacedFirst();
+
+    private IReadOnlyList<int> PlacedFirst() =>
+        [.. Enumerable.Range(0, seats.Length).Where(seat => Places[seat] == 1)];
+
 
     /// <summary>Who the next hand is dealt to, which rule 9.4 thins as it goes.</summary>
     private IReadOnlyList<bool> StillIn =>
         [.. Enumerable.Range(0, seats.Length).Select(seat => outAfterHand[seat] == 0)];
 
-    /// <summary>
-    /// Rule 9.4, and rule 9.2 for the other two: a single hand is the whole
-    /// of its game, and a series counts hands that nothing counts yet, so
-    /// for now it ends the same way.
-    /// </summary>
-    private bool TheGameIsOver =>
-        Mode != GameMode.Survival || StillIn.Count(one => one) <= 1;
+    /// <summary>Rules 9.2, 9.4 and 9.7.</summary>
+    private bool TheGameIsOver => Mode switch
+    {
+        GameMode.Survival => StillIn.Count(one => one) <= 1,
+        GameMode.Series => Limit is not { } hands || handsSoFar >= hands,
+        _ => true
+    };
 
     /// <summary>
     /// Everything that happens because a hand finished, in the order it has
@@ -181,6 +185,7 @@ internal sealed partial class OpenTable
         }
 
         eachHand.Add(scored);
+        agreedRedeals.Add(ended.AgreedRedeals);
     }
 
     /// <summary>Rule 9.4: reaching the number is enough, and it is the end of this hand.</summary>
@@ -201,33 +206,6 @@ internal sealed partial class OpenTable
         }
     }
 
-    /// <summary>
-    /// Rule 9.5: the last one in, or where everybody went out together, the
-    /// lowest of them. A game of one hand has the hand's winner instead -
-    /// there is nobody to be the last one left in it.
-    /// </summary>
-    private int WonTheGame()
-    {
-        if (Mode != GameMode.Survival)
-        {
-            return hand?.WinnerSeat ?? -1;
-        }
-
-        var left = Enumerable.Range(0, seats.Length)
-            .Where(seat => outAfterHand[seat] == 0)
-            .ToList();
-
-        if (left.Count == 1)
-        {
-            return left[0];
-        }
-
-        return Enumerable.Range(0, seats.Length)
-            .Where(seat => seats[seat] is not null)
-            .OrderBy(seat => totals[seat])
-            .FirstOrDefault(-1);
-    }
-
     /// <summary>Everything a new game starts from, which is nothing.</summary>
     private void ForgetTheGame()
     {
@@ -235,6 +213,7 @@ internal sealed partial class OpenTable
         Array.Clear(handsPlayed);
         Array.Clear(outAfterHand);
         eachHand.Clear();
+        agreedRedeals.Clear();
         Array.Clear(readIt);
         handsSoFar = 0;
         showing = false;

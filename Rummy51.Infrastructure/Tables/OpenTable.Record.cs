@@ -101,14 +101,17 @@ internal sealed partial class OpenTable
 
     }
 
-    /// <summary>Rules 9.2 and 9.5: whoever the mode's own ending left in front.</summary>
+    /// <summary>
+    /// Rules 9.5 and 9.8: whoever the mode's own ending left in front, and
+    /// nobody where a series left several there - the places say who shared it.
+    /// </summary>
     private void NoteTheGameEnded()
     {
-        var won = WonTheGame();
+        var won = PlacedFirst();
 
         pending.Add(new GameEnded(
             gameId,
-            won == -1 ? null : playedBy.ElementAtOrDefault(won),
+            won.Count == 1 ? playedBy.ElementAtOrDefault(won[0]) : null,
             [.. Enumerable.Range(0, playedBy.Length).Where(seat => playedBy[seat] is not null)
                 .Select(seat => new PlayerStanding(
                     playedBy[seat]!.Value,

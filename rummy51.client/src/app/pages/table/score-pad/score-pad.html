@@ -1,4 +1,4 @@
-<table class="pad">
+<table class="pad" [class.pad--weighted]="weighted()">
   <thead>
     <tr>
       <th class="pad__corner" scope="col">{{ 'table.handNumber' | translate }}</th>
@@ -32,8 +32,21 @@
 
   <tbody>
     @for (row of rows(); track row.hand) {
-      <tr class="pad__row" [class.pad__row--last]="$last">
-        <th scope="row" class="pad__hand">{{ row.hand }}</th>
+      <tr
+        class="pad__row"
+        [class.pad__row--latest]="row.latest"
+        [class.pad__row--next]="row.next"
+        [class.pad__row--double]="row.fixed === 2"
+        [class.pad__row--fourfold]="row.fixed === 4"
+      >
+        <th scope="row" class="pad__hand">
+          <span class="pad__hand-slots">
+            @if (weighted()) {
+              <app-hand-weight class="pad__weight" [fixed]="row.fixed" [redealt]="row.redealt" />
+            }
+            <span class="pad__number">{{ row.hand }}</span>
+          </span>
+        </th>
 
         @for (cell of row.cells; track $index) {
           <td class="pad__cell">

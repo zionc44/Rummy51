@@ -178,7 +178,7 @@
           [asking]="reckoning.askedToStay()"
           [justOut]="reckoning.justOut()"
           [anotherHand]="reckoning.anotherHand()"
-          [gameWinner]="reckoning.gameWinner()"
+          [othersWhoWon]="reckoning.othersWhoWon()"
           [wonTheGame]="reckoning.wonTheGame()"
           [left]="asking.secondsLeft()"
           (stayed)="reckoning.stay($event)"
@@ -191,7 +191,7 @@
       @if (reckoning.open()) {
         <app-table-standing
           [pad]="reckoning.pad()"
-          [limit]="table()?.limit ?? null"
+          [progress]="reckoning.progress()"
           (closed)="reckoning.open.set(false)"
         />
       }

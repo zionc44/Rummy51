@@ -22,7 +22,30 @@ export class Reckoning {
   ) {}
 
   /** Rule 9.2: a game of several hands, so where it stands is worth a column. */
-  readonly across = computed(() => this.table()?.mode === 'survival');
+  readonly across = computed(() => {
+    const mode = this.table()?.mode;
+
+    return mode !== undefined && mode !== 'single';
+  });
+
+  /** What the standing is read against: rule 9.4's number, or how far 9.7's hands have gone. */
+  readonly progress = computed((): Progress | null => {
+    const table = this.table();
+    const hand = this.hand();
+
+    if (!table || table.limit === null || !hand) {
+      return null;
+    }
+
+    if (table.mode === 'survival') {
+      return { key: 'lobby.points', params: { '0': table.limit } };
+    }
+
+    const counted = hand.standing.eachHand.length;
+    const now = hand.phase === 'finished' ? counted : counted + 1;
+
+    return { key: 'table.handOf', params: { '0': Math.min(now, table.limit), '1': table.limit } };
+  });
 
   readonly winnerName = computed(() => {
     const hand = this.hand();
@@ -134,14 +157,16 @@ export class Reckoning {
   /** Rule 9.4: nobody is being asked anything, so a deal is what follows. */
   readonly anotherHand = computed(() => (this.hand()?.staying.length ?? 0) === 0);
 
-  /** Rule 9.5: who the game went to, once there is a game to have been won. */
-  readonly gameWinner = computed(() => {
-    const seat = this.hand()?.standing.won ?? -1;
+  /** Rules 9.5 and 9.8, less the viewer: a win they share is told to them as theirs. */
+  readonly othersWhoWon = computed(() =>
+    (this.hand()?.standing.won ?? [])
+      .filter((seat) => seat !== this.ownSeat())
+      .map((seat) => this.seats()[seat]?.displayName ?? ''),
+  );
 
-    return seat === -1 ? null : (this.seats()[seat]?.displayName ?? '');
-  });
-
-  readonly wonTheGame = computed(() => (this.hand()?.standing.won ?? -1) === this.ownSeat());
+  readonly wonTheGame = computed(() =>
+    (this.hand()?.standing.won ?? []).includes(this.ownSeat()),
+  );
 
   /** Rule 9.3: the table is asking and this player has still to answer. */
   readonly askedToStay = computed(() => {
@@ -185,6 +210,12 @@ export class Reckoning {
 
   /** The one thing here a watcher has to be remembered by, and only them. */
   private readonly putAway = signal(false);
+}
+
+/** A line for the standing's title, already chosen and ready to translate. */
+export interface Progress {
+  readonly key: string;
+  readonly params: Readonly<Record<string, number>>;
 }
 
 /** Nought is no place at all, so it comes last rather than ahead of first. */

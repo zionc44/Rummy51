@@ -18,6 +18,10 @@
   color: var(--text-faint);
 }
 
+.pad--weighted .pad__corner {
+  inline-size: 3.25rem;
+}
+
 .pad__head {
   color: var(--text-muted);
 }
@@ -64,32 +68,78 @@
   color: var(--text-faint);
   font-size: 0.6875rem;
   font-weight: 400;
+  white-space: nowrap;
 }
 
-// Where they stand leads and what the hand cost them follows it, because
+// Both slots are a fixed width whatever is in them, so the numbers stand in
+// one column down the pad whether or not a hand carries a mark.
+.pad__hand-slots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pad__weight {
+  justify-content: center;
+  inline-size: 1.625rem;
+}
+
+.pad__number {
+  inline-size: 1rem;
+  text-align: center;
+}
+
+// Where they stand leads and what the hand cost them sits under it, because
 // the first is what the next hand is played on and the second is how it
-// got there.
-// Laid out inline and not as a flex row: a table cell told to be a flex
-// container stops being a table cell, and the columns stop lining up.
+// got there. Under and not beside: four players side by side are wider than
+// a phone, and the pad scrolled sideways to show them.
+// Blocks and not a flex column: a table cell told to be a flex container
+// stops being a table cell, and the columns stop lining up.
 .pad__cell {
-  padding-block: 0.3125rem;
+  padding-block: 0.1875rem;
   text-align: center;
   white-space: nowrap;
+}
+
+.pad__running,
+.pad__score {
+  display: block;
 }
 
 .pad__running {
   font-size: 0.9375rem;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .pad__score {
-  margin-inline-start: 0.3125rem;
   color: var(--text-faint);
   font-size: 0.6875rem;
+  line-height: 1.2;
+}
+
+// A played row is two lines tall, and a hand still to come is given the same
+// from the start, so the pad is the height it will end at and nothing moves
+// as it fills.
+.pad__row {
+  block-size: 2.375rem;
 }
 
 // The bottom row is where the game stands now, which is the one line
 // anybody reads the pad for when they are not reading all of it.
-.pad__row--last {
+.pad__row--latest {
   background: rgb(255 255 255 / 0.06);
+}
+
+.pad__row--double {
+  background: rgb(251 191 36 / 0.07);
+}
+
+.pad__row--fourfold {
+  background: rgb(251 146 60 / 0.1);
+}
+
+.pad__row--next .pad__number {
+  color: var(--text);
+  font-weight: 700;
 }

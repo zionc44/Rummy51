@@ -2,19 +2,19 @@
   <div class="result__panel" role="alertdialog" aria-modal="true">
     <!-- Rule 9.5: once a game has been won, that is the news. What the last
          hand did is underneath it, because it is what the table came to. -->
-    @if (gameWinner(); as champion) {
-      @if (wonTheGame()) {
-        <p class="result__won result__won--mine">{{ 'table.youWonTheGame' | translate }}</p>
-      } @else {
-        <p class="result__won">{{ 'table.wonTheGame' | translate: { '0': champion } }}</p>
-      }
+    @if (gameNews(); as news) {
+      <p class="result__won" [class.result__won--mine]="news.mine">
+        {{ news.key | translate: { '0': news.names } }}
+      </p>
     } @else if (me()?.won) {
       <p class="result__won result__won--mine">{{ 'table.youTookIt' | translate }}</p>
     } @else {
       <p class="result__won">{{ 'table.wonBy' | translate: { '0': winner() } }}</p>
     }
 
-    <p class="result__how">{{ how() | translate }}</p>
+    @if (doubling().forTheWin === 1) {
+      <p class="result__how">{{ how() | translate }}</p>
+    }
 
     @if (me(); as mine) {
       @if (!mine.won && !across()) {
@@ -24,11 +24,18 @@
       }
     }
 
-    <!-- Rule 8.2 has two conditions and they stack, so a doubling that only
-         said x4 would leave nobody able to tell which of them was met. -->
+    <!-- Rules 8.2 and 8.4 stack, so a doubling that only said x8 would
+         leave nobody able to tell which of them was met. -->
     @if (doubling(); as doubling) {
       @if (doubling.altogether > 1) {
         <ul class="result__doublings">
+          @if (doubling.forTheSeries > 1) {
+            <li class="result__doubling">
+              <span class="result__times">&times;{{ doubling.forTheSeries }}</span>
+              {{ 'table.seriesDoubled' | translate }}
+            </li>
+          }
+
           @if (doubling.forTheRedeal > 1) {
             <li class="result__doubling">
               <span class="result__times">&times;{{ doubling.forTheRedeal }}</span>
@@ -43,9 +50,11 @@
             </li>
           }
 
-          <li class="result__doubling result__doubling--all">
-            {{ 'table.altogether' | translate: { '0': doubling.altogether } }}
-          </li>
+          @if (severalDoublings()) {
+            <li class="result__doubling result__doubling--all">
+              {{ 'table.altogether' | translate: { '0': doubling.altogether } }}
+            </li>
+          }
         </ul>
       }
     }
@@ -122,13 +131,12 @@
         </button>
       </div>
     } @else if (anotherHand()) {
-      <p class="result__waiting">{{ 'table.nextHand' | translate }}</p>
-
-      <button type="button" class="btn-primary" (click)="closed.emit()">
+      <button type="button" class="btn-primary result__ok" (click)="closed.emit()">
         {{ 'common.ok' | translate }}
+        <span class="result__ok-left" [class.result__ok-left--urgent]="left() <= 3">
+          {{ left() }}
+        </span>
       </button>
-
-      <p class="result__left" [class.result__left--urgent]="left() <= 3">{{ left() }}</p>
     } @else {
       <p class="result__waiting">{{ 'table.waitingForTheRest' | translate }}</p>
     }

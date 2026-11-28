@@ -1,11 +1,6 @@
 namespace Rummy51.Domain.Game;
 
-/// <summary>
-/// Rules 8.1, 8.2 and 8.3: what a hand came to for each seat, and why.
-/// It answers for every seat or for none, because one seat takes a minus
-/// and the rest pay: no seat's number means anything without the one that
-/// won, and until a hand is over there is no winner to take it.
-/// </summary>
+/// <summary>Rules 8.1 to 8.6: what a hand came to for each seat, and why.</summary>
 public sealed partial class Hand
 {
     /// <summary>Rule 8.1, and what the screen reads while the hand is still running.</summary>
@@ -27,16 +22,19 @@ public sealed partial class Hand
     public IReadOnlyList<int> Places =>
         Scores.Count == 0 ? [] : Placing.Of(Scores, playing);
 
-    /// <summary>
-    /// Rule 8.2, which is the table's and not any player's: it multiplies
-    /// the winner's minus and everybody's penalty alike. One while a hand
-    /// is still being played, there being nothing yet to multiply.
-    /// </summary>
-    public int ResultMultiplier => RedealMultiplier * WinMultiplier;
+    /// <summary>Rules 8.4 and 8.5, told by the game: which hand of a series this is is not the cards'.</summary>
+    public HandWeight Weight { get; init; } = HandWeight.Single;
 
-    /// <summary>Rule 8.2: a redeal the table agreed to, however many there were.</summary>
+    /// <summary>Rules 8.2 and 8.6, and one until there is something to multiply.</summary>
+    public int ResultMultiplier => FixedMultiplier * RedealMultiplier * WinMultiplier;
+
+    /// <summary>Rule 8.4.</summary>
+    public int FixedMultiplier => Phase == HandPhase.Finished ? Weight.Fixed : 1;
+
+    /// <summary>Rules 8.2 and 8.5.</summary>
     public int RedealMultiplier =>
-        Phase == HandPhase.Finished && AgreedRedeals > 0 ? 2 : 1;
+        Phase == HandPhase.Finished
+        && (Weight.Redealt || (Weight.CountsSingle && AgreedRedeals > 0)) ? 2 : 1;
 
     /// <summary>Rule 8.2: taken by somebody who owed the table nothing for it.</summary>
     public int WinMultiplier =>

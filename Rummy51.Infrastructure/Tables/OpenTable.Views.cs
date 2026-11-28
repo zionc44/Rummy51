@@ -95,7 +95,8 @@ internal sealed partial class OpenTable
                     [.. OutOfIt],
                     [.. ReadIt],
                     Places,
-                    WonSeat),
+                    Won,
+                    Weights),
                 staying ?? [],
                 Absent,
                 hand.HasDrawn,
@@ -111,9 +112,10 @@ internal sealed partial class OpenTable
                 hand.ForcedWith,
                 countdown.Describe(hand.WaitingSeat));
 
-    /// <summary>Rule 8.2, with what met each of its two conditions.</summary>
+    /// <summary>Rules 8.2, 8.4 and 8.5, with what met each condition.</summary>
     private static Doubling Doubled(Hand hand) =>
         new(
+            hand.FixedMultiplier,
             hand.RedealMultiplier,
             hand.WinMultiplier,
             hand.ResultMultiplier,

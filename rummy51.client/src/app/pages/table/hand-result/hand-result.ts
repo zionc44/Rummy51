@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/i18n/language-service';
 import { Doubling } from '../../../core/lobby/lobby.models';
 import { ScorePad as Pad } from '../../../core/lobby/score-pad';
 import { ScorePad } from '../score-pad/score-pad';
@@ -64,10 +65,10 @@ export class HandResult {
   /** Rule 9.4: the game goes on, so what follows this window is a deal. */
   readonly anotherHand = input(false);
 
-  /** Rule 9.5: who the game itself went to, once there is a game to have won. */
-  readonly gameWinner = input<string | null>(null);
+  /** Rules 9.5 and 9.8: who the game went to, other than the one reading this. */
+  readonly othersWhoWon = input<readonly string[]>([]);
 
-  /** Whether that is the one reading this. */
+  /** Whether it went to the one reading this, alone or with the others. */
   readonly wonTheGame = input(false);
 
   readonly left = input(0);
@@ -86,6 +87,42 @@ export class HandResult {
    * about somebody, with where they came underneath.
    */
   protected readonly me = computed(() => this.rows().find((row) => row.mine) ?? null);
+
+  /** A total is worth saying only where it is more than the one reason before it. */
+  protected readonly severalDoublings = computed(() => {
+    const { forTheSeries, forTheRedeal, forTheWin } = this.doubling();
+
+    return [forTheSeries, forTheRedeal, forTheWin].filter((times) => times > 1).length > 1;
+  });
+
+  /** Rules 9.5 and 9.8 as the news, or null while there is no game to have won. */
+  protected readonly gameNews = computed(() => {
+    const others = this.othersWhoWon();
+    const names = this.listed(others);
+
+    if (this.wonTheGame()) {
+      const key = others.length ? 'table.youSharedTheGame' : 'table.youWonTheGame';
+
+      return { key, names, mine: true };
+    }
+
+    if (others.length === 0) {
+      return null;
+    }
+
+    const key = others.length > 1 ? 'table.sharedTheGame' : 'table.wonTheGame';
+
+    return { key, names, mine: false };
+  });
+
+  private readonly language = inject(LanguageService);
+
+  /** "Dana and Yossi" in the reader's own language, which has its own word for "and". */
+  private listed(names: readonly string[]): string {
+    return new Intl.ListFormat(this.language.current().code, { type: 'conjunction' }).format(
+      names,
+    );
+  }
 
   /**
    * How the hand was taken, which is also what doubled it where it did.

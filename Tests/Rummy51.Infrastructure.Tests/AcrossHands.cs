@@ -110,7 +110,7 @@ public class AcrossHands
         var table = Opened.Arranged(mode: GameMode.Survival, limit: 100).GoOut();
         var won = table.Hand.WinnerSeat;
 
-        Assert.Equal(won, table.Hand.Standing.Won);
+        Assert.Equal([won], table.Hand.Standing.Won);
         Assert.Equal(1, table.Hand.Standing.Places[won]);
         Assert.Equal(2, table.Hand.Standing.Places[1 - won]);
     }

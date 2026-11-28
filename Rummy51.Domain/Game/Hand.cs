@@ -122,6 +122,7 @@ public sealed partial class Hand
             return;
         }
 
+        Weight = was.Weight;
         AgreedRedeals = was.AgreedRedeals;
         ForcedRedeals = was.ForcedRedeals;
         redeals.AddRange(was.Redeals);

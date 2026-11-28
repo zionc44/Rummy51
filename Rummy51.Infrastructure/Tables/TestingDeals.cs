@@ -31,7 +31,7 @@ internal static class TestingDeals
 
             if (Enumerable.Range(0, seats).Any(dealt.CanForceARedeal))
             {
-                return new Hand(seats, jokers, was.DealerSeat, dealt.Deck.Seed);
+                return new Hand(seats, was.DealerSeat, new Deck(jokers, dealt.Deck.Seed), was: was);
             }
         }
 

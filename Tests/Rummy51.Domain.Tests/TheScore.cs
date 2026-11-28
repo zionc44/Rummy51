@@ -77,6 +77,37 @@ public class TheScore
     }
 
     [Fact]
+    public void Rule_8_6_rummy_in_a_hand_counting_four_times_over_counts_eight()
+    {
+        var (hand, seat) = InOneStrike(weight: new HandWeight(4, false));
+
+        Assert.Equal(8, hand.ResultMultiplier);
+        Assert.Equal(-240, hand.Scores[seat]);
+        Assert.Equal(Worth.NeverWentDown * 8, hand.Scores[1 - seat]);
+    }
+
+    /// <summary>A redeal an earlier hand sent on doubles like one agreed in this hand.</summary>
+    [Fact]
+    public void Rule_8_5_a_redeal_sent_on_doubles_the_hand_it_falls_on()
+    {
+        var (hand, _) = InOneStrike(weight: new HandWeight(1, true));
+
+        Assert.Equal(1, hand.FixedMultiplier);
+        Assert.Equal(2, hand.RedealMultiplier);
+        Assert.Equal(4, hand.ResultMultiplier);
+    }
+
+    [Fact]
+    public void Rule_8_4_a_hand_counting_double_doubles_everybody()
+    {
+        var (hand, seat) = AcrossTwoTurns(new HandWeight(2, false));
+
+        Assert.Equal(2, hand.FixedMultiplier);
+        Assert.Equal(1, hand.RedealMultiplier);
+        Assert.Equal(-60, hand.Scores[seat]);
+    }
+
+    [Fact]
     public void Rule_8_2_an_ordinary_win_doubles_nothing()
     {
         var (hand, _) = AcrossTwoTurns();
@@ -136,9 +167,9 @@ public class TheScore
     /// turn, because rule 6.5 keeps two back while going out is closed, and
     /// everything else goes down on the second.
     /// </summary>
-    private static (Hand Hand, int Seat) InOneStrike(bool attaching = false)
+    private static (Hand Hand, int Seat) InOneStrike(bool attaching = false, HandWeight? weight = null)
     {
-        var hand = Dealt.Holding(Dealt.AWinningHand);
+        var hand = Dealt.Holding(Dealt.AWinningHand, weight: weight);
         var seat = hand.TurnSeat;
         var cards = TheTurn.Held(hand, seat);
 
@@ -172,9 +203,9 @@ public class TheScore
     }
 
     /// <summary>The same hand laid over two turns, which rule 6.6 does not double.</summary>
-    private static (Hand Hand, int Seat) AcrossTwoTurns()
+    private static (Hand Hand, int Seat) AcrossTwoTurns(HandWeight? weight = null)
     {
-        var hand = Dealt.Holding(Dealt.AWinningHand);
+        var hand = Dealt.Holding(Dealt.AWinningHand, weight: weight);
         var seat = hand.TurnSeat;
         var cards = TheTurn.Held(hand, seat);
 

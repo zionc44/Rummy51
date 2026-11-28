@@ -17,6 +17,7 @@
   gap: 0.75rem;
   inline-size: 100%;
   max-inline-size: 24rem;
+  max-block-size: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--felt-900);
@@ -40,10 +41,19 @@
 }
 
 // Rule 9.2: a game of many hands is many rows, and the window is still a
-// window. Only the pad gives way.
+// window. Only the pad gives way, and only once the screen has run out.
 .standing__pad {
+  flex: 0 1 auto;
+  min-block-size: 0;
   overflow-y: auto;
   border-block: 1px solid var(--border);
-  padding-block: 0.5rem;
-  max-block-size: 60vh;
+  padding-block: 0.25rem;
+  scrollbar-width: thin;
+}
+
+// The result window's button, so that the two read as one.
+.standing__ok {
+  align-self: center;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9375rem;
 }

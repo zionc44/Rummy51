@@ -3,8 +3,8 @@
     <p class="standing__title">
       {{ 'table.standing' | translate }}
 
-      @if (limit(); as limit) {
-        <span class="standing__limit">{{ 'lobby.points' | translate: { '0': limit } }}</span>
+      @if (progress(); as progress) {
+        <span class="standing__limit">{{ progress.key | translate: progress.params }}</span>
       }
     </p>
 
@@ -12,7 +12,7 @@
       <app-score-pad [columns]="pad().columns" [rows]="pad().rows" />
     </div>
 
-    <button type="button" class="btn-primary" (click)="closed.emit()">
+    <button type="button" class="btn-primary standing__ok" (click)="closed.emit()">
       {{ 'common.ok' | translate }}
     </button>
   </div>

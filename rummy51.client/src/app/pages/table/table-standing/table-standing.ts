@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ScorePad as Pad } from '../../../core/lobby/score-pad';
+import { Progress } from '../reckoning';
 import { ScorePad } from '../score-pad/score-pad';
 
 /**
@@ -19,8 +20,8 @@ import { ScorePad } from '../score-pad/score-pad';
 export class TableStanding {
   readonly pad = input.required<Pad>();
 
-  /** The number rule 9.4 knocks somebody out at, so a total can be read against it. */
-  readonly limit = input<number | null>(null);
+  /** What a total is read against: rule 9.4's number, or how far a series has gone. */
+  readonly progress = input<Progress | null>(null);
 
   readonly closed = output<void>();
 }

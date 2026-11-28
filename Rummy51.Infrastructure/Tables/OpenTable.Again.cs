@@ -160,7 +160,10 @@ internal sealed partial class OpenTable
     private void Deal(int dealerSeat)
     {
         dealerWas = dealerSeat;
-        hand = new Hand(seats.Length, Jokers, dealerSeat, Random.Shared.Next(), StillIn);
+        hand = new Hand(seats.Length, Jokers, dealerSeat, Random.Shared.Next(), StillIn)
+        {
+            Weight = NextWeight()
+        };
         handWritten = false;
         dealtOnce = false;
 

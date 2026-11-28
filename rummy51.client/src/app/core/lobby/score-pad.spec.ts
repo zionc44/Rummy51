@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Standing, TableSeat } from './lobby.models';
+import { HandWeight, Standing, TableSeat } from './lobby.models';
 import { scorePadOf } from './score-pad';
 
 /**
@@ -89,7 +89,57 @@ describe('a score pad', () => {
     expect(pad.columns).toHaveLength(2);
     expect(pad.rows[0].cells[1]?.score).toBe(47);
   });
+
+  /** The weights are the server's; what is asked is that every row is there to carry one. */
+  it('rule 8.4: a series lays every hand it will have from its first deal', () => {
+    const pad = padOf([], { weights: series([1, 2, 1, 4]) });
+
+    expect(pad.rows.map((row) => row.hand)).toEqual([1, 2, 3, 4]);
+    expect(pad.rows.map((row) => row.fixed)).toEqual([1, 2, 1, 4]);
+    expect(pad.rows.flatMap((row) => row.cells)).toEqual(Array(8).fill(null));
+  });
+
+  it('rule 8.5: and marks a redeal on the hand it fell on', () => {
+    const weights = series([1, 2, 1, 4]).map((weight, at) =>
+      at === 2 ? { ...weight, redealt: true, times: 2 } : weight,
+    );
+    const pad = padOf([[-30, 47]], { weights });
+
+    expect(pad.rows.map((row) => row.redealt)).toEqual([false, false, true, false]);
+  });
+
+  it('rule 9.7: the hands still to come are empty and move nobody', () => {
+    const pad = padOf(
+      [
+        [-30, 47],
+        [94, -60],
+      ],
+      { weights: series([1, 2, 1, 4]) },
+    );
+
+    expect(pad.rows[2].cells).toEqual([null, null]);
+    expect(pad.rows[1].cells[0]?.running).toBe(64);
+  });
+
+  it('the last hand counted is where the game stands, and the one after it is next', () => {
+    const pad = padOf([[-30, 47]], { weights: series([1, 2, 1, 4]) });
+
+    expect(pad.rows.map((row) => row.latest)).toEqual([true, false, false, false]);
+    expect(pad.rows.map((row) => row.next)).toEqual([false, true, false, false]);
+  });
+
+  it('and a game that is not a series has no hand to come', () => {
+    const pad = padOf([[-30, 47]]);
+
+    expect(pad.rows).toHaveLength(1);
+    expect(pad.rows.some((row) => row.next)).toBe(false);
+    expect(pad.rows[0].fixed).toBe(1);
+  });
 });
+
+function series(fixed: readonly number[]): HandWeight[] {
+  return fixed.map((times) => ({ fixed: times, redealt: false, times }));
+}
 
 function padOf(hands: readonly (readonly (number | null)[])[], over: Partial<Standing> = {}) {
   return scorePadOf(standing(hands, over), [seated('Dana'), seated('Yossi')], 0, []);
@@ -106,7 +156,8 @@ function standing(
     out: [],
     read: [],
     places: [],
-    won: -1,
+    won: [],
+    weights: [],
     ...over,
   };
 }

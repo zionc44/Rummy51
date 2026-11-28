@@ -509,9 +509,19 @@ they came to, which hand put them out under 9.4 and where 9.5 placed them
 the same, because a game already played must keep the standing it was
 played to.
 
-Still open in the game: nothing sequences hands, so a game is one deal and
-stops — the other two modes in 9.2 are chosen, checked and then played as
-though they were the first. Tables still live in memory, so a restart loses
+All three modes of 9.2 are played. A survival game goes on until one
+player is left in it; a series is the number of hands it was opened for,
+and some of those count for more before a card of them is dealt - 8.4
+fixes which, and 8.5 sends a redeal's doubling on from a hand already
+doubled to the next one that is not. A hand is told what it counts for as
+it is dealt and scores itself by it, so it still knows nothing of the game
+it belongs to: the series is `Series.cs`, and the table asks it. The pad
+lays every hand of a series from the first deal, so where the heavy hands
+lie is read before anybody plays one. A tie at the top of a series is a
+shared win under 9.8, which is why who won is a list and the games table
+records no single winner for it.
+
+Still open in the game: tables still live in memory, so a restart loses
 every table in play, though no longer the results of what was played in
 them.
 
@@ -534,9 +544,9 @@ CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
 
-All four suites are written, a sitting at a time. `dotnet test` runs 295
-of them - 166 over the rules, 98 over the tables and 31 over the pipeline
-- and `npm test` 137 more over the client's `core/`. Every test is named
+All four suites are written, a sitting at a time. `dotnet test` runs 316
+of them - 179 over the rules, 106 over the tables and 31 over the pipeline
+- and `npm test` 142 more over the client's `core/`. Every test is named
 after the rule it holds the code to. The server's suites live under
 `Tests/`, one folder per project held; the client's live beside what they
 test, as Angular looks for them, and `rule-links.js` knows a test by its

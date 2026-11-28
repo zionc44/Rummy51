@@ -55,7 +55,6 @@
             [table]="table"
             [mine]="seatedAt().has(table.tableId)"
             [waiting]="waiting()"
-            [showLimit]="true"
             (joined)="joined.emit($event)"
             (returned)="returned.emit($event)"
           />

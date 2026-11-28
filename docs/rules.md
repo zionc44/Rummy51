@@ -240,7 +240,7 @@ showed is not worth counting.
 **8.2** Doubling is blanket — it applies to the winner's minus as much as to
 everybody else's penalty — and there are two conditions. Each is worth one
 doubling however many times it was met, and together they make x4, which is
-the ceiling.
+the ceiling. A series counts both differently, under 8.5 and 8.6.
 
 The first is a redeal every player agreed to under 12.1. A forced one does
 not double, however it was answered: 12.9 takes the table's consent rather
@@ -257,6 +257,37 @@ winner is always first. Two worth the same take the same place, and the
 place after them is the one that would have followed had they differed.
 Nothing in a hand breaks a tie: there is no second thing to weigh, and
 inventing one would score the game on something it never asked about.
+
+**8.4** In a series some hands count double or four times over before a card
+of them is dealt, by where they fall in it:
+
+| hands | x2 | x4 |
+|---|---|---|
+| 3 | the 3rd | — |
+| 4 | the 2nd | the 4th |
+| 6 | the 3rd | the 6th |
+| 8 | the 2nd and 6th | the 4th and 8th |
+| 12 | the 3rd and 9th | the 6th and 12th |
+
+It is blanket as 8.2's doublings are, and it is known from the first deal,
+so everybody knows from the start which hands the series will be won and
+lost in.
+
+**8.5** In a series 8.2's first condition works differently. Every redeal
+the table agreed to under 12.1 is a doubling of its own, however many one
+hand had. It falls on the hand it was made in when that hand counts single,
+and otherwise on the next hand of the series that still does: a hand already
+counting double or four times over, under 8.4 or under this rule, passes it
+on. One that finds no single hand left is lost. A forced redeal doubles
+nothing here either, for 8.2's reason.
+
+So a series of twelve whose first hand is redealt twelve times counts every
+hand at least double: the first redeal doubles the first hand, the next seven
+the seven single hands after it, and the last four find none left.
+
+**8.6** 8.2's second condition doubles on top of whatever 8.4 and 8.5 made of
+the hand. A hand counting four times over that is gone out rummy counts eight
+times over, which is the ceiling a series has in place of 8.2's x4.
 
 ## 9. Hands, games and tables
 
@@ -294,6 +325,15 @@ chair up, and the chair stays empty until the game ends either way. Nobody
 joins a game in progress, and 9.3 is what offers the chair again once there
 is no game to join. It is the one chair 10.4 does not hold to the end,
 there being nothing left in it to play out.
+
+**9.7** A game of the third kind is played for the number of hands the table
+was opened with, and ends at the end of the last of them. Every seat is in
+every one, under 10.4. A hand dealt again under chapter 12 is the same hand
+under 12.8, and not one more of the series.
+
+**9.8** It is won by the lowest total and placed by totals, as a hand is
+under 8.3. Two or more alike at the top have all won it: nothing in a series
+breaks a tie, for 8.3's reason, so a shared first place is a shared win.
 
 ## 10. Leaving
 
@@ -428,5 +468,4 @@ owns what.
 Questions, not rules, so they have no numbers of their own. A rule written
 here before it is settled is a rule somebody will enforce by mistake.
 
-Nothing, for a single hand. A game of several is chapter 9, and nothing
-sequences one yet.
+Nothing.

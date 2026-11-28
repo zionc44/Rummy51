@@ -40,15 +40,18 @@ export const SERIES_HANDS: Readonly<Record<number, readonly number[]>> = {
 
 /**
  * Every stake a mode's tables are headed by in the lobby, lowest first. A
- * single hand has none, there being nothing for it to reach.
- *
- * Nor has a series, yet. How many hands one may be depends on who is at
- * the table, so heading them would mean a heading for every count any
- * table could have been opened for - five of them for three choices. It
- * waits until series are played at all, and until then a row says it.
+ * single hand has none, there being nothing for it to reach. A series has
+ * every count any table could have been opened for, whoever sits at it.
  */
 export function limitsOf(mode: GameMode): readonly number[] {
-  return mode === 'survival' ? SURVIVAL_POINTS : [];
+  switch (mode) {
+    case 'survival':
+      return SURVIVAL_POINTS;
+    case 'series':
+      return [...new Set(Object.values(SERIES_HANDS).flat())].sort((one, other) => one - other);
+    default:
+      return [];
+  }
 }
 
 export interface TableSeat {
@@ -117,8 +120,9 @@ export interface MeldView {
  * nothing beyond it. Cards arrive as their code, which is also the name of
  * the picture, so there is one name and not two.
  */
-/** Rule 8.2 as it was arrived at. All ones while a hand is being played. */
+/** Rules 8.2 and 8.4 as they were arrived at. All ones while a hand is being played. */
 export interface Doubling {
+  readonly forTheSeries: number;
   readonly forTheRedeal: number;
   readonly forTheWin: number;
   readonly altogether: number;
@@ -150,8 +154,21 @@ export interface Standing {
   /** Rule 9.5, and nought for a chair that was never in the game. */
   readonly places: readonly number[];
 
-  /** Rule 9.5: the seat the game went to, and -1 until there is one. */
-  readonly won: number;
+  /** Rules 9.5 and 9.8: the seats the game went to, and none until there is one. */
+  readonly won: readonly number[];
+
+  /** Rules 8.4 and 8.5: every hand of a series, and empty for any other game. */
+  readonly weights: readonly HandWeight[];
+}
+
+/** What a series has made of one of its hands. */
+export interface HandWeight {
+  /** Rule 8.4. */
+  readonly fixed: number;
+
+  /** Rule 8.5. */
+  readonly redealt: boolean;
+  readonly times: number;
 }
 
 export interface HandView {

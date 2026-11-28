@@ -20,9 +20,16 @@ internal static class Dealt
     private const int Cut = 0;
 
     /// <summary>In play, with the opener holding exactly what was asked for.</summary>
-    public static Hand Holding(IReadOnlyList<Card> opener, int seats = 2, int jokers = 2)
+    public static Hand Holding(
+        IReadOnlyList<Card> opener,
+        int seats = 2,
+        int jokers = 2,
+        HandWeight? weight = null)
     {
-        var hand = new Hand(seats, dealerSeat: 0, LaidOut(opener, seats, jokers));
+        var hand = new Hand(seats, dealerSeat: 0, LaidOut(opener, seats, jokers))
+        {
+            Weight = weight ?? HandWeight.Single
+        };
 
         hand.CutAt(Cut);
         hand.Deal();

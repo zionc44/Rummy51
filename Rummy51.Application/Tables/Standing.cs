@@ -1,3 +1,5 @@
+using Rummy51.Domain.Game;
+
 namespace Rummy51.Application.Tables;
 
 /// <summary>
@@ -22,9 +24,10 @@ namespace Rummy51.Application.Tables;
 /// twice is a placing that will be changed once.
 /// </param>
 /// <param name="Won">
-/// Rule 9.5: the seat the game itself went to, which is not the seat that
-/// took any one hand. Minus one until there is a game to have been won.
+/// Rules 9.5 and 9.8: who the game went to, not who took any one hand, and
+/// nobody until there is a game to have been won.
 /// </param>
+/// <param name="Weights">Rules 8.4 and 8.5, every hand of a series from its first deal.</param>
 public sealed record Standing(
     IReadOnlyList<int> Totals,
     IReadOnlyList<int> Hands,
@@ -32,4 +35,5 @@ public sealed record Standing(
     IReadOnlyList<bool> Out,
     IReadOnlyList<bool> Read,
     IReadOnlyList<int> Places,
-    int Won);
+    IReadOnlyList<int> Won,
+    IReadOnlyList<HandWeight> Weights);

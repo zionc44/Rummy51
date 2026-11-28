@@ -17,6 +17,7 @@
   gap: 0.75rem;
   inline-size: 100%;
   max-inline-size: 22rem;
+  max-block-size: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--felt-900);
@@ -48,17 +49,24 @@
   font-size: 0.875rem;
 }
 
-// Each condition on its own line because each is its own reason, and the
-// total under them because it is the only one nobody has to be told twice.
+// One line, each reason named and the total last. How the hand was taken is
+// one of the reasons where it doubled, so it is said here and not twice.
 .result__doublings {
   display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.5rem;
   margin: 0;
   padding: 0;
   color: var(--place);
   font-size: 0.8125rem;
   list-style: none;
+}
+
+.result__doubling + .result__doubling::before {
+  margin-inline-end: 0.5rem;
+  color: var(--text-faint);
+  content: '·';
 }
 
 .result__doubling--all {
@@ -177,6 +185,29 @@
   }
 }
 
+// Small, with the clock inside it: between hands the window is for reading,
+// and the pad is what deserves the room.
+.result__ok {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9375rem;
+}
+
+.result__ok-left {
+  min-inline-size: 1.25rem;
+  opacity: 0.6;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.result__ok-left--urgent {
+  opacity: 1;
+  color: var(--status-in-game);
+}
+
 .result__waiting {
   margin: 0;
   color: var(--text-muted);
@@ -197,9 +228,13 @@
 
 // Rule 9.2: as many rows as the game has had hands, inside a window that
 // is still a window.
+// Whatever height the window has left over, and only then a scroll: the
+// panel stops at the screen and this is the one part of it that gives.
 .result__pad {
+  flex: 0 1 auto;
+  min-block-size: 0;
   overflow-y: auto;
   border-block: 1px solid var(--border);
-  padding-block: 0.5rem;
-  max-block-size: 45vh;
+  padding-block: 0.25rem;
+  scrollbar-width: thin;
 }

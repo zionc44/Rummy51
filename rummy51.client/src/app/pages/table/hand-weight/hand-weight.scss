@@ -1,0 +1,30 @@
+:host {
+  display: inline-flex;
+}
+
+.weight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  border-radius: var(--radius-pill);
+  padding-inline: 0.3125rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+// Filled, because 8.4 is part of the series from before its first deal.
+.weight--fixed {
+  background: var(--series-double);
+  color: var(--felt-950);
+}
+
+.weight--four {
+  background: var(--series-fourfold);
+}
+
+// Bare, because 8.5's doubling is something that happened at the table.
+.weight--redealt {
+  color: var(--series-redeal);
+}
