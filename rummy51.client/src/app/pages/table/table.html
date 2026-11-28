@@ -84,7 +84,9 @@
             <span class="table__turning" aria-hidden="true"></span>
             {{ 'table.waiting' | translate }}
             <span class="table__count">
-              {{ 'table.seatedOf' | translate: { '0': seating.taken(), '1': current.seats.length } }}
+              {{
+                'table.seatedOf' | translate: { '0': seating.taken(), '1': current.seats.length }
+              }}
             </span>
           </p>
         }
@@ -172,6 +174,7 @@
           [winner]="reckoning.winnerName()"
           [doubling]="hand.doubling"
           [across]="reckoning.across()"
+          [pad]="reckoning.pad()"
           [asking]="reckoning.askedToStay()"
           [justOut]="reckoning.justOut()"
           [anotherHand]="reckoning.anotherHand()"
@@ -187,7 +190,7 @@
       <!-- Rule 9.4: asked for in the middle of a hand, and gone again. -->
       @if (reckoning.open()) {
         <app-table-standing
-          [rows]="reckoning.standingRows()"
+          [pad]="reckoning.pad()"
           [limit]="table()?.limit ?? null"
           (closed)="reckoning.open.set(false)"
         />
@@ -204,7 +207,11 @@
       }
 
       @if (hand.phase === 'keeping' && seating.seated() && !asking.chosen()) {
-        <app-keep-three [cards]="myCards()" [left]="asking.secondsLeft()" (kept)="asking.keep($event)" />
+        <app-keep-three
+          [cards]="myCards()"
+          [left]="asking.secondsLeft()"
+          (kept)="asking.keep($event)"
+        />
       }
     }
 

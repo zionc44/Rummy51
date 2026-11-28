@@ -23,8 +23,11 @@ internal sealed partial class OpenTable
     /// </summary>
     private readonly int[] outAfterHand;
 
-    /// <summary>What the hand before this one came to, which outlives it.</summary>
-    private readonly int[] lastHand;
+    /// <summary>
+    /// Rule 9.2 hand by hand, and null for a seat that was not in one -
+    /// a nought reads as a hand played and scored nothing in.
+    /// </summary>
+    private readonly List<int?[]> eachHand = [];
 
     /// <summary>Who has read what the hand came to and is ready for the next.</summary>
     private readonly bool[] readIt;
@@ -54,7 +57,7 @@ internal sealed partial class OpenTable
     /// <summary>Rule 9.5, and nought for a chair that was never in the game.</summary>
     public IReadOnlyList<int> Places => Placing.InTheGame(handsPlayed, totals, InTheGame);
 
-    public IReadOnlyList<int> LastHand => lastHand;
+    public IReadOnlyList<IReadOnlyList<int?>> EachHand => eachHand;
 
     public IReadOnlyList<bool> ReadIt => readIt;
 
@@ -163,18 +166,21 @@ internal sealed partial class OpenTable
     {
         handsSoFar += 1;
 
+        var scored = new int?[seats.Length];
+
         for (var seat = 0; seat < seats.Length; seat++)
         {
-            lastHand[seat] = ended.Playing[seat] ? ended.Scores[seat] : 0;
-
             if (!ended.Playing[seat])
             {
                 continue;
             }
 
+            scored[seat] = ended.Scores[seat];
             totals[seat] += ended.Scores[seat];
             handsPlayed[seat] += 1;
         }
+
+        eachHand.Add(scored);
     }
 
     /// <summary>Rule 9.4: reaching the number is enough, and it is the end of this hand.</summary>
@@ -228,7 +234,7 @@ internal sealed partial class OpenTable
         Array.Clear(totals);
         Array.Clear(handsPlayed);
         Array.Clear(outAfterHand);
-        Array.Clear(lastHand);
+        eachHand.Clear();
         Array.Clear(readIt);
         handsSoFar = 0;
         showing = false;

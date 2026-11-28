@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { ResultRow } from '../hand-result/hand-result';
+import { ScorePad as Pad } from '../../../core/lobby/score-pad';
+import { ScorePad } from '../score-pad/score-pad';
 
 /**
  * Rule 9.4 while the hand is still being played. The result window says
@@ -10,13 +11,13 @@ import { ResultRow } from '../hand-result/hand-result';
  */
 @Component({
   selector: 'app-table-standing',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, ScorePad],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-standing.html',
   styleUrl: './table-standing.scss',
 })
 export class TableStanding {
-  readonly rows = input<readonly ResultRow[]>([]);
+  readonly pad = input.required<Pad>();
 
   /** The number rule 9.4 knocks somebody out at, so a total can be read against it. */
   readonly limit = input<number | null>(null);

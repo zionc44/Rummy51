@@ -135,8 +135,12 @@ export interface Standing {
   readonly totals: readonly number[];
   readonly hands: readonly number[];
 
-  /** What the hand before this one came to, which outlives it. */
-  readonly last: readonly number[];
+  /**
+   * Rule 9.2: what every hand of this game came to, a row to a hand and a
+   * seat to a column. Null where a seat was not in that hand, a nought
+   * being a hand played and scored nothing in.
+   */
+  readonly eachHand: readonly (readonly (number | null)[])[];
 
   readonly out: readonly boolean[];
 

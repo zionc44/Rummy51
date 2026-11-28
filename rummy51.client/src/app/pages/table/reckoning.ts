@@ -1,5 +1,6 @@
 import { Signal, computed, signal } from '@angular/core';
 import { HandPhase, HandView, LobbyTable, TableSeat } from '../../core/lobby/lobby.models';
+import { ScorePad, scorePadOf } from '../../core/lobby/score-pad';
 import { ResultRow } from './hand-result/hand-result';
 import { Moves } from './moves';
 
@@ -67,42 +68,15 @@ export class Reckoning {
   });
 
   /**
-   * Rule 9.4 in the middle of a hand, where there is no hand to show yet.
-   * How close somebody is to the number is how the hand in front of them
-   * should be played, so it is worth asking for before it is over.
+   * Rule 9.2: the game hand by hand, which is the standing as well as the
+   * history of it - the bottom of a column is where that player stands.
    */
-  readonly standingRows = computed<readonly ResultRow[]>(() => {
+  readonly pad = computed<ScorePad>(() => {
     const hand = this.hand();
-    const seats = this.seats();
 
-    if (!hand || !this.across()) {
-      return [];
-    }
-
-    const { totals, hands, last, out, places } = hand.standing;
-    const played = Math.max(...hands);
-
-    return seats
-      .flatMap((who, seat) =>
-        who.playerId
-          ? [
-              {
-                place: places[seat] ?? 0,
-                name: who.displayName ?? '',
-                score: last[seat] ?? 0,
-                won: false,
-                wentDown: false,
-                mine: seat === this.ownSeat(),
-                total: totals[seat] ?? 0,
-                hands: hands[seat] ?? 0,
-                out: out[seat] ?? false,
-                playedLast: (hands[seat] ?? 0) === played,
-                staying: null,
-              },
-            ]
-          : [],
-      )
-      .sort(byPlace);
+    return hand && this.across()
+      ? scorePadOf(hand.standing, this.seats(), this.ownSeat(), hand.staying)
+      : { columns: [], rows: [] };
   });
 
   /** Open only while somebody is reading it. */

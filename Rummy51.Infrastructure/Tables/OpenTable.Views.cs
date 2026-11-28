@@ -90,7 +90,7 @@ internal sealed partial class OpenTable
                 new Standing(
                     [.. Totals],
                     [.. HandsPlayed],
-                    [.. LastHand],
+                    [.. EachHand],
                     [.. OutOfIt],
                     [.. ReadIt],
                     Places,

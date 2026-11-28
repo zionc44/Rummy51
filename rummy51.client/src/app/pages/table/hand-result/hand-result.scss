@@ -194,3 +194,12 @@
   color: var(--danger);
   font-weight: 700;
 }
+
+// Rule 9.2: as many rows as the game has had hands, inside a window that
+// is still a window.
+.result__pad {
+  overflow-y: auto;
+  border-block: 1px solid var(--border);
+  padding-block: 0.5rem;
+  max-block-size: 45vh;
+}

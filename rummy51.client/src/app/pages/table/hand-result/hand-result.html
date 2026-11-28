@@ -50,61 +50,50 @@
       }
     }
 
-    <!-- Rule 9.4: once a game runs across hands, where somebody stands in
-         it matters more than where they came in this one. -->
+    <!-- Rule 9.2: a game of several hands is read hand by hand, and the
+         bottom of a column is where that player stands in it. One of them
+         is this hand, so the list under it would say it a second time. -->
     @if (across()) {
-      <p class="result__heads">
-        <span class="result__place"></span>
-        <span class="result__name"></span>
-        <span class="result__cell">{{ 'table.handsLasted' | translate }}</span>
-        <span class="result__cell">{{ 'table.thisHand' | translate }}</span>
-        <span class="result__cell">{{ 'table.inTheGame' | translate }}</span>
-      </p>
-    }
+      <div class="result__pad">
+        <app-score-pad [columns]="pad().columns" [rows]="pad().rows" />
+      </div>
+    } @else {
+      <ol class="result__rows">
+        @for (row of rows(); track row.name) {
+          <li
+            class="result__row"
+            [class.result__row--mine]="row.mine"
+            [class.result__row--out]="row.out"
+          >
+            <span class="result__place">{{ row.out ? '' : row.place }}</span>
 
-    <ol class="result__rows">
-      @for (row of rows(); track row.name) {
-        <li
-          class="result__row"
-          [class.result__row--mine]="row.mine"
-          [class.result__row--out]="row.out"
-        >
-          <span class="result__place">{{ row.out ? '' : row.place }}</span>
+            <span class="result__name">
+              {{ row.name }}
 
-          <span class="result__name">
-            {{ row.name }}
-
-            <!-- Rule 8.1 hangs its hundred on this, so a score nobody can
+              <!-- Rule 8.1 hangs its hundred on this, so a score nobody can
                  account for says where it came from. -->
-            @if (!row.wentDown && !row.won && !row.out) {
-              <small class="result__never">{{ 'table.neverWentDown' | translate }}</small>
-            }
+              @if (!row.wentDown && !row.won && !row.out) {
+                <small class="result__never">{{ 'table.neverWentDown' | translate }}</small>
+              }
 
-            @if (row.out) {
-              <small class="result__never">{{ 'table.wentOut' | translate }}</small>
-            }
+              @if (row.out) {
+                <small class="result__never">{{ 'table.wentOut' | translate }}</small>
+              }
 
-            @if (row.staying === true) {
-              <span class="result__staying" [title]="'table.staying' | translate">&#10003;</span>
-            } @else if (row.staying === false) {
-              <span class="result__going" [title]="'table.going' | translate">&#10007;</span>
-            }
-          </span>
-
-          @if (across()) {
-            <span class="result__cell">{{ row.hands }}</span>
-            <span class="result__cell" [class.result__cell--won]="row.won">
-              {{ row.playedLast ? row.score : '' }}
+              @if (row.staying === true) {
+                <span class="result__staying" [title]="'table.staying' | translate">&#10003;</span>
+              } @else if (row.staying === false) {
+                <span class="result__going" [title]="'table.going' | translate">&#10007;</span>
+              }
             </span>
-            <span class="result__cell result__cell--heavy">{{ row.total }}</span>
-          } @else {
+
             <span class="result__cell result__cell--heavy" [class.result__cell--won]="row.won">
               {{ row.score }}
             </span>
-          }
-        </li>
-      }
-    </ol>
+          </li>
+        }
+      </ol>
+    }
 
     @if (asking()) {
       <p class="result__another">{{ 'table.anotherGame' | translate }}</p>

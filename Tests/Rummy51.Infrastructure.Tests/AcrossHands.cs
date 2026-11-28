@@ -147,4 +147,47 @@ public class AcrossHands
 
         Assert.Equal(42, table.Hand.Waiting!.Seconds);
     }
+    /// <summary>
+    /// Rule 9.2: a game is a sequence of hands, and what each of them came
+    /// to outlives it. The total is the column added up, so the two can be
+    /// read against each other.
+    /// </summary>
+    [Fact]
+    public void Rule_9_2_every_hand_of_the_game_keeps_what_it_came_to()
+    {
+        var table = Opened.Arranged(mode: GameMode.Survival, limit: 500);
+        var first = table.GoOut().Hand.Scores.ToArray();
+        var pad = TheHandAfter(table).Hand.Standing.EachHand;
+
+        Assert.Equal(2, pad.Count);
+        Assert.Equal(first.Select(score => (int?)score), pad[0]);
+        Assert.Equal(table.Hand.Scores.Select(score => (int?)score), pad[1]);
+    }
+
+    [Fact]
+    public void Rule_9_2_and_what_each_of_them_stands_at_is_their_column_added_up()
+    {
+        var table = Opened.Arranged(mode: GameMode.Survival, limit: 500).GoOut();
+        var standing = TheHandAfter(table).Hand.Standing;
+
+        Assert.Equal(
+            standing.Totals,
+            Enumerable.Range(0, 2).Select(seat => standing.EachHand.Sum(hand => hand[seat] ?? 0)));
+    }
+
+    [Fact]
+    public void Rule_9_2_and_a_game_with_no_hand_behind_it_has_nothing_in_it()
+    {
+        var table = Opened.Arranged(mode: GameMode.Survival, limit: 500);
+
+        Assert.Empty(table.Hand.Standing.EachHand);
+    }
+
+    /// <summary>The wait between hands read out, dealt again, and played.</summary>
+    private static Opened TheHandAfter(Opened table)
+    {
+        table.Tick(table.Turns.BetweenHandsSeconds);
+
+        return table.Dealt().GoOut();
+    }
 }

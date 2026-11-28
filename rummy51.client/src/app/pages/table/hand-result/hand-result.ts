@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Doubling } from '../../../core/lobby/lobby.models';
+import { ScorePad as Pad } from '../../../core/lobby/score-pad';
+import { ScorePad } from '../score-pad/score-pad';
 
 /** One player as the hand left them, and as the game has left them. */
 export interface ResultRow {
@@ -34,7 +36,7 @@ export interface ResultRow {
  */
 @Component({
   selector: 'app-hand-result',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, ScorePad],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './hand-result.html',
   styleUrl: './hand-result.scss',
@@ -49,6 +51,9 @@ export class HandResult {
 
   /** Rule 9.2: this hand is one of several, so the game is worth its columns. */
   readonly across = input(false);
+
+  /** Rule 9.2 hand by hand, which is what `across` is shown instead of a list. */
+  readonly pad = input.required<Pad>();
 
   /** Rule 9.3: this player has still to say whether they want another game. */
   readonly asking = input(false);

@@ -534,9 +534,9 @@ CAPTCHA on registration — it cannot require a credential, so those are its
 only protection — and a mail sender, which unblocks password reset, email
 confirmation and changing an address.
 
-All four suites are written, a sitting at a time. `dotnet test` runs 279
-of them - 159 over the rules, 89 over the tables and 31 over the pipeline
-- and `npm test` 125 more over the client's `core/`. Every test is named
+All four suites are written, a sitting at a time. `dotnet test` runs 287
+of them - 159 over the rules, 97 over the tables and 31 over the pipeline
+- and `npm test` 132 more over the client's `core/`. Every test is named
 after the rule it holds the code to. The server's suites live under
 `Tests/`, one folder per project held; the client's live beside what they
 test, as Angular looks for them, and `rule-links.js` knows a test by its

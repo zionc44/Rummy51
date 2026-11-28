@@ -1,0 +1,95 @@
+.pad {
+  border-collapse: collapse;
+  inline-size: 100%;
+  font-variant-numeric: tabular-nums;
+  table-layout: fixed;
+}
+
+.pad__corner,
+.pad__head {
+  border-block-end: 1px solid var(--border);
+  padding-block-end: 0.3125rem;
+  font-size: 0.6875rem;
+  font-weight: 400;
+}
+
+.pad__corner {
+  inline-size: 1.75rem;
+  color: var(--text-faint);
+}
+
+.pad__head {
+  color: var(--text-muted);
+}
+
+.pad__head--mine {
+  color: var(--text);
+  font-weight: 700;
+}
+
+// Rule 9.4: still at the table and no longer in the game.
+.pad__head--out {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+.pad__who {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.1875rem;
+}
+
+.pad__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pad__place {
+  flex: none;
+  color: var(--text-faint);
+  font-size: 0.5625rem;
+}
+
+.pad__staying {
+  color: var(--felt-300);
+}
+
+.pad__going {
+  color: var(--text-faint);
+}
+
+.pad__hand {
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+  font-weight: 400;
+}
+
+// Where they stand leads and what the hand cost them follows it, because
+// the first is what the next hand is played on and the second is how it
+// got there.
+// Laid out inline and not as a flex row: a table cell told to be a flex
+// container stops being a table cell, and the columns stop lining up.
+.pad__cell {
+  padding-block: 0.3125rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pad__running {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.pad__score {
+  margin-inline-start: 0.3125rem;
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+}
+
+// The bottom row is where the game stands now, which is the one line
+// anybody reads the pad for when they are not reading all of it.
+.pad__row--last {
+  background: rgb(255 255 255 / 0.06);
+}

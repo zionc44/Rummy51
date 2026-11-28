@@ -1,0 +1,51 @@
+<table class="pad">
+  <thead>
+    <tr>
+      <th class="pad__corner" scope="col">{{ 'table.handNumber' | translate }}</th>
+
+      @for (column of columns(); track column.seat) {
+        <th
+          scope="col"
+          class="pad__head"
+          [class.pad__head--mine]="column.mine"
+          [class.pad__head--out]="column.out"
+        >
+          <span class="pad__who">
+            @if (column.place) {
+              <span class="pad__place">{{ column.place }}</span>
+            }
+
+            <!-- Rule 9.6 empties the chair and the server stops naming it,
+                 while the column it played stays the game's. -->
+            <span class="pad__name">{{ column.name || '&mdash;' }}</span>
+          </span>
+
+          @if (column.staying === true) {
+            <span class="pad__staying" [title]="'table.staying' | translate">&#10003;</span>
+          } @else if (column.staying === false) {
+            <span class="pad__going" [title]="'table.going' | translate">&#10007;</span>
+          }
+        </th>
+      }
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (row of rows(); track row.hand) {
+      <tr class="pad__row" [class.pad__row--last]="$last">
+        <th scope="row" class="pad__hand">{{ row.hand }}</th>
+
+        @for (cell of row.cells; track $index) {
+          <td class="pad__cell">
+            <!-- A minus belongs in front of its digits, and a number set
+                 in a right-to-left line is read with it behind them. -->
+            @if (cell) {
+              <span class="pad__running" dir="ltr">{{ cell.running }}</span>
+              <span class="pad__score" dir="ltr">({{ cell.score }})</span>
+            }
+          </td>
+        }
+      </tr>
+    }
+  </tbody>
+</table>

@@ -49,7 +49,6 @@ internal sealed partial class OpenTable
         totals = new int[request.Seats];
         handsPlayed = new int[request.Seats];
         outAfterHand = new int[request.Seats];
-        lastHand = new int[request.Seats];
         readIt = new bool[request.Seats];
     }
 

@@ -8,37 +8,9 @@
       }
     </p>
 
-    <p class="standing__heads">
-      <span class="standing__place"></span>
-      <span class="standing__name"></span>
-      <span class="standing__cell">{{ 'table.handsLasted' | translate }}</span>
-      <span class="standing__cell">{{ 'table.lastHand' | translate }}</span>
-      <span class="standing__cell">{{ 'table.inTheGame' | translate }}</span>
-    </p>
-
-    <ol class="standing__rows">
-      @for (row of rows(); track row.name) {
-        <li
-          class="standing__row"
-          [class.standing__row--mine]="row.mine"
-          [class.standing__row--out]="row.out"
-        >
-          <span class="standing__place">{{ row.out ? '' : row.place }}</span>
-
-          <span class="standing__name">
-            {{ row.name }}
-
-            @if (row.out) {
-              <small class="standing__out">{{ 'table.wentOut' | translate }}</small>
-            }
-          </span>
-
-          <span class="standing__cell">{{ row.hands }}</span>
-          <span class="standing__cell">{{ row.playedLast ? row.score : '' }}</span>
-          <span class="standing__cell standing__cell--heavy">{{ row.total }}</span>
-        </li>
-      }
-    </ol>
+    <div class="standing__pad">
+      <app-score-pad [columns]="pad().columns" [rows]="pad().rows" />
+    </div>
 
     <button type="button" class="btn-primary" (click)="closed.emit()">
       {{ 'common.ok' | translate }}

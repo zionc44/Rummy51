@@ -5,10 +5,11 @@ namespace Rummy51.Application.Tables;
 /// How long each of them has lasted is the standing itself and not a
 /// decoration - it is what places them when the game ends.
 /// </summary>
-/// <param name="Last">
-/// What the hand before this one came to, kept because the standing is
-/// worth reading in the middle of a hand and the hand it followed is gone
-/// by then. Nought for a seat that was not in it.
+/// <param name="EachHand">
+/// Rule 9.2: what every hand came to, a row to a hand and a seat to a
+/// column. Null where a seat was not in that hand, a nought being a hand
+/// played and scored nothing in. The running total under a cell is the
+/// column down to it, and is worked out where it is shown.
 /// </param>
 /// <param name="Read">
 /// Who has read what the hand came to and is waiting on nobody. A seat
@@ -27,7 +28,7 @@ namespace Rummy51.Application.Tables;
 public sealed record Standing(
     IReadOnlyList<int> Totals,
     IReadOnlyList<int> Hands,
-    IReadOnlyList<int> Last,
+    IReadOnlyList<IReadOnlyList<int?>> EachHand,
     IReadOnlyList<bool> Out,
     IReadOnlyList<bool> Read,
     IReadOnlyList<int> Places,
