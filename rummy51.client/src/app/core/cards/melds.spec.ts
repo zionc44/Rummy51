@@ -70,7 +70,33 @@ describe('a run', () => {
   it('rule 4.2: but never turns the corner', () => {
     expect(isRun([H(King), H(Ace), H(2)])).toBe(false);
   });
+
+  /** Rule 1.1 puts two of every card in the deck, so this is two aces. */
+  it('rule 4.3: one run reaches from one ace to the other', () => {
+    expect(isRun(aceToAce())).toBe(true);
+  });
+
+  it('rule 4.3: and either of them may be a joker', () => {
+    expect(isRun([...aceToAce().slice(0, -1), joker()])).toBe(true);
+  });
+
+  it('rule 4.3: but fourteen places are all there are', () => {
+    expect(isRun([...aceToAce(), H(2)])).toBe(false);
+  });
+
+  /** Rule 4.1: one place each, and these two are asking for one. */
+  it('rule 4.3: and two aces beside each other are not two places', () => {
+    expect(isRun([H(Ace), H(Ace), H(2)])).toBe(false);
+  });
+
+  /** Rule 1.2 and rule 5.3: the ace is worth eleven at both ends. */
+  it('rule 4.3: and both of them are counted', () => {
+    expect(worthOnTable(aceToAce())).toBe(11 + 54 + 30 + 11);
+  });
 });
+
+/** A-2-3-...-K-A, which is the whole suit and one card over. */
+const aceToAce = () => [H(Ace), ...Array.from({ length: 12 }, (_, at) => H(at + 2)), H(Ace)];
 
 describe('a meld', () => {
   it('rule 4.1: is a run or a set and nothing else', () => {

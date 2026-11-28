@@ -94,10 +94,18 @@ nobody's is the table's own business and not a rule of the game.
 ## 4. Runs and sets
 
 **4.1** A run is three or more of the same suit in ascending order; a set is
-three or four of the same rank. Neither may hold the same card twice.
+three or four of the same rank. Neither may hold two cards in one place: a
+run has a place for each rank it covers and a set one for each suit, and
+the two packs of 1.1 change neither.
 
 **4.2** Q-K-A is a run and A-2-3 is a run. K-A-2 is not, because the ace does
 not turn the corner.
+
+**4.3** One run may hold both of 4.2 at once. A-2-3-...-K-A is fourteen
+cards in fourteen places, an ace standing at each end, and it turns no
+corner: the places run from one to fourteen and there is nothing outside
+them to turn into. It is two of the deck's aces and not one card laid
+twice, which is why 4.1 does not reach it.
 
 ## 5. Going down
 

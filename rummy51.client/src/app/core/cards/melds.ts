@@ -1,4 +1,4 @@
-import { Ace, HeldCard, King, isJoker, rankOf, suitOf } from './card';
+import { Ace, HeldCard, isJoker, rankOf, suitOf } from './card';
 import { worthOfHand, worthOfRank } from './worth';
 
 /**
@@ -20,6 +20,12 @@ export const GoingDown = 51;
 
 /** Rule 4.1. */
 const Most = 4;
+
+/** Rule 4.2. */
+const Lowest = 1;
+
+/** Rule 4.2, and where Ace already sits. */
+const Highest = Ace;
 
 /**
  * Each place given the number of the run it belongs to, or null for none.
@@ -85,7 +91,7 @@ export function isSet(cards: readonly HeldCard[]): boolean {
   return named.every((card) => rankOf(card) === rank) && suits.size === named.length;
 }
 
-/** Rules 4.1, 4.2 - which is why the ace is asked about twice. */
+/** Rules 4.1, 4.2, 4.3. */
 export function isRun(cards: readonly HeldCard[]): boolean {
   const named = cards.filter((card) => !isJoker(card));
 
@@ -99,41 +105,23 @@ export function isRun(cards: readonly HeldCard[]): boolean {
     return false;
   }
 
-  const high = (card: HeldCard) => rankOf(card);
-  const low = (card: HeldCard) => (rankOf(card) === Ace ? 1 : rankOf(card));
+  return placesOf(cards).length > 0;
+}
 
+/** A joker names nothing, so only the rest are asked anything. */
+function inOrder(run: readonly HeldCard[], places: readonly number[]): boolean {
   return (
-    inOrderBy(cards, high, 1, 2, Ace) ||
-    inOrderBy(cards, high, -1, 2, Ace) ||
-    inOrderBy(cards, low, 1, 1, King) ||
-    inOrderBy(cards, low, -1, 1, King)
+    places.every((place) => place >= Lowest && place <= Highest) &&
+    run.every((card, at) => isJoker(card) || sits(card, places[at]))
   );
 }
 
-/**
- * Anchored on the first card that names itself, since a joker names
- * nothing and takes whatever rank the place it sits in asks for.
- */
-function inOrderBy(
-  cards: readonly HeldCard[],
-  rank: (card: HeldCard) => number,
-  step: number,
-  lowest: number,
-  highest: number,
-): boolean {
-  const anchor = cards.findIndex((card) => !isJoker(card));
-  const from = rank(cards[anchor]);
+/** Rule 4.2: the ace answers for either end of the scale. */
+const sits = (card: HeldCard, place: number) =>
+  rankOf(card) === place || (rankOf(card) === Ace && place === Lowest);
 
-  return cards.every((card, at) => {
-    const wanted = from + step * (at - anchor);
-
-    if (wanted < lowest || wanted > highest) {
-      return false;
-    }
-
-    return isJoker(card) || rank(card) === wanted;
-  });
-}
+/** Rule 4.3. */
+const startsAt = (named: HeldCard) => (rankOf(named) === Ace ? [Highest, Lowest] : [rankOf(named)]);
 
 /** Rules 5.1, 5.2. */
 export const hasCleanRun = (meld: readonly HeldCard[]) => cleanRunIn(meld).length >= Least;
@@ -162,22 +150,28 @@ export function showingWorth(laid: readonly (readonly HeldCard[])[]): number {
   return providers.length === 0 ? whole : whole - Math.min(...providers);
 }
 
-/** Jokers included, read off whichever way the run is in order. */
+/**
+ * Rules 4.1, 4.2, 4.3: the places a run fills, jokers included, and empty
+ * for anything that is not one. There is one scale and the ace answers at
+ * both ends of it, so nothing has to be told about corners - fifteen is
+ * off the scale wherever it is asked for.
+ */
 function placesOf(run: readonly HeldCard[]): readonly number[] {
-  const high = (card: HeldCard) => rankOf(card);
-  const low = (card: HeldCard) => (rankOf(card) === Ace ? 1 : rankOf(card));
+  const anchor = run.findIndex((card) => !isJoker(card));
 
-  for (const [rank, step, lowest, highest] of [
-    [high, 1, 2, Ace],
-    [high, -1, 2, Ace],
-    [low, 1, 1, King],
-    [low, -1, 1, King],
-  ] as const) {
-    if (inOrderBy(run, rank, step, lowest, highest)) {
-      const anchor = run.findIndex((card) => !isJoker(card));
-      const from = rank(run[anchor]);
+  if (anchor < 0) {
+    return [];
+  }
 
-      return run.map((_, at) => from + step * (at - anchor));
+  // High before low, so an ace with nothing but jokers either side of it
+  // is read at the top of the scale and not the bottom.
+  for (const from of startsAt(run[anchor])) {
+    for (const step of [1, -1]) {
+      const places = run.map((_, at) => from + step * (at - anchor));
+
+      if (inOrder(run, places)) {
+        return places;
+      }
     }
   }
 

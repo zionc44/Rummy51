@@ -26,6 +26,12 @@ public static class Melding
     /// <summary>Rule 5.1.</summary>
     private const int FiftyOne = 51;
 
+    /// <summary>Rule 4.2.</summary>
+    private const int Lowest = 1;
+
+    /// <summary>Rule 4.2, and where Rank.Ace already sits.</summary>
+    private const int Highest = (int)Rank.Ace;
+
     /// <summary>Rules 5.1, 5.6.</summary>
     public static bool IsAShowing(IReadOnlyList<IReadOnlyList<Card>> laid) =>
         laid.Any(HasCleanRun) && ShowingWorth(laid) >= FiftyOne;
@@ -119,37 +125,49 @@ public static class Melding
             : PlacesOf(meld).Sum(WorthOfPlace);
     }
 
-    /// <summary>Jokers included, read off whichever way the run is in order.</summary>
+    /// <summary>
+    /// Rules 4.1, 4.2, 4.3: the places a run fills, jokers included, and
+    /// empty for anything that is not one. There is one scale and the ace
+    /// answers at both ends of it, so nothing has to be told about corners
+    /// - fifteen is off the scale wherever it is asked for.
+    /// </summary>
     private static IReadOnlyList<int> PlacesOf(IReadOnlyList<Card> run)
     {
-        if (InOrderBy(run, High, 1, 2, (int)Rank.Ace))
+        var anchor = run.ToList().FindIndex(card => card is Card.Suited);
+
+        if (anchor < 0)
         {
-            return Places(run, High, 1);
+            return [];
         }
 
-        if (InOrderBy(run, High, -1, 2, (int)Rank.Ace))
+        // High before low, so an ace with nothing but jokers either side of
+        // it is read at the top of the scale and not the bottom.
+        foreach (var from in StartsAt((Card.Suited)run[anchor]))
         {
-            return Places(run, High, -1);
+            foreach (var step in (int[])[1, -1])
+            {
+                var places = Places(run, anchor, from, step);
+
+                if (InOrder(run, places))
+                {
+                    return places;
+                }
+            }
         }
 
-        if (InOrderBy(run, Low, 1, 1, (int)Rank.King))
-        {
-            return Places(run, Low, 1);
-        }
-
-        return InOrderBy(run, Low, -1, 1, (int)Rank.King) ? Places(run, Low, -1) : [];
+        return [];
     }
+
+    /// <summary>Rule 4.3.</summary>
+    private static IReadOnlyList<int> StartsAt(Card.Suited named) =>
+        named.Rank == Rank.Ace ? [Highest, Lowest] : [(int)named.Rank];
 
     private static IReadOnlyList<int> Places(
         IReadOnlyList<Card> run,
-        Func<Card, int> rank,
-        int step)
-    {
-        var anchor = run.ToList().FindIndex(card => card is Card.Suited);
-        var from = rank(run[anchor]);
-
-        return [.. run.Select((_, at) => from + (step * (at - anchor)))];
-    }
+        int anchor,
+        int from,
+        int step) =>
+        [.. run.Select((_, at) => from + (step * (at - anchor)))];
 
     /// <summary>Rules 1.2, 4.2: one is the ace read low, and worth eleven anyway.</summary>
     private static int WorthOfPlace(int rank) =>
@@ -203,7 +221,7 @@ public static class Melding
         return named.All(card => card.Rank == rank) && suits.Count == named.Count;
     }
 
-    /// <summary>Rules 4.1, 4.2 - which is why the ace is asked about twice.</summary>
+    /// <summary>Rules 4.1, 4.2, 4.3.</summary>
     private static bool IsRun(IReadOnlyList<Card> cards)
     {
         var named = cards.OfType<Card.Suited>().ToList();
@@ -213,38 +231,16 @@ public static class Melding
             return false;
         }
 
-        return InOrderBy(cards, High, 1, 2, (int)Rank.Ace)
-            || InOrderBy(cards, High, -1, 2, (int)Rank.Ace)
-            || InOrderBy(cards, Low, 1, 1, (int)Rank.King)
-            || InOrderBy(cards, Low, -1, 1, (int)Rank.King);
+        return PlacesOf(cards).Count > 0;
     }
 
-    private static int High(Card card) => (int)((Card.Suited)card).Rank;
+    /// <summary>A joker names nothing, so only the rest are asked anything.</summary>
+    private static bool InOrder(IReadOnlyList<Card> run, IReadOnlyList<int> places) =>
+        places.All(place => place is >= Lowest and <= Highest)
+        && run.Select((card, at) => (card, at)).All(place =>
+            place.card is Card.Joker || Sits((Card.Suited)place.card, places[place.at]));
 
-    /// <summary>Rule 4.2.</summary>
-    private static int Low(Card card) => High(card) == (int)Rank.Ace ? 1 : High(card);
-
-    /// <summary>
-    /// Anchored on the first card that names itself, since a joker names
-    /// nothing and takes whatever rank the place it sits in asks for.
-    /// </summary>
-    private static bool InOrderBy(
-        IReadOnlyList<Card> cards,
-        Func<Card, int> rank,
-        int step,
-        int lowest,
-        int highest)
-    {
-        var anchor = cards.ToList().FindIndex(card => card is Card.Suited);
-        var from = rank(cards[anchor]);
-
-        return cards.Select((card, at) => (card, at)).All(place =>
-        {
-            var wanted = from + (step * (place.at - anchor));
-
-            return wanted >= lowest
-                && wanted <= highest
-                && (place.card is Card.Joker || rank(place.card) == wanted);
-        });
-    }
+    /// <summary>Rule 4.2: the ace answers for either end of the scale.</summary>
+    private static bool Sits(Card.Suited card, int place) =>
+        (int)card.Rank == place || (card.Rank == Rank.Ace && place == Lowest);
 }

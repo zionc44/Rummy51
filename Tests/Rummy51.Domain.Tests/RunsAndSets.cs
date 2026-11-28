@@ -52,6 +52,36 @@ public class RunsAndSets
     public void Rule_4_2_a_run_reads_either_way_round() =>
         Assert.True(Melding.IsMeld([S(6), S(5), S(4)]));
 
+    /// <summary>Rule 1.1 puts two of every card in the deck, so this is two aces.</summary>
+    [Fact]
+    public void Rule_4_3_one_run_reaches_from_one_ace_to_the_other() =>
+        Assert.True(Melding.IsMeld(AceToAce));
+
+    [Fact]
+    public void Rule_4_3_and_either_of_them_may_be_a_joker() =>
+        Assert.True(Melding.IsMeld([.. AceToAce[..^1], Joker()]));
+
+    /// <summary>
+    /// Rule 1.2 and rule 5.3: fourteen places, and the ace is worth eleven
+    /// at both ends of them.
+    /// </summary>
+    [Fact]
+    public void Rule_4_3_and_both_of_them_are_counted() =>
+        Assert.Equal(11 + 54 + 30 + 11, Melding.WorthOnTheTable(AceToAce));
+
+    [Fact]
+    public void Rule_4_3_but_fourteen_places_are_all_there_are() =>
+        Assert.False(Melding.IsMeld([.. AceToAce, S(2)]));
+
+    /// <summary>Rule 4.1: one place each, and these two are asking for one.</summary>
+    [Fact]
+    public void Rule_4_3_and_two_aces_beside_each_other_are_not_two_places() =>
+        Assert.False(Melding.IsMeld([S(Ace), S(Ace), S(2)]));
+
+    /// <summary>A-2-3-...-K-A, which is the whole suit and one card over.</summary>
+    private static readonly Card[] AceToAce =
+        [S(Ace), .. Enumerable.Range(2, 12).Select(S), S(Ace)];
+
     // ------------------------------------------------- what a joker stands for
 
     [Fact]
