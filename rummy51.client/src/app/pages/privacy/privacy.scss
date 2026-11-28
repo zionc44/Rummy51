@@ -1,0 +1,32 @@
+.privacy {
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  padding-block: 1rem 4rem;
+  max-inline-size: 42rem;
+  line-height: 1.7;
+
+  a {
+    color: var(--felt-50);
+  }
+}
+
+.privacy__back {
+  margin-block-end: 1.5rem;
+}
+
+.privacy__title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.privacy__updated {
+  margin-block-start: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.privacy__heading {
+  margin-block: 2rem 0.5rem;
+  font-size: 1.25rem;
+}

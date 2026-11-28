@@ -7,6 +7,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/landing/landing').then((m) => m.Landing),
   },
   {
+    path: 'privacy',
+    loadComponent: () => import('./pages/privacy/privacy').then((m) => m.Privacy),
+  },
+  {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),

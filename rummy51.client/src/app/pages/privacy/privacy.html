@@ -1,0 +1,26 @@
+<app-page-shell>
+  <main class="privacy">
+    <button type="button" class="btn-ghost privacy__back" (click)="back()">
+      {{ 'common.back' | translate }}
+    </button>
+
+    <h1 class="privacy__title">{{ 'privacy.title' | translate }}</h1>
+    <p class="privacy__updated">{{ 'privacy.updated' | translate }}</p>
+    <p>{{ 'privacy.intro' | translate }}</p>
+
+    @for (section of sections; track section) {
+      <section>
+        <h2 class="privacy__heading">{{ 'privacy.' + section + '.title' | translate }}</h2>
+        <p>{{ 'privacy.' + section + '.body' | translate }}</p>
+      </section>
+    }
+
+    <section>
+      <h2 class="privacy__heading">{{ 'privacy.contact.title' | translate }}</h2>
+      <p>
+        {{ 'privacy.contact.body' | translate }}
+        <a [href]="'mailto:' + contact" dir="ltr">{{ contact }}</a>
+      </p>
+    </section>
+  </main>
+</app-page-shell>

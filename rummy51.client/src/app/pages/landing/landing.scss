@@ -62,6 +62,12 @@
   }
 }
 
+.landing__privacy {
+  margin-block-start: 2rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
 // Stacked and full width on a phone, side by side once there is room.
 .landing__actions {
   display: flex;

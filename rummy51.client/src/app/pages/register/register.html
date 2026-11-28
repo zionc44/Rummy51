@@ -47,6 +47,12 @@
 
       <app-google-sign-in-button />
 
+      <!-- A tab of its own, so that what is typed in the form above survives reading it. -->
+      <p class="auth__notice">
+        {{ 'auth.privacyNotice' | translate }}
+        <a routerLink="/privacy" target="_blank" class="auth__link">{{ 'auth.privacyLink' | translate }}</a>
+      </p>
+
       <p class="auth__switch">
         {{ 'auth.haveAccount' | translate }}
         <a routerLink="/login" class="auth__link">{{ 'landing.login' | translate }}</a>

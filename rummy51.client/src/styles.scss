@@ -157,6 +157,13 @@ button {
   text-align: center;
 }
 
+.auth__notice {
+  margin: 1rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
 .auth__link {
   margin-inline-start: 0.25rem;
   color: var(--felt-500);

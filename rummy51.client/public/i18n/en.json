@@ -6,11 +6,46 @@
   "landing": {
     "intro": "One deck, fifty-one points to open, and the first hand to go out wins. Pull up a chair.",
     "register": "Sign up",
-    "login": "Sign in"
+    "login": "Sign in",
+    "privacy": "Privacy policy"
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "updated": "Last updated 28 November 2026",
+    "intro": "Rummy 51 is an online card game. This page says what is kept about you while you play, what for, and how to have it deleted.",
+    "collected": {
+      "title": "What is kept",
+      "body": "The email address and display name you chose, and your password - kept only as a hash, from which the password itself cannot be recovered. If you upload a profile picture, only the picture is kept, after it has been drawn again: no location and nothing else from the original file. And the history of your games - who sat at which table, the hands dealt and the results."
+    },
+    "use": {
+      "title": "What for",
+      "body": "So that you can sign in, play and see your results, and nothing else. It is not used for advertising, not sold and not passed to anybody."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "body": "The site uses one cookie, which keeps you signed in, and a temporary second one while you sign in with Google. The language you chose is kept in your browser. There are no ads, trackers or analytics."
+    },
+    "google": {
+      "title": "Signing in with Google",
+      "body": "Is your choice. Google passes us your name, email address and a link to your profile picture, and nothing more. A Google profile picture is shown straight from Google's servers."
+    },
+    "stored": {
+      "title": "Where it is kept",
+      "body": "On a server of Contabo's in Germany, inside the European Union. The connection to the site is encrypted."
+    },
+    "deletion": {
+      "title": "Deletion",
+      "body": "You can ask at any time for your account and the personal information tied to it to be deleted, at the address below."
+    },
+    "contact": {
+      "title": "Contact",
+      "body": "Questions about this policy and requests for deletion:"
+    }
   },
   "common": {
     "cancel": "Cancel",
-    "ok": "OK"
+    "ok": "OK",
+    "back": "Back"
   },
   "language": {
     "switch": "Change language"
@@ -39,7 +74,9 @@
     "linkGoogleTitle": "Connect your Google account",
     "linkGoogleBody": "{{0}} is already registered here. Enter its password to connect your Google account to it.",
     "linkGoogleSubmit": "Connect account",
-    "linkGooglePending": "Connecting..."
+    "linkGooglePending": "Connecting...",
+    "privacyNotice": "By continuing you agree to the",
+    "privacyLink": "privacy policy"
   },
   "account": {
     "save": "Save",

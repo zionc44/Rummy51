@@ -35,6 +35,12 @@
 
       <app-google-sign-in-button />
 
+      <!-- Signing in through Google opens an account for an address it has not seen. -->
+      <p class="auth__notice">
+        {{ 'auth.privacyNotice' | translate }}
+        <a routerLink="/privacy" target="_blank" class="auth__link">{{ 'auth.privacyLink' | translate }}</a>
+      </p>
+
       <p class="auth__switch">
         {{ 'auth.noAccount' | translate }}
         <a routerLink="/register" class="auth__link">{{ 'landing.register' | translate }}</a>
