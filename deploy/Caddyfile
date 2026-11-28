@@ -1,0 +1,7 @@
+playrummy51.com {
+	reverse_proxy app:8080
+}
+
+www.playrummy51.com {
+	redir https://playrummy51.com{uri} permanent
+}

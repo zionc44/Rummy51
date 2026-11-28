@@ -1,0 +1,72 @@
+# Everything that runs on the server, started from this folder with
+#   docker compose up -d --build
+# The secrets are in .env beside it, which is never committed; .env.example
+# says what it holds.
+
+name: rummy51
+
+# Docker keeps every line a container writes, for ever, unless told otherwise.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    logging: *logging
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+  app:
+    build:
+      context: ..
+    image: rummy51
+    restart: unless-stopped
+    logging: *logging
+    # No ports. Caddy is the only way in, which is the whole of why Program.cs
+    # may believe the forwarded headers of whoever sends them.
+    environment:
+      ConnectionStrings__Rummy51Db: Host=db;Database=rummy51;Username=rummy51;Password=${POSTGRES_PASSWORD}
+      Database__MigrateOnStartup: "true"
+      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+      Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_DB: rummy51
+      POSTGRES_USER: rummy51
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set in .env}
+    # Loopback only. Docker writes its own firewall rules ahead of ufw's, so a
+    # bare "5432:5432" would open the database to the internet while ufw went
+    # on saying it was closed. DBeaver reaches it through an SSH tunnel.
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rummy51 -d rummy51"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  caddy-data:
+  caddy-config:
+  db-data:

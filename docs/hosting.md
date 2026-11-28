@@ -259,10 +259,11 @@ secret store. **This repository is public.**
 
 **Google needs a redirect URI** registered for the real domain.
 
-**`Program.cs` calls `UseHttpsRedirection` and has no
-`UseForwardedHeaders`.** Behind a reverse proxy that terminates TLS, the
-application sees `http`, redirects to `https`, the proxy forwards as `http`
-again, and that is an infinite redirect loop on the first deployment.
+~~**`Program.cs` calls `UseHttpsRedirection` and has no
+`UseForwardedHeaders`.**~~ Settled: it believes Caddy's forwarded headers
+now, and `BehindTheProxy` fails if it stops. Without that, a proxy ending
+TLS forwards `http`, the application redirects to `https`, and the browser
+goes round that for ever.
 
 ## How to deploy
 

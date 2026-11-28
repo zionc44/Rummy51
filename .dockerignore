@@ -1,0 +1,15 @@
+.git
+.vs
+.claude
+Secret
+Tests
+docs
+scripts
+deploy
+**/bin
+**/obj
+**/node_modules
+**/*.user
+**/appsettings.Development.json
+rummy51.client/dist
+rummy51.client/.angular

@@ -39,9 +39,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.1" />
   </ItemGroup>
 
-  <!-- Builds the Angular app and copies it into wwwroot on publish. -->
+  <!-- Builds the Angular app and copies it into wwwroot on publish. The
+       Dockerfile builds it in a stage of its own and says SkipClientBuild. -->
   <ItemGroup>
-    <ProjectReference Include="..\rummy51.client\rummy51.client.esproj">
+    <ProjectReference Include="..\rummy51.client\rummy51.client.esproj" Condition="'$(SkipClientBuild)' != 'true'">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\Rummy51.Application\Rummy51.Application.csproj" />

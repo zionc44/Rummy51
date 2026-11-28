@@ -1,7 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Rummy51.Infrastructure;
+using Rummy51.Infrastructure.Persistence;
 using Rummy51.Server.Authentication;
 using Rummy51.Server.Errors;
 using Rummy51.Server.Hubs;
@@ -30,6 +32,20 @@ builder.Services.AddSingleton<TableNews>();
 builder.Services.AddHostedService<TurnClock>();
 builder.Services.AddHostedService<GameRecorder>();
 
+// Behind Caddy, which ends TLS and forwards plain HTTP: unless the scheme it
+// was asked in is believed, UseHttpsRedirection answers every request with a
+// redirect back to Caddy, for ever.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // Caddy's address is whatever Docker hands its container, so it cannot be
+    // named here. Believing any sender is safe only while this application
+    // publishes no port of its own and Caddy is the one thing that reaches it.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -50,6 +66,15 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// On only where the application is deployed. A developer runs
+// `dotnet ef database update`, and the suite that boots this pipeline has no
+// database to reach.
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    await app.Services.MigrateDatabaseAsync();
+}
+
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 
 app.UseDefaultFiles();

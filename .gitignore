@@ -41,6 +41,7 @@ appsettings.*.local.json
 ## catches a provider file downloaded straight into the project by mistake.
 Secret/
 client_secret*.json
+deploy/.env
 
 ## Claude Code. The settings and the hook are the project's and are committed,
 ## so that whichever machine this is opened on is held to the same rules. Only
